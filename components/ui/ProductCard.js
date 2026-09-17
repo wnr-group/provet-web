@@ -1,0 +1,52 @@
+import Link from "next/link";
+import { ArrowUpRight, PackageSearch } from "lucide-react";
+
+const FALLBACK_IMG = "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=600&h=450&fit=crop";
+
+export default function ProductCard({ product }) {
+  const image = product.images?.[0] || FALLBACK_IMG;
+
+  return (
+    <Link
+      href={`/products/${product.slug}`}
+      className="card group flex flex-col overflow-hidden transition hover:-translate-y-1 hover:shadow-card"
+    >
+      <div className="relative aspect-[4/3] overflow-hidden bg-mist-100">
+        {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary external/uploaded URLs, not a fixed set of remote hosts */}
+        <img
+          src={image}
+          alt={product.name}
+          loading="lazy"
+          className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+        />
+        {product.isFeatured && (
+          <span className="badge absolute left-3 top-3 bg-accent-400 text-brand-900">Featured</span>
+        )}
+        <span className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-brand-700 opacity-0 transition group-hover:opacity-100">
+          <ArrowUpRight size={16} />
+        </span>
+      </div>
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        {product.category?.name && (
+          <span className="text-xs font-semibold uppercase tracking-wide text-accent-600">
+            {product.category.name}
+          </span>
+        )}
+        <h3 className="font-display font-semibold text-ink line-clamp-1">{product.name}</h3>
+        {product.shortDescription && (
+          <p className="line-clamp-2 text-sm text-ink-soft">{product.shortDescription}</p>
+        )}
+        <div className="mt-auto flex items-center justify-between pt-2 text-sm">
+          {product.packSize ? (
+            <span className="inline-flex items-center gap-1.5 text-ink-soft">
+              <PackageSearch size={14} /> {product.packSize}
+            </span>
+          ) : (
+            <span />
+          )}
+          <span className="font-semibold text-brand-600 link-underline">View details</span>
+        </div>
+      </div>
+    </Link>
+  );
+}

@@ -1,0 +1,101 @@
+// Prisma schema for Provet.
+//
+// Datasource: SQLite is used for local development because there is no
+// Docker/Postgres/Supabase available in this environment. The schema
+// intentionally avoids SQLite-only features (no raw pragmas, no SQLite-only
+// column types) so that moving to Postgres/Supabase later is just a matter of
+// changing `provider` below to "postgresql" and pointing DATABASE_URL at a
+// Postgres connection string, then re-running `prisma migrate dev`.
+// JSON-ish fields (Product.specifications, Product.images) are stored as
+// plain strings (JSON-encoded) rather than using SQLite's json1 helpers, and
+// are parsed/serialized in lib/serializers.js - this also works unchanged on
+// Postgres (where they could later be upgraded to a native Json column).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("admin")
+  createdAt    DateTime @default(now())
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  image       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  products    Product[]
+}
+
+model Product {
+  id               String    @id @default(cuid())
+  name             String
+  slug             String    @unique
+  sku              String?   @unique
+  categoryId       String
+  category         Category  @relation(fields: [categoryId], references: [id])
+  shortDescription String?
+  composition      String?
+  uses             String?
+  dosage           String?
+  applications     String?
+  specifications   String? // JSON-encoded object, parsed/serialized in lib/serializers.js
+  images           String? // JSON-encoded string array, parsed/serialized in lib/serializers.js
+  packSize         String?
+  isFeatured       Boolean   @default(false)
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  enquiries        Enquiry[]
+}
+
+model Enquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  status    String   @default("new") // "new" | "read" | "resolved"
+  createdAt DateTime @default(now())
+}
+
+model Banner {
+  id        String   @id @default(cuid())
+  title     String
+  subtitle  String?
+  image     String
+  ctaText   String?
+  ctaLink   String?
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ContentBlock {
+  id        String   @id @default(cuid())
+  page      String
+  key       String
+  title     String?
+  body      String?
+  image     String?
+  order     Int      @default(0)
+  updatedAt DateTime @updatedAt
+
+  @@unique([page, key])
+}
