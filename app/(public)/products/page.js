@@ -3,6 +3,7 @@ import ProductCard from "@/components/ui/ProductCard";
 import EmptyState from "@/components/ui/EmptyState";
 import ProductsFilters from "@/components/products/ProductsFilters";
 import ProductsPagination from "@/components/products/ProductsPagination";
+import BrochureDownload from "@/components/products/BrochureDownload";
 
 const LIMIT = 12;
 
@@ -28,13 +29,16 @@ export default async function Products({ searchParams }) {
   return (
     <div className="bg-mist-50/40">
       <div className="bg-brand-700 py-10 text-white sm:py-14">
-        <div className="container-page">
-          <h1 className="font-display text-3xl font-extrabold sm:text-4xl">
-            {activeCategory ? activeCategory.name : "Our Products"}
-          </h1>
-          <p className="mt-2 max-w-xl text-brand-100">
-            {activeCategory?.description || "Explore our full range of veterinary medicines, vaccines and healthcare products."}
-          </p>
+        <div className="container-page flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="font-display text-3xl font-extrabold sm:text-4xl">
+              {activeCategory ? activeCategory.name : "Our Products"}
+            </h1>
+            <p className="mt-2 max-w-xl text-brand-100">
+              {activeCategory?.description || "Explore our full range of veterinary medicines, vaccines and healthcare products."}
+            </p>
+          </div>
+          <BrochureDownload />
         </div>
       </div>
 

@@ -177,3 +177,16 @@ model FeedbackField {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+// Details captured before handing over the brochure download. Separate from
+// Enquiry because Enquiry models a message staff must reply to and triage
+// (subject/message, new -> read -> resolved), and has nowhere to put
+// company/city; this is a one-shot download lead with no reply expected.
+model BrochureLead {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String
+  company   String
+  city      String?
+  createdAt DateTime @default(now())
+}
