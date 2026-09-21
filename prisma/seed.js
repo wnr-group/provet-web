@@ -9,6 +9,7 @@
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const prisma = require("../lib/prisma");
+const { PLATFORMS } = require("../lib/socialSchema");
 
 function slug(s) {
   return s
@@ -486,6 +487,20 @@ async function main() {
     });
   }
   console.log("Seeded content blocks for pages: home, about");
+
+  // --- Social media links ---------------------------------------------------
+  // Seeded as empty and disabled on purpose: Provet's real profile URLs aren't
+  // known here, and inventing them would put dead links on every public page.
+  // The rows exist so the admin screen has a stable, ordered list to fill in;
+  // `update: {}` keeps any URL an admin has already configured.
+  for (const [index, platform] of PLATFORMS.entries()) {
+    await prisma.socialLink.upsert({
+      where: { platform: platform.key },
+      update: {},
+      create: { platform: platform.key, url: null, isActive: false, order: index },
+    });
+  }
+  console.log(`Seeded ${PLATFORMS.length} social link placeholders (all disabled - add URLs in Admin > Social Media)`);
 
   // --- Sample enquiries -----------------------------------------------------
   const sampleProduct = await prisma.product.findFirst({ where: { slug: featuredSlugs[0] } });

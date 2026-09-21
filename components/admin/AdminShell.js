@@ -9,6 +9,7 @@ import {
   FolderTree,
   Image as ImageIcon,
   FileText,
+  Share2,
   Mail,
   LogOut,
   ExternalLink,
@@ -22,6 +23,7 @@ const links = [
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
   { href: "/admin/banners", label: "Banners", icon: ImageIcon },
   { href: "/admin/content", label: "Website Content", icon: FileText },
+  { href: "/admin/social", label: "Social Media", icon: Share2 },
   { href: "/admin/enquiries", label: "Enquiries", icon: Mail },
 ];
 

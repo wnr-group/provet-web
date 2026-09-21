@@ -99,3 +99,18 @@ model ContentBlock {
 
   @@unique([page, key])
 }
+
+// Admin-configurable social media links shown in the public footer and on the
+// Contact page. One row per platform (`platform` is unique and drawn from the
+// fixed list in lib/socialSchema.js) rather than a free-form list, because the
+// set of supported platforms is a product decision, not admin data - the admin
+// only supplies the URL and the enabled flag.
+model SocialLink {
+  id        String   @id @default(cuid())
+  platform  String   @unique // "instagram" | "facebook" | "youtube" | "linkedin" | "twitter"
+  url       String?
+  isActive  Boolean  @default(false)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

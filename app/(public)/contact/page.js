@@ -1,6 +1,8 @@
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 import ContactForm from "@/components/contact/ContactForm";
+import SocialLinks from "@/components/ui/SocialLinks";
+import { getActiveSocialLinks } from "@/lib/data";
 
 export const metadata = {
   title: "Contact Us",
@@ -10,6 +12,8 @@ export const metadata = {
 export default async function Contact({ searchParams }) {
   const params = await searchParams;
   const productName = params.product || "";
+  // Same admin config the footer reads - no separate Contact-page setting.
+  const socialLinks = await getActiveSocialLinks();
 
   return (
     <div className="bg-mist-50/40">
@@ -42,6 +46,14 @@ export default async function Contact({ searchParams }) {
               </div>
             </RevealItem>
           ))}
+
+          {socialLinks.length > 0 && (
+            <RevealItem direction="right" className="card p-5">
+              <p className="text-sm font-semibold text-ink">Follow Us</p>
+              <p className="mt-1 text-sm text-ink-soft">Stay up to date with our latest products and updates.</p>
+              <SocialLinks links={socialLinks} variant="light" className="mt-4" iconSize={16} />
+            </RevealItem>
+          )}
         </RevealGroup>
 
         <Reveal direction="left" delay={0.1} mode="mount" className="card p-6 sm:p-8">

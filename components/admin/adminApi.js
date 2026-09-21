@@ -58,6 +58,11 @@ export const adminGetContent = (page) => apiFetch(`/admin/content/${page}`);
 export const adminUpdateContent = (page, sections) =>
   apiFetch(`/admin/content/${page}`, { method: "PUT", body: JSON.stringify({ sections }) });
 
+// ---- Admin: Social Links ----
+export const adminGetSocialLinks = () => apiFetch("/admin/social-links");
+export const adminUpdateSocialLinks = (links) =>
+  apiFetch("/admin/social-links", { method: "PUT", body: JSON.stringify({ links }) });
+
 // ---- Admin: Enquiries ----
 export const adminGetEnquiries = (params = {}) => apiFetch(withQuery("/admin/enquiries", params));
 export const adminUpdateEnquiryStatus = (id, status) =>
