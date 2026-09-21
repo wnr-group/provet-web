@@ -1,5 +1,10 @@
 const { z } = require("zod");
+const { after } = require("next/server");
 const prisma = require("../../../lib/prisma");
+const {
+  sendCustomerEnquiryConfirmation,
+  sendVendorEnquiryNotification,
+} = require("../../../lib/email");
 
 const enquirySchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
@@ -19,11 +24,13 @@ export async function POST(request) {
 
   const { name, email, phone, subject, message, productId } = parsed.data;
 
+  let productName = null;
   if (productId) {
     const product = await prisma.product.findUnique({ where: { id: productId } });
     if (!product) {
       return Response.json({ error: "productId does not reference an existing product" }, { status: 400 });
     }
+    productName = product.name;
   }
 
   const enquiry = await prisma.enquiry.create({
@@ -38,23 +45,29 @@ export async function POST(request) {
     },
   });
 
-  // NOTE: no SMTP configured yet. In production, wire up a real
-  // transactional email here (e.g. via nodemailer/Resend). For now we just
-  // log a clear notification so enquiries are visible during local dev.
-  console.log(
-    [
-      "",
-      "==================== [EMAIL NOTIFICATION] ====================",
-      `New enquiry from ${name} <${email}>`,
-      `Subject : ${subject}`,
-      `Phone   : ${phone || "-"}`,
-      `Product : ${productId || "-"}`,
-      `Message : ${message}`,
-      `Received: ${enquiry.createdAt.toISOString()}`,
-      "================================================================",
-      "",
-    ].join("\n")
-  );
+  // Notifications are best-effort and must not sit between the customer and
+  // their confirmation: SMTP round trips are slow (seconds against a real
+  // provider), and the enquiry is already safely committed by this point.
+  // after() runs the sends once the response has been flushed - unlike a
+  // bare floating promise, the platform keeps the invocation alive for it.
+  // Both senders resolve rather than throw (see lib/email.js), and
+  // allSettled means one failing address can't stop the other.
+  after(async () => {
+    const [customerResult, vendorResult] = await Promise.allSettled([
+      sendCustomerEnquiryConfirmation(enquiry, productName),
+      sendVendorEnquiryNotification(enquiry, productName),
+    ]);
 
+    for (const [label, result] of [
+      ["customer confirmation", customerResult],
+      ["vendor notification", vendorResult],
+    ]) {
+      if (result.status === "rejected") {
+        console.error(`[enquiries] Unexpected error sending ${label} for ${enquiry.id}:`, result.reason);
+      }
+    }
+  });
+
+  // Response shape unchanged - no email status, no SMTP detail.
   return Response.json({ id: enquiry.id, createdAt: enquiry.createdAt }, { status: 201 });
 }
