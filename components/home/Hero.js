@@ -74,7 +74,12 @@ export default function Hero({ banners = [] }) {
       <div className={clsx("pointer-events-none absolute inset-0 -z-10", OVERLAY_GRADIENT)} />
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(229,9,127,0.22),transparent_55%)]" />
 
-      <div className="container-page relative flex min-h-[560px] flex-col justify-center py-16 pb-24 sm:py-20 sm:pb-24 lg:min-h-[640px] lg:py-24 lg:pb-28">
+      {/* A fixed height, not min-height: the banners have titles of 30-47
+          characters, so with min-height the whole hero (and the image with
+          it) grew or shrank as the slides rotated. The content is centred
+          inside it and each text block below reserves its maximum number of
+          lines, so nothing shifts between slides either. */}
+      <div className="container-page relative flex h-[600px] flex-col justify-center pb-20 sm:h-[620px] sm:pb-24 lg:h-[680px]">
         <div className="max-w-2xl">
           <motion.span
             initial={{ opacity: 0, y: 12 }}
@@ -92,7 +97,10 @@ export default function Hero({ banners = [] }) {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              className="mt-5 max-w-xl font-display text-4xl font-extrabold leading-[1.1] text-white sm:text-5xl"
+              // Three lines reserved (leading-[1.1] x 3), clamped to the
+              // same, so a 30-character title and a 47-character one occupy
+              // identical space and an over-long one can't stretch the hero.
+              className="mt-5 line-clamp-3 min-h-[7.425rem] max-w-xl font-display text-4xl font-extrabold leading-[1.1] text-white sm:min-h-[9.9rem] sm:text-5xl"
             >
               {slide.title}
             </motion.h1>
@@ -102,7 +110,8 @@ export default function Hero({ banners = [] }) {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="mt-5 max-w-lg text-brand-100 leading-relaxed"
+            // Two lines reserved (leading-relaxed x 2) for the same reason.
+            className="mt-5 line-clamp-2 min-h-[3.25rem] max-w-lg leading-relaxed text-brand-100"
           >
             {slide.subtitle}
           </motion.p>
