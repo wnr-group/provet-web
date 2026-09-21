@@ -9,6 +9,8 @@
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const prisma = require("../lib/prisma");
+const { PLATFORMS } = require("../lib/socialSchema");
+const { DEFAULT_FEEDBACK_CONFIG, DEFAULT_FEEDBACK_FIELDS } = require("../lib/feedbackSchema");
 
 function slug(s) {
   return s
@@ -486,6 +488,32 @@ async function main() {
     });
   }
   console.log("Seeded content blocks for pages: home, about");
+
+  // --- Social media links ---------------------------------------------------
+  // Seeded as empty and disabled on purpose: Provet's real profile URLs aren't
+  // known here, and inventing them would put dead links on every public page.
+  // The rows exist so the admin screen has a stable, ordered list to fill in;
+  // `update: {}` keeps any URL an admin has already configured.
+  for (const [index, platform] of PLATFORMS.entries()) {
+    await prisma.socialLink.upsert({
+      where: { platform: platform.key },
+      update: {},
+      create: { platform: platform.key, url: null, isActive: false, order: index },
+    });
+  }
+  console.log(`Seeded ${PLATFORMS.length} social link placeholders (all disabled - add URLs in Admin > Social Media)`);
+
+  // --- Feedback form settings -----------------------------------------------
+  // `update: {}` so re-seeding never clobbers settings an admin has changed.
+  await prisma.feedbackSetting.upsert({
+    where: { key: "default" },
+    update: {},
+    create: { key: "default", ...DEFAULT_FEEDBACK_CONFIG },
+  });
+  for (const field of DEFAULT_FEEDBACK_FIELDS) {
+    await prisma.feedbackField.upsert({ where: { key: field.key }, update: {}, create: field });
+  }
+  console.log(`Seeded feedback form settings and ${DEFAULT_FEEDBACK_FIELDS.length} built-in fields`);
 
   // --- Sample enquiries -----------------------------------------------------
   const sampleProduct = await prisma.product.findFirst({ where: { slug: featuredSlugs[0] } });
