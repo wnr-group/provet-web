@@ -114,3 +114,66 @@ model SocialLink {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+
+// A visitor-submitted feedback message. Kept separate from Enquiry on
+// purpose: an enquiry is a sales lead with a subject, a phone number, an
+// optional product and a triage status, whereas feedback is an unsolicited
+// comment with no workflow attached. `name`/`email` are nullable because the
+// admin can hide either field (see FeedbackSetting) - `message` is the one
+// thing a feedback always has.
+model Feedback {
+  id      String  @id @default(cuid())
+  name    String?
+  email   String?
+  message String
+  // Answers to the admin's custom fields, JSON-encoded like
+  // Product.specifications (see the note at the top of this file). Stored as
+  // an array of { key, label, value } rather than a plain key->value map so a
+  // submission stays readable after the admin renames or deletes the field
+  // that produced it. Parsed in lib/serializers.js.
+  answers   String?
+  createdAt DateTime @default(now())
+}
+
+// Singleton config row for the public feedback form. `key` is a fixed
+// "default" rather than relying on "the first row", so reads and writes can
+// use a plain upsert on a unique column and can never create a second config
+// by accident. The message field is intentionally not configurable - a
+// feedback form without a message field would have nothing to submit.
+model FeedbackSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique @default("default")
+  isEnabled   Boolean  @default(true)
+  title       String   @default("Share Your Feedback")
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// One row per field on the public feedback form. The admin builds the form
+// from these: add, rename, reorder, require, enable/disable, delete.
+//
+// `isSystem` marks the three built-ins (name, email, message) that write to
+// Feedback's own columns instead of the JSON `answers` blob - they can be
+// relabelled, reordered and (for name/email) hidden or made optional, but
+// never deleted, because existing rows and the admin list depend on those
+// columns. Everything else is a custom field the admin created.
+//
+// `key` is a slug derived from the label on creation and then frozen: it's
+// what already-submitted answers are keyed by, so renaming the label must not
+// change it.
+model FeedbackField {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  label       String
+  type        String   @default("text") // see FIELD_TYPES in lib/feedbackSchema.js
+  placeholder String?
+  helpText    String?
+  options     String? // JSON-encoded string array, used by select/radio
+  isRequired  Boolean  @default(false)
+  isEnabled   Boolean  @default(true)
+  isSystem    Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

@@ -63,6 +63,23 @@ export const adminGetSocialLinks = () => apiFetch("/admin/social-links");
 export const adminUpdateSocialLinks = (links) =>
   apiFetch("/admin/social-links", { method: "PUT", body: JSON.stringify({ links }) });
 
+// ---- Admin: Feedback ----
+export const adminGetFeedbackConfig = () => apiFetch("/admin/feedback-config");
+export const adminUpdateFeedbackConfig = (payload) =>
+  apiFetch("/admin/feedback-config", { method: "PUT", body: JSON.stringify(payload) });
+export const adminGetFeedbackFields = () => apiFetch("/admin/feedback-fields");
+export const adminCreateFeedbackField = (payload) =>
+  apiFetch("/admin/feedback-fields", { method: "POST", body: JSON.stringify(payload) });
+export const adminUpdateFeedbackField = (id, payload) =>
+  apiFetch(`/admin/feedback-fields/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+export const adminDeleteFeedbackField = (id) =>
+  apiFetch(`/admin/feedback-fields/${id}`, { method: "DELETE" });
+export const adminReorderFeedbackFields = (order) =>
+  apiFetch("/admin/feedback-fields/reorder", { method: "PUT", body: JSON.stringify({ order }) });
+export const adminGetFeedbacks = (params = {}) => apiFetch(withQuery("/admin/feedback", params));
+export const adminGetFeedback = (id) => apiFetch(`/admin/feedback/${id}`);
+export const adminDeleteFeedback = (id) => apiFetch(`/admin/feedback/${id}`, { method: "DELETE" });
+
 // ---- Admin: Enquiries ----
 export const adminGetEnquiries = (params = {}) => apiFetch(withQuery("/admin/enquiries", params));
 export const adminUpdateEnquiryStatus = (id, status) =>

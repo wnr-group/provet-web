@@ -114,6 +114,45 @@ URLs weren't available, and seeding invented ones would put dead links on
 every public page. Add them under Admin → Social Media; until a platform has
 a URL *and* is enabled, it simply doesn't render.
 
+### Feedback form
+
+Three models: `Feedback` (submissions), `FeedbackSetting` (a singleton config
+row keyed `"default"`, holding enabled/title/description) and
+`FeedbackField` — one row per field on the public form. The form lives at the
+bottom of the **Contact** page, kept separate from the enquiry form above it
+because an enquiry is a sales lead with a subject, a phone number and a triage
+status, while feedback is an unsolicited comment with no workflow.
+
+**The admin builds the form.** Add fields, reorder them, rename them, set
+required, enable/disable, delete. Supported types: short text, long text,
+email, phone, number, dropdown, single choice, multiple choice, rating (1–5).
+
+`name`, `email` and `message` are **built-in** (`isSystem`): they write to
+`Feedback`'s own columns rather than the JSON blob, so they can be relabelled,
+reordered and — for name/email — hidden or made optional, but never deleted.
+`message` is additionally locked: always shown, always required, since a
+feedback form without it would collect nothing.
+
+Answers to custom fields live in `Feedback.answers`, JSON-encoded like
+`Product.specifications`. Each entry is `{ key, label, value }` rather than a
+plain map: storing the label with the answer means a submission stays readable
+after the admin renames or deletes the field that produced it. A field's `key`
+is slugified from its label on creation and then frozen, because submitted
+answers are keyed by it.
+
+`POST /api/feedback` builds its validator from the **stored, enabled** field
+definitions (`buildFeedbackSubmissionSchema` in `lib/feedbackSchema.js`), never
+from the request. A crafted request therefore can't skip a required field,
+post to a disabled form, store a disabled field, or pick a dropdown value
+that isn't in the admin's option list. The form's own `required` attributes
+are UX only.
+
+Admin → Feedback has two tabs: **Submissions** (paginated 10/page like
+Enquiries, expand for detail including custom answers, delete) and **Form
+Settings** (config + the field builder).
+
+Email notification on new feedback is intentionally not implemented.
+
 ### Social media links
 
 One `SocialLink` row per platform, with the supported platform list fixed in
