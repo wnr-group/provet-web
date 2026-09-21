@@ -7,7 +7,20 @@ import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
 import Counter from "@/components/motion/Counter";
 
-const HERO_FALLBACK = "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1200&h=900&fit=crop";
+// Requested at full-bleed width now that the image spans the viewport rather
+// than sitting in a ~450px card.
+const HERO_FALLBACK = "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1920&h=1080&fit=crop";
+
+// The banner is admin-uploaded, so it can be any photo - light, busy, or
+// low-contrast. These two layers guarantee the white text stays readable over
+// whatever is behind it: a vertical wash on narrow screens (where the text
+// sits over the middle of the image) and a left-weighted one from `sm` up
+// (where the text occupies the left half and the photo should stay visible on
+// the right). Arbitrary values rather than `bg-gradient-to-*` so the
+// direction switch is explicit and version-proof.
+const OVERLAY_GRADIENT =
+  "bg-[linear-gradient(to_bottom,rgba(21,18,48,0.88),rgba(21,18,48,0.72)_55%,rgba(21,18,48,0.82))] " +
+  "sm:bg-[linear-gradient(to_right,rgba(21,18,48,0.94),rgba(21,18,48,0.78)_45%,rgba(21,18,48,0.30))]";
 
 const STATS = [
   ["250+", "Products"],
@@ -41,15 +54,33 @@ export default function Hero({ banners = [] }) {
   const slide = slides[active];
 
   return (
-    <section className="relative overflow-hidden bg-brand-700">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(229,9,127,0.22),transparent_55%)]" />
-      <div className="container-page relative grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-2 lg:py-24">
-        <div>
+    <section className="relative isolate overflow-hidden bg-brand-900">
+      {/* Full-bleed banner: the image covers the whole section rather than
+          sitting in a card, so it spans the viewport edge to edge. */}
+      <AnimatePresence mode="sync">
+        <motion.img
+          key={slide.id ?? slide.image}
+          src={slide.image || HERO_FALLBACK}
+          alt=""
+          aria-hidden="true"
+          fetchPriority="high"
+          initial={{ opacity: 0, scale: 1.06 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute inset-0 -z-10 h-full w-full object-cover"
+        />
+      </AnimatePresence>
+      <div className={clsx("pointer-events-none absolute inset-0 -z-10", OVERLAY_GRADIENT)} />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(229,9,127,0.22),transparent_55%)]" />
+
+      <div className="container-page relative flex min-h-[560px] flex-col justify-center py-16 pb-24 sm:py-20 sm:pb-24 lg:min-h-[640px] lg:py-24 lg:pb-28">
+        <div className="max-w-2xl">
           <motion.span
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="badge bg-white/10 text-accent-200"
+            className="badge bg-white/10 text-accent-200 backdrop-blur-sm"
           >
             <ShieldCheck size={14} /> Trusted by veterinarians nationwide
           </motion.span>
@@ -85,7 +116,7 @@ export default function Hero({ banners = [] }) {
             <Link href={slide.ctaLink || "/products"} className="btn-accent">
               {slide.ctaText || "Explore Products"} <ArrowRight size={16} />
             </Link>
-            <Link href="/contact" className="btn bg-white/10 text-white hover:bg-white/20">
+            <Link href="/contact" className="btn bg-white/10 text-white backdrop-blur-sm hover:bg-white/20">
               Talk to Our Team
             </Link>
           </motion.div>
@@ -107,38 +138,26 @@ export default function Hero({ banners = [] }) {
           </motion.dl>
         </div>
 
-        <div className="relative mx-auto w-full max-w-md lg:max-w-none">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-3xl border border-white/10 shadow-lift">
-            <AnimatePresence mode="sync">
-              <motion.img
-                key={slide.id ?? slide.image}
-                src={slide.image || HERO_FALLBACK}
-                alt={slide.title}
-                initial={{ opacity: 0, scale: 1.04 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-            </AnimatePresence>
-          </div>
-          {slides.length > 1 && (
-            <div className="mt-4 flex justify-center gap-2 lg:justify-start">
-              {slides.map((s, i) => (
-                <button
-                  key={s.id}
-                  onClick={() => setActive(i)}
-                  aria-label={`Show slide ${i + 1}`}
-                  className={clsx(
-                    "h-2 rounded-full transition-all",
-                    i === active ? "w-6 bg-accent-400" : "w-2 bg-white/30"
-                  )}
-                />
-              ))}
-            </div>
-          )}
-        </div>
       </div>
+
+      {slides.length > 1 && (
+        <div className="absolute inset-x-0 bottom-8 z-10">
+          <div className="container-page flex gap-2">
+            {slides.map((s, i) => (
+              <button
+                key={s.id}
+                onClick={() => setActive(i)}
+                aria-label={`Show slide ${i + 1}`}
+                aria-current={i === active}
+                className={clsx(
+                  "h-2 rounded-full transition-all",
+                  i === active ? "w-6 bg-accent-400" : "w-2 bg-white/40 hover:bg-white/60"
+                )}
+              />
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
