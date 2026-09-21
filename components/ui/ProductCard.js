@@ -9,7 +9,7 @@ export default function ProductCard({ product }) {
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="card group flex flex-col overflow-hidden transition hover:-translate-y-1 hover:shadow-card"
+      className="card group flex h-full flex-col overflow-hidden transition hover:-translate-y-1 hover:shadow-card"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-mist-100">
         {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary external/uploaded URLs, not a fixed set of remote hosts */}
@@ -26,16 +26,17 @@ export default function ProductCard({ product }) {
           <ArrowUpRight size={16} />
         </span>
       </div>
+      {/* Every text row reserves a fixed number of lines (min-h matches the
+          line-height, line-clamp caps the overflow) and is always rendered,
+          even when empty. Without that, a product with no category or a
+          one-line description produced a shorter card than its neighbours -
+          card height followed the copy instead of being uniform. */}
       <div className="flex flex-1 flex-col gap-2 p-4">
-        {product.category?.name && (
-          <span className="text-xs font-semibold uppercase tracking-wide text-accent-600">
-            {product.category.name}
-          </span>
-        )}
-        <h3 className="font-display font-semibold text-ink line-clamp-1">{product.name}</h3>
-        {product.shortDescription && (
-          <p className="line-clamp-2 text-sm text-ink-soft">{product.shortDescription}</p>
-        )}
+        <span className="line-clamp-1 min-h-4 text-xs font-semibold uppercase tracking-wide text-accent-600">
+          {product.category?.name}
+        </span>
+        <h3 className="line-clamp-1 font-display font-semibold text-ink">{product.name}</h3>
+        <p className="line-clamp-2 min-h-10 text-sm text-ink-soft">{product.shortDescription}</p>
         <div className="mt-auto flex items-center justify-between pt-2 text-sm">
           {product.packSize ? (
             <span className="inline-flex items-center gap-1.5 text-ink-soft">

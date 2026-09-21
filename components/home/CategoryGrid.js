@@ -24,7 +24,7 @@ export default function CategoryGrid({ categories }) {
         </div>
         <RevealGroup className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {categories.slice(0, 6).map((c) => (
-            <RevealItem key={c.id}>
+            <RevealItem key={c.id} className="h-full">
               <CategoryCard category={c} />
             </RevealItem>
           ))}

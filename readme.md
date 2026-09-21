@@ -9,7 +9,7 @@ Product catalogue with composition/uses/dosage/applications, category
 browsing, search & filters, an enquiry-based contact flow (no shopping cart
 — this is a B2B/B2B2C informational catalogue, not e-commerce), and a
 secured admin dashboard for managing products, categories, banners, website
-content and enquiries.
+content, social media links and enquiries.
 
 Brand colors and logo are sampled from the real Provet logo: navy `#393185`
 and magenta `#E5097F`.
@@ -85,6 +85,7 @@ npm install
 npx prisma migrate dev   # creates prisma/dev.db and applies the schema
 npm run db:seed          # seeds categories/products/banners/content/admin user
 npm run dev              # http://localhost:3000
+npm test                 # unit tests (node --test, no extra deps)
 ```
 
 Seed data includes ~6 categories, 19 sample products, banners, homepage/about
@@ -107,6 +108,65 @@ available. Seed images are generic stock placeholders from Picsum/Unsplash;
 the logo (`public/logo-mark.png`, `logo-full.png`) and favicon are the real
 assets pulled from provet.in. Contact details in the footer/Contact page
 (address, phone, email) are Provet's real public listing.
+
+Social media links are seeded **empty and disabled** — Provet's real profile
+URLs weren't available, and seeding invented ones would put dead links on
+every public page. Add them under Admin → Social Media; until a platform has
+a URL *and* is enabled, it simply doesn't render.
+
+### Feedback form
+
+Three models: `Feedback` (submissions), `FeedbackSetting` (a singleton config
+row keyed `"default"`, holding enabled/title/description) and
+`FeedbackField` — one row per field on the public form. The form lives at the
+bottom of the **Contact** page, kept separate from the enquiry form above it
+because an enquiry is a sales lead with a subject, a phone number and a triage
+status, while feedback is an unsolicited comment with no workflow.
+
+**The admin builds the form.** Add fields, reorder them, rename them, set
+required, enable/disable, delete. Supported types: short text, long text,
+email, phone, number, dropdown, single choice, multiple choice, rating (1–5).
+
+`name`, `email` and `message` are **built-in** (`isSystem`): they write to
+`Feedback`'s own columns rather than the JSON blob, so they can be relabelled,
+reordered and — for name/email — hidden or made optional, but never deleted.
+`message` is additionally locked: always shown, always required, since a
+feedback form without it would collect nothing.
+
+Answers to custom fields live in `Feedback.answers`, JSON-encoded like
+`Product.specifications`. Each entry is `{ key, label, value }` rather than a
+plain map: storing the label with the answer means a submission stays readable
+after the admin renames or deletes the field that produced it. A field's `key`
+is slugified from its label on creation and then frozen, because submitted
+answers are keyed by it.
+
+`POST /api/feedback` builds its validator from the **stored, enabled** field
+definitions (`buildFeedbackSubmissionSchema` in `lib/feedbackSchema.js`), never
+from the request. A crafted request therefore can't skip a required field,
+post to a disabled form, store a disabled field, or pick a dropdown value
+that isn't in the admin's option list. The form's own `required` attributes
+are UX only.
+
+Admin → Feedback has two tabs: **Submissions** (paginated 10/page like
+Enquiries, expand for detail including custom answers, delete) and **Form
+Settings** (config + the field builder).
+
+Email notification on new feedback is intentionally not implemented.
+
+### Social media links
+
+One `SocialLink` row per platform, with the supported platform list fixed in
+`lib/socialSchema.js` (the admin supplies the URL and the enabled flag, not
+the platform set). Both the footer and the Contact page read the same config
+through `getActiveSocialLinks()` in `lib/data.js` — there is deliberately no
+second, Contact-only setting. Two rules are enforced server-side in
+`lib/socialSchema.js`: a platform can't be enabled without a URL, and URLs
+must be `http(s)` (these strings land in an `href` on every public page, so
+allowing arbitrary schemes would make the footer a stored-XSS sink).
+
+Brand glyphs live in `components/ui/SocialIcons.js` as inline SVGs because
+lucide-react v1 dropped its brand icons — the footer already did this for
+Facebook/Twitter/LinkedIn; that set just moved and grew by two.
 
 The current site keeps the simpler nav (Home/Products/About/Contact) rather
 than provet.in's full structure (About Us dropdown, Avinova/Blunova product

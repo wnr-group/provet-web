@@ -24,7 +24,7 @@ export default function FeaturedProducts({ products }) {
         </div>
         <RevealGroup className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {products.slice(0, 4).map((p) => (
-            <RevealItem key={p.id}>
+            <RevealItem key={p.id} className="h-full">
               <ProductCard product={p} />
             </RevealItem>
           ))}
