@@ -1,9 +1,11 @@
 import { getActiveBanners, getCategories, getProducts, getContentSections } from "@/lib/data";
 import Hero from "@/components/home/Hero";
 import FeatureStrip from "@/components/home/FeatureStrip";
+import Mission from "@/components/home/Mission";
 import CategoryGrid from "@/components/home/CategoryGrid";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import WhyUs from "@/components/home/WhyUs";
+import Stats from "@/components/home/Stats";
 import CtaBanner from "@/components/home/CtaBanner";
 
 // Without this, Next.js prerenders this page once at build time (no
@@ -26,7 +28,7 @@ export default async function Home() {
     getContentSections("home"),
   ]);
 
-  const whyUsSection = content.find((s) => s.key === "why-us");
+  const section = (key) => content.find((s) => s.key === key);
   const featured = products.filter((p) => p.isFeatured).length
     ? products.filter((p) => p.isFeatured)
     : products;
@@ -37,7 +39,9 @@ export default async function Home() {
       <FeatureStrip />
       <CategoryGrid categories={categories} />
       <FeaturedProducts products={featured} />
-      <WhyUs section={whyUsSection} />
+      <Mission section={section("mission")} />
+      <WhyUs section={section("why-us")} />
+      <Stats section={section("stats")} />
       <CtaBanner />
     </>
   );
