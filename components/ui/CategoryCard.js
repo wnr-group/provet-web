@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-const ICON_FALLBACK = "https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=300&h=300&fit=crop";
+const ICON_FALLBACK =
+  "https://images.unsplash.com/photo-1766297247072-93fd815afef3?auto=format&fit=crop&w=300&h=300&q=80";
 
 export default function CategoryCard({ category }) {
   return (

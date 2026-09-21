@@ -5,7 +5,8 @@ import { getProductBySlug } from "@/lib/data";
 import Reveal from "@/components/motion/Reveal";
 import ProductGallery from "@/components/products/ProductGallery";
 
-const FALLBACK_IMG = "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=800&h=600&fit=crop";
+const FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1664216294580-079bc527ae49?auto=format&fit=crop&w=800&h=600&q=80";
 
 function Section({ icon: Icon, title, children }) {
   if (!children) return null;

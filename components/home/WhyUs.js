@@ -20,8 +20,8 @@ export default function WhyUs({ section }) {
             <div className="aspect-square max-w-md overflow-hidden rounded-3xl border border-white/10">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="https://images.unsplash.com/photo-1628009368231-7bb7cfcb0def?w=800&h=800&fit=crop"
-                alt="Veterinarian examining a dog"
+                src="https://images.unsplash.com/photo-1770836037793-95bdbf190f71?auto=format&fit=crop&w=800&h=800&q=80"
+                alt="Veterinarian warmly examining a dog during a clinic visit"
                 className="h-full w-full object-cover"
               />
             </div>
