@@ -376,12 +376,20 @@ const bannersData = [
     order: 0,
   },
   {
+    title: "From Day-Old Chicks to Full Flock Health",
+    subtitle: "Brooding support, growth formulations and biosecurity products for commercial poultry operations.",
+    image: img(PHOTO.poultryBarn, 1920, 800),
+    ctaText: "Explore Products",
+    ctaLink: "/products",
+    order: 1,
+  },
+  {
     title: "Trusted Veterinary Medicines, Backed by Science",
     subtitle: "Quality formulations for companion animals and livestock, from a partner you can rely on.",
     image: img(PHOTO.labScientist, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
-    order: 1,
+    order: 2,
   },
   {
     title: "Comprehensive Anti-parasitic Range",
@@ -389,7 +397,7 @@ const bannersData = [
     image: img(PHOTO.cattleField, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
-    order: 2,
+    order: 3,
   },
   {
     title: "Vaccination Programs That Work",
@@ -397,7 +405,7 @@ const bannersData = [
     image: img(PHOTO.vetInjectingDog, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
-    order: 3,
+    order: 4,
   },
   {
     title: "Partnering with Veterinarians Nationwide",
@@ -405,7 +413,7 @@ const bannersData = [
     image: img(PHOTO.vetExaminingDog, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
-    order: 4,
+    order: 5,
   },
 ];
 
