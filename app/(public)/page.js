@@ -6,6 +6,7 @@ import CategoryGrid from "@/components/home/CategoryGrid";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
 import WhyUs from "@/components/home/WhyUs";
 import Stats from "@/components/home/Stats";
+import Testimonials from "@/components/home/Testimonials";
 import CtaBanner from "@/components/home/CtaBanner";
 
 // Without this, Next.js prerenders this page once at build time (no
@@ -42,6 +43,7 @@ export default async function Home() {
       <Mission section={section("mission")} />
       <WhyUs section={section("why-us")} />
       <Stats section={section("stats")} />
+      <Testimonials section={section("testimonials")} />
       <CtaBanner />
     </>
   );
