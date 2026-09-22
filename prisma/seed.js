@@ -11,6 +11,8 @@ const bcrypt = require("bcryptjs");
 const prisma = require("../lib/prisma");
 const { PLATFORMS } = require("../lib/socialSchema");
 const { DEFAULT_FEEDBACK_CONFIG, DEFAULT_FEEDBACK_FIELDS } = require("../lib/feedbackSchema");
+// Real copy carried over from the old provet.in site - see the notes there.
+const { menuPages } = require("./menuPages");
 
 function slug(s) {
   return s
@@ -465,8 +467,10 @@ const aboutContent = [
   },
 ];
 
+
 async function main() {
   console.log("Seeding database...");
+  const refreshed = { categories: 0, products: 0, banners: 0 };
 
   // --- Admin user -----------------------------------------------------
   const passwordHash = await bcrypt.hash("Admin@123", 10);
@@ -483,6 +487,16 @@ async function main() {
   console.log("Created admin user: admin@provet.in / Admin@123");
 
   // --- Categories + products -------------------------------------------
+  //
+  // Rows are upserted with `update: {}` so a reseed never overwrites copy an
+  // admin has edited. That also meant image changes made in this file never
+  // reached a database seeded before them: the rows already existed, so the
+  // new URLs were skipped and the old picsum.photos placeholders stayed put.
+  //
+  // refreshImage() closes that gap without reintroducing the clobbering: it
+  // replaces an image only while it is still one of those placeholders. An
+  // admin-uploaded picture, or one already matching this file, is left alone.
+  const isPlaceholder = (value) => typeof value === "string" && value.includes("picsum.photos");
   const featuredSlugs = [];
 
   for (const catData of categoriesData) {
@@ -497,6 +511,14 @@ async function main() {
         image: img(CATEGORY_PHOTO[catData.name]),
       },
     });
+
+    if (isPlaceholder(category.image)) {
+      await prisma.category.update({
+        where: { id: category.id },
+        data: { image: img(CATEGORY_PHOTO[catData.name]) },
+      });
+      refreshed.categories += 1;
+    }
 
     for (const p of catData.products) {
       const pSlug = slug(p.name);
@@ -520,6 +542,16 @@ async function main() {
           isActive: true,
         },
       });
+      // `images` is a JSON-encoded array; one stale entry means the whole
+      // set predates the current photo list, so it is replaced wholesale.
+      if ((JSON.parse(product.images || "[]") || []).some(isPlaceholder)) {
+        await prisma.product.update({
+          where: { id: product.id },
+          data: { images: JSON.stringify(p.images) },
+        });
+        refreshed.products += 1;
+      }
+
       if (p.isFeatured) featuredSlugs.push(product.slug);
     }
 
@@ -531,6 +563,9 @@ async function main() {
     const existing = await prisma.banner.findFirst({ where: { title: banner.title } });
     if (!existing) {
       await prisma.banner.create({ data: banner });
+    } else if (isPlaceholder(existing.image)) {
+      await prisma.banner.update({ where: { id: existing.id }, data: { image: banner.image } });
+      refreshed.banners += 1;
     }
   }
   console.log(`Seeded ${bannersData.length} banners`);
@@ -551,6 +586,39 @@ async function main() {
     });
   }
   console.log("Seeded content blocks for pages: home, about");
+
+  // --- Menu pages -----------------------------------------------------------
+  // One row per entry in lib/navigation.js, so every menu item resolves to a
+  // real page the moment the site boots instead of a 404. Deliberately thin:
+  // a title, an intro and one starter section each. The copy is placeholder
+  // scaffolding for the admin to replace - nothing here claims to be Provet's
+  // actual editorial content, and `update: {}` means a reseed never
+  // overwrites what an admin has since written.
+  for (const page of menuPages) {
+    await prisma.page.upsert({
+      where: { key: page.key },
+      update: {},
+      create: {
+        key: page.key,
+        title: page.title,
+        description: page.description,
+        heroImage: page.heroImage ?? null,
+      },
+    });
+    for (const [index, section] of page.sections.entries()) {
+      await prisma.contentBlock.upsert({
+        where: { page_key: { page: page.key, key: section.key } },
+        update: {},
+        create: {
+          page: page.key,
+          order: index,
+          ...section,
+          config: section.config ? JSON.stringify(section.config) : null,
+        },
+      });
+    }
+  }
+  console.log(`Seeded ${menuPages.length} menu pages`);
 
   // --- Social media links ---------------------------------------------------
   // Seeded as empty and disabled on purpose: Provet's real profile URLs aren't
@@ -611,6 +679,14 @@ async function main() {
       ],
     });
     console.log("Seeded 3 sample enquiries");
+  }
+
+  const totalRefreshed = refreshed.categories + refreshed.products + refreshed.banners;
+  if (totalRefreshed) {
+    console.log(
+      `Refreshed placeholder images on ${refreshed.categories} categories, ` +
+        `${refreshed.products} products, ${refreshed.banners} banners`
+    );
   }
 
   console.log("Seeding complete.");
