@@ -9,7 +9,8 @@ import Counter from "@/components/motion/Counter";
 
 // Requested at full-bleed width now that the image spans the viewport rather
 // than sitting in a ~450px card.
-const HERO_FALLBACK = "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?w=1920&h=1080&fit=crop";
+const HERO_FALLBACK =
+  "https://images.unsplash.com/photo-1579165466949-3180a3d056d5?auto=format&fit=crop&w=1920&h=1080&q=80";
 
 // The banner is admin-uploaded, so it can be any photo - light, busy, or
 // low-contrast. These two layers guarantee the white text stays readable over

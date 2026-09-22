@@ -1,16 +1,25 @@
 // Prisma schema for Provet.
 //
-// Datasource: Postgres, hosted on Supabase. JSON-ish fields
-// (Product.specifications, Product.images) are stored as plain strings
-// (JSON-encoded) rather than a native Json column, and are parsed/serialized
-// in lib/serializers.js.
+// Datasource: SQLite for local development.
+//
+// The dev branch is on Postgres/Supabase, so this diverges from it - moving
+// back means setting `provider` to "postgresql", swapping the adapter in
+// lib/prisma.js to @prisma/adapter-pg, pointing DATABASE_URL at a Postgres
+// connection string, and regenerating the migrations for that provider (a
+// migration folder belongs to one provider; migration_lock.toml records it).
+//
+// The schema itself deliberately avoids provider-specific features so it runs
+// unchanged on either. JSON-ish fields (Product.specifications,
+// Product.images, ContentBlock.config) are stored as plain strings
+// (JSON-encoded) rather than a native Json column, and are
+// parsed/serialized in lib/serializers.js.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
 }
 
 model AdminUser {
@@ -81,17 +90,49 @@ model Banner {
   updatedAt DateTime @updatedAt
 }
 
+// One editable section of a page, in display order. Extended rather than
+// replaced when the menu pages arrived: the bespoke home/about layouts read
+// the same rows, so a second "page section" model would have split content
+// management in two.
+//
+// `type` names a renderer from lib/sectionTypes.js and decides which of the
+// shared columns below are used. `config` carries whatever that type needs on
+// top of them (buttons, a category to pull products from, a column count),
+// JSON-encoded like Product.specifications - see the note at the top of this
+// file. `isVisible` lets the admin retire a section without losing its copy.
 model ContentBlock {
   id        String   @id @default(cuid())
   page      String
   key       String
+  type      String   @default("richText") // see SECTION_TYPES in lib/sectionTypes.js
   title     String?
   body      String?
   image     String?
+  config    String? // JSON-encoded object, parsed in lib/sectionTypes.js
+  isVisible Boolean  @default(true)
   order     Int      @default(0)
   updatedAt DateTime @updatedAt
 
   @@unique([page, key])
+}
+
+// Page-level settings for the menu pages: the hero, the intro copy and the
+// SEO overrides. Separate from ContentBlock because these belong to the page
+// as a whole rather than to any one section, and the page must still exist
+// (with its title and hero) before an admin has added a single section.
+//
+// `key` is the route without its leading slash ("about/who-we-are") and is
+// how lib/navigation.js ties a menu entry to its content.
+model Page {
+  id             String   @id @default(cuid())
+  key            String   @unique
+  title          String
+  description    String?
+  heroImage      String?
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 // Admin-configurable social media links shown in the public footer and on the

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ArrowUpRight, PackageSearch } from "lucide-react";
 
-const FALLBACK_IMG = "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=600&h=450&fit=crop";
+const FALLBACK_IMG =
+  "https://images.unsplash.com/photo-1664216294580-079bc527ae49?auto=format&fit=crop&w=600&h=450&q=80";
 
 export default function ProductCard({ product }) {
   const image = product.images?.[0] || FALLBACK_IMG;

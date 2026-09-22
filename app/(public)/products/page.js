@@ -25,10 +25,16 @@ export default async function Products({ searchParams }) {
 
   const totalPages = Math.max(1, Math.ceil(result.total / LIMIT));
   const activeCategory = categories.find((c) => c.slug === category);
+  const headerImage =
+    activeCategory?.image ||
+    "https://images.unsplash.com/photo-1579165466949-3180a3d056d5?auto=format&fit=crop&w=1920&h=500&q=80";
 
   return (
     <div className="bg-mist-50/40">
-      <div className="bg-brand-700 py-10 text-white sm:py-14">
+      <div className="relative isolate overflow-hidden bg-brand-900 py-10 text-white sm:py-14">
+        {/* eslint-disable-next-line @next/next/no-img-element -- category photo (DB) or fixed fallback, neither a dynamic host */}
+        <img src={headerImage} alt="" aria-hidden="true" className="absolute inset-0 -z-10 h-full w-full object-cover" />
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(21,18,48,0.92),rgba(21,18,48,0.8)_55%,rgba(21,18,48,0.9))]" />
         <div className="container-page flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="font-display text-3xl font-extrabold sm:text-4xl">

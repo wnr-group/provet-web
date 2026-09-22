@@ -18,7 +18,15 @@ export default async function Contact({ searchParams }) {
 
   return (
     <div className="bg-mist-50/40">
-      <div className="bg-brand-700 py-14 text-center text-white sm:py-20">
+      <div className="relative isolate overflow-hidden bg-brand-900 py-14 text-center text-white sm:py-20">
+        {/* eslint-disable-next-line @next/next/no-img-element -- fixed decorative background, not a dynamic host */}
+        <img
+          src="https://images.unsplash.com/photo-1770836037289-e00e5f351d11?auto=format&fit=crop&w=1920&h=800&q=80"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 -z-10 h-full w-full object-cover"
+        />
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(21,18,48,0.92),rgba(21,18,48,0.8)_55%,rgba(21,18,48,0.9))]" />
         <Reveal mode="mount" className="container-page">
           <span className="badge bg-white/10 text-accent-200">Contact</span>
           <h1 className="mt-4 font-display text-3xl font-extrabold sm:text-4xl">We&apos;re Here to Help</h1>

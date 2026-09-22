@@ -11,6 +11,8 @@ const bcrypt = require("bcryptjs");
 const prisma = require("../lib/prisma");
 const { PLATFORMS } = require("../lib/socialSchema");
 const { DEFAULT_FEEDBACK_CONFIG, DEFAULT_FEEDBACK_FIELDS } = require("../lib/feedbackSchema");
+// Real copy carried over from the old provet.in site - see the notes there.
+const { menuPages } = require("./menuPages");
 
 function slug(s) {
   return s
@@ -21,9 +23,56 @@ function slug(s) {
     .replace(/(^-|-$)/g, "");
 }
 
-function placeholderImage(seed, w = 600, h = 400) {
-  return `https://picsum.photos/seed/${seed}/${w}/${h}`;
+// Curated, verified Unsplash photo IDs (free license, no attribution
+// required for CDN hotlinking) - grouped by what they depict so the mapping
+// below stays legible. See img() for how a width/height gets applied.
+const PHOTO = {
+  labScientist: "1579165466949-3180a3d056d5",
+  cattleField: "1589248529232-69c286cf2cb4",
+  vetInjectingDog: "1770836037275-38b44e4b101f",
+  vetExaminingDog: "1770836037289-e00e5f351d11",
+  tabletsSpilled: "1758345680670-20a895a2dba3",
+  dogAtVet: "1630438994394-3deff7a591bf",
+  vialsAndIvBottle: "1576671081837-49000212a370",
+  // Blank white pharma bottle, no readable label (not the earlier
+  // "Afteravo Essentials AfterCoweed Gummy" bottle, a real branded human
+  // supplement with its full product name printed on it).
+  supplementBottle: "1664216294580-079bc527ae49",
+  dogRunningBeach: "1530281700549-e82e7bf110d6",
+  // Clear, unlabeled spray bottle (not the earlier bottle branded "ESSENTIAL"
+  // with a visible logo).
+  antisepticSpray: "1550572017-4b7a301b9d81",
+  vetWithDachshund: "1770836037793-95bdbf190f71",
+  labShelves: "1766297247072-93fd815afef3",
+  poultryBarn: "1694854038360-56b29a16fb0c",
+  hen: "1517419800355-7ea1a4b1f68d",
+  roosterCloseUp: "1755777339174-bb10939126ce",
+  fishFarmAerial: "1766744489655-328ec3d4f417",
+  cattleGrazing: "1498191923457-88552caeccb3",
+  goatsGrazing: "1622837699015-9a4cb8b7a94b",
+  // Clean oral/liquid dose bottle, background bottles' labels illegible (not
+  // the earlier photo, a real branded "blendarchive" product with its
+  // tagline printed on it).
+  oralMedicineBottle: "1635166304271-04931640a450",
+  blisterPack: "1630094539386-280edfb5d46a",
+  // Blank/unbranded label (not the earlier "Ela De Pure Gel Facial Cleanser"
+  // tube, which had a competing brand's real, readable product name on it).
+  gelTube: "1595387644458-363fe11c900e",
+  clearSprayBottle: "1550572017-4b7a301b9d81",
+};
+
+function img(id, w = 600, h = 400) {
+  return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
 }
+
+const CATEGORY_PHOTO = {
+  "Antibiotics & Anti-infectives": PHOTO.tabletsSpilled,
+  "Anti-parasitics": PHOTO.dogAtVet,
+  "Vaccines & Biologicals": PHOTO.vialsAndIvBottle,
+  "Nutritional Supplements": PHOTO.supplementBottle,
+  "Pain Management & Anti-inflammatories": PHOTO.dogRunningBeach,
+  "Wound Care & Antiseptics": PHOTO.antisepticSpray,
+};
 
 const categoriesData = [
   {
@@ -42,7 +91,7 @@ const categoriesData = [
         applications: "Companion animals - dogs and cats.",
         specifications: { packSize: "10 x 10 tablets", form: "Tablet", storage: "Store below 25°C, protect from light" },
         packSize: "10 x 10 tablets",
-        images: [placeholderImage("amoxiclav-vet"), placeholderImage("amoxiclav-vet-2")],
+        images: [img(PHOTO.tabletsSpilled), img(PHOTO.blisterPack)],
         isFeatured: true,
       },
       {
@@ -56,7 +105,7 @@ const categoriesData = [
         applications: "Cattle, sheep, goats, swine.",
         specifications: { packSize: "100ml", form: "Injectable", storage: "Store below 25°C, do not freeze" },
         packSize: "100ml",
-        images: [placeholderImage("oxytetracycline-la"), placeholderImage("oxytetracycline-la-2")],
+        images: [img(PHOTO.vialsAndIvBottle), img(PHOTO.cattleGrazing)],
         isFeatured: false,
       },
       {
@@ -69,7 +118,7 @@ const categoriesData = [
         applications: "Poultry, swine.",
         specifications: { packSize: "1 litre", form: "Oral solution", storage: "Store below 25°C, protect from light" },
         packSize: "1 litre",
-        images: [placeholderImage("enrofloxacin-solution")],
+        images: [img(PHOTO.oralMedicineBottle), img(PHOTO.poultryBarn)],
         isFeatured: false,
       },
       {
@@ -82,7 +131,7 @@ const categoriesData = [
         applications: "Cattle.",
         specifications: { packSize: "100ml", form: "Injectable suspension", storage: "Refrigerate 2-8°C" },
         packSize: "100ml",
-        images: [placeholderImage("ceftiofur-suspension")],
+        images: [img(PHOTO.vialsAndIvBottle), img(PHOTO.cattleGrazing)],
         isFeatured: false,
       },
     ],
@@ -102,7 +151,7 @@ const categoriesData = [
         applications: "Cattle, sheep, pigs.",
         specifications: { packSize: "50ml", form: "Injectable", storage: "Store below 30°C" },
         packSize: "50ml",
-        images: [placeholderImage("ivermectin-injection"), placeholderImage("ivermectin-injection-2")],
+        images: [img(PHOTO.vialsAndIvBottle), img(PHOTO.goatsGrazing)],
         isFeatured: true,
       },
       {
@@ -115,7 +164,7 @@ const categoriesData = [
         applications: "Dogs.",
         specifications: { packSize: "3 x 1.34ml pipettes", form: "Spot-on", storage: "Store below 25°C" },
         packSize: "3 x 1.34ml pipettes",
-        images: [placeholderImage("fipronil-spot-on")],
+        images: [img(PHOTO.dogAtVet)],
         isFeatured: true,
       },
       {
@@ -128,7 +177,7 @@ const categoriesData = [
         applications: "Cattle, sheep, goats.",
         specifications: { packSize: "1 litre", form: "Oral suspension", storage: "Shake well before use" },
         packSize: "1 litre",
-        images: [placeholderImage("albendazole-suspension")],
+        images: [img(PHOTO.oralMedicineBottle), img(PHOTO.goatsGrazing)],
         isFeatured: false,
       },
     ],
@@ -148,7 +197,7 @@ const categoriesData = [
         applications: "Dogs.",
         specifications: { packSize: "1 dose vial + diluent", form: "Lyophilized vaccine", storage: "Store 2-8°C, protect from light" },
         packSize: "1 dose vial + diluent",
-        images: [placeholderImage("dhppi-vaccine")],
+        images: [img(PHOTO.vialsAndIvBottle), img(PHOTO.vetWithDachshund)],
         isFeatured: true,
       },
       {
@@ -161,7 +210,7 @@ const categoriesData = [
         applications: "Cattle, buffalo, sheep, goats.",
         specifications: { packSize: "50 dose vial", form: "Injectable emulsion", storage: "Store 2-8°C, do not freeze" },
         packSize: "50 dose vial",
-        images: [placeholderImage("fmd-vaccine")],
+        images: [img(PHOTO.vialsAndIvBottle), img(PHOTO.cattleGrazing)],
         isFeatured: false,
       },
       {
@@ -174,7 +223,7 @@ const categoriesData = [
         applications: "Cats.",
         specifications: { packSize: "1 dose vial + diluent", form: "Lyophilized vaccine", storage: "Store 2-8°C" },
         packSize: "1 dose vial + diluent",
-        images: [placeholderImage("tricat-vaccine")],
+        images: [img(PHOTO.vialsAndIvBottle)],
         isFeatured: false,
       },
     ],
@@ -194,7 +243,7 @@ const categoriesData = [
         applications: "Dogs, cats, cattle, poultry.",
         specifications: { packSize: "200ml", form: "Oral liquid", storage: "Store below 25°C" },
         packSize: "200ml",
-        images: [placeholderImage("multivitamin-syrup")],
+        images: [img(PHOTO.oralMedicineBottle), img(PHOTO.supplementBottle)],
         isFeatured: false,
       },
       {
@@ -207,7 +256,7 @@ const categoriesData = [
         applications: "Dairy cattle, buffalo.",
         specifications: { packSize: "10 boluses", form: "Bolus", storage: "Store in a cool, dry place" },
         packSize: "10 boluses",
-        images: [placeholderImage("calcium-bolus")],
+        images: [img(PHOTO.blisterPack), img(PHOTO.cattleGrazing)],
         isFeatured: true,
       },
       {
@@ -220,7 +269,7 @@ const categoriesData = [
         applications: "Dogs, cats, cattle.",
         specifications: { packSize: "200ml", form: "Oral suspension", storage: "Store below 25°C, shake well" },
         packSize: "200ml",
-        images: [placeholderImage("liver-tonic")],
+        images: [img(PHOTO.oralMedicineBottle)],
         isFeatured: false,
       },
     ],
@@ -240,7 +289,7 @@ const categoriesData = [
         applications: "Dogs, cats.",
         specifications: { packSize: "100ml", form: "Oral suspension", storage: "Store below 25°C" },
         packSize: "100ml",
-        images: [placeholderImage("meloxicam-suspension")],
+        images: [img(PHOTO.oralMedicineBottle), img(PHOTO.dogRunningBeach)],
         isFeatured: true,
       },
       {
@@ -253,7 +302,7 @@ const categoriesData = [
         applications: "Cattle, horses.",
         specifications: { packSize: "100ml", form: "Injectable", storage: "Store below 25°C, protect from light" },
         packSize: "100ml",
-        images: [placeholderImage("flunixin-injection")],
+        images: [img(PHOTO.vialsAndIvBottle), img(PHOTO.cattleGrazing)],
         isFeatured: false,
       },
       {
@@ -266,7 +315,7 @@ const categoriesData = [
         applications: "Dogs, horses.",
         specifications: { packSize: "30g tube", form: "Topical gel", storage: "Store below 25°C" },
         packSize: "30g tube",
-        images: [placeholderImage("diclofenac-gel")],
+        images: [img(PHOTO.gelTube)],
         isFeatured: false,
       },
     ],
@@ -286,7 +335,7 @@ const categoriesData = [
         applications: "All species.",
         specifications: { packSize: "500ml", form: "Topical solution", storage: "Store below 25°C" },
         packSize: "500ml",
-        images: [placeholderImage("povidone-iodine")],
+        images: [img(PHOTO.clearSprayBottle)],
         isFeatured: false,
       },
       {
@@ -299,7 +348,7 @@ const categoriesData = [
         applications: "Cattle, horses, dogs.",
         specifications: { packSize: "100ml aerosol", form: "Spray", storage: "Store below 25°C, away from flame" },
         packSize: "100ml aerosol",
-        images: [placeholderImage("wound-spray")],
+        images: [img(PHOTO.antisepticSpray)],
         isFeatured: true,
       },
       {
@@ -312,7 +361,7 @@ const categoriesData = [
         applications: "Dogs, cats, horses.",
         specifications: { packSize: "50g tube", form: "Cream", storage: "Store below 25°C" },
         packSize: "50g tube",
-        images: [placeholderImage("silver-sulfadiazine")],
+        images: [img(PHOTO.gelTube)],
         isFeatured: false,
       },
     ],
@@ -321,36 +370,52 @@ const categoriesData = [
 
 const bannersData = [
   {
-    title: "Trusted Veterinary Medicines, Backed by Science",
-    subtitle: "Quality formulations for companion animals and livestock, from a partner you can rely on.",
-    image: placeholderImage("banner-hero-1", 1600, 600),
+    title: "Complete Poultry Health Solutions",
+    subtitle: "Antibiotics, vaccines and growth-support formulations trusted by poultry farms nationwide.",
+    image: img(PHOTO.hen, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 0,
   },
   {
-    title: "Comprehensive Anti-parasitic Range",
-    subtitle: "Protecting herds and companion animals from ticks, worms and mites, season after season.",
-    image: placeholderImage("banner-hero-2", 1600, 600),
+    title: "From Day-Old Chicks to Full Flock Health",
+    subtitle: "Brooding support, growth formulations and biosecurity products for commercial poultry operations.",
+    image: img(PHOTO.poultryBarn, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 1,
   },
   {
-    title: "Vaccination Programs That Work",
-    subtitle: "Biologicals designed for real-world herd health and companion animal immunization schedules.",
-    image: placeholderImage("banner-hero-3", 1600, 600),
+    title: "Trusted Veterinary Medicines, Backed by Science",
+    subtitle: "Quality formulations for companion animals and livestock, from a partner you can rely on.",
+    image: img(PHOTO.labScientist, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 2,
   },
   {
-    title: "Partnering with Veterinarians Nationwide",
-    subtitle: "A growing catalogue built with input from practicing veterinarians and animal health experts.",
-    image: placeholderImage("banner-hero-4", 1600, 600),
+    title: "Comprehensive Anti-parasitic Range",
+    subtitle: "Protecting herds and companion animals from ticks, worms and mites, season after season.",
+    image: img(PHOTO.cattleField, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 3,
+  },
+  {
+    title: "Vaccination Programs That Work",
+    subtitle: "Biologicals designed for real-world herd health and companion animal immunization schedules.",
+    image: img(PHOTO.vetInjectingDog, 1920, 800),
+    ctaText: "Explore Products",
+    ctaLink: "/products",
+    order: 4,
+  },
+  {
+    title: "Partnering with Veterinarians Nationwide",
+    subtitle: "A growing catalogue built with input from practicing veterinarians and animal health experts.",
+    image: img(PHOTO.vetExaminingDog, 1920, 800),
+    ctaText: "Explore Products",
+    ctaLink: "/products",
+    order: 5,
   },
 ];
 
@@ -372,6 +437,41 @@ const homeContent = [
     title: "By the Numbers",
     body: "20+ years combined formulation experience - 100+ SKUs across 6 therapeutic categories - Supplying clinics and distributors across the region.",
     order: 2,
+  },
+  {
+    // Carried over from the old Provet homepage, where the testimonials are
+    // designed graphics rather than quotable text - the words are inside the
+    // image. That is why there are no quotes or attributions here: they can't
+    // be read out of a JPEG, and inventing them would put words in a real
+    // customer's mouth. Each slide's caption is the product it refers to,
+    // taken from the image's own filename, so the alt text says something.
+    key: "testimonials",
+    type: "carousel",
+    title: "What Our Customers Say",
+    order: 3,
+    config: JSON.stringify({
+      aspect: "square",
+      autoplay: true,
+      interval: 6000,
+      items: [
+        {
+          image: "/content/Fepromix_Testimonials-1024x1024.jpg",
+          title: "Fepromix",
+        },
+        {
+          image: "/content/Final_Nagronex-SNB_Testimonial-1024x1024.jpg",
+          title: "Nagronex-SNB",
+        },
+        {
+          image: "/content/Testimonial_Galpromin-XL-1024x1024.jpg",
+          title: "Galpromin-XL",
+        },
+        {
+          image: "/content/Testimonial_Immulator-1024x1024.jpg",
+          title: "Immulator",
+        },
+      ],
+    }),
   },
 ];
 
@@ -402,8 +502,10 @@ const aboutContent = [
   },
 ];
 
+
 async function main() {
   console.log("Seeding database...");
+  const refreshed = { categories: 0, products: 0, banners: 0 };
 
   // --- Admin user -----------------------------------------------------
   const passwordHash = await bcrypt.hash("Admin@123", 10);
@@ -420,6 +522,16 @@ async function main() {
   console.log("Created admin user: admin@provet.in / Admin@123");
 
   // --- Categories + products -------------------------------------------
+  //
+  // Rows are upserted with `update: {}` so a reseed never overwrites copy an
+  // admin has edited. That also meant image changes made in this file never
+  // reached a database seeded before them: the rows already existed, so the
+  // new URLs were skipped and the old picsum.photos placeholders stayed put.
+  //
+  // refreshImage() closes that gap without reintroducing the clobbering: it
+  // replaces an image only while it is still one of those placeholders. An
+  // admin-uploaded picture, or one already matching this file, is left alone.
+  const isPlaceholder = (value) => typeof value === "string" && value.includes("picsum.photos");
   const featuredSlugs = [];
 
   for (const catData of categoriesData) {
@@ -431,9 +543,17 @@ async function main() {
         name: catData.name,
         slug: catSlug,
         description: catData.description,
-        image: placeholderImage(catSlug),
+        image: img(CATEGORY_PHOTO[catData.name]),
       },
     });
+
+    if (isPlaceholder(category.image)) {
+      await prisma.category.update({
+        where: { id: category.id },
+        data: { image: img(CATEGORY_PHOTO[catData.name]) },
+      });
+      refreshed.categories += 1;
+    }
 
     for (const p of catData.products) {
       const pSlug = slug(p.name);
@@ -457,6 +577,16 @@ async function main() {
           isActive: true,
         },
       });
+      // `images` is a JSON-encoded array; one stale entry means the whole
+      // set predates the current photo list, so it is replaced wholesale.
+      if ((JSON.parse(product.images || "[]") || []).some(isPlaceholder)) {
+        await prisma.product.update({
+          where: { id: product.id },
+          data: { images: JSON.stringify(p.images) },
+        });
+        refreshed.products += 1;
+      }
+
       if (p.isFeatured) featuredSlugs.push(product.slug);
     }
 
@@ -468,6 +598,9 @@ async function main() {
     const existing = await prisma.banner.findFirst({ where: { title: banner.title } });
     if (!existing) {
       await prisma.banner.create({ data: banner });
+    } else if (isPlaceholder(existing.image)) {
+      await prisma.banner.update({ where: { id: existing.id }, data: { image: banner.image } });
+      refreshed.banners += 1;
     }
   }
   console.log(`Seeded ${bannersData.length} banners`);
@@ -488,6 +621,39 @@ async function main() {
     });
   }
   console.log("Seeded content blocks for pages: home, about");
+
+  // --- Menu pages -----------------------------------------------------------
+  // One row per entry in lib/navigation.js, so every menu item resolves to a
+  // real page the moment the site boots instead of a 404. Deliberately thin:
+  // a title, an intro and one starter section each. The copy is placeholder
+  // scaffolding for the admin to replace - nothing here claims to be Provet's
+  // actual editorial content, and `update: {}` means a reseed never
+  // overwrites what an admin has since written.
+  for (const page of menuPages) {
+    await prisma.page.upsert({
+      where: { key: page.key },
+      update: {},
+      create: {
+        key: page.key,
+        title: page.title,
+        description: page.description,
+        heroImage: page.heroImage ?? null,
+      },
+    });
+    for (const [index, section] of page.sections.entries()) {
+      await prisma.contentBlock.upsert({
+        where: { page_key: { page: page.key, key: section.key } },
+        update: {},
+        create: {
+          page: page.key,
+          order: index,
+          ...section,
+          config: section.config ? JSON.stringify(section.config) : null,
+        },
+      });
+    }
+  }
+  console.log(`Seeded ${menuPages.length} menu pages`);
 
   // --- Social media links ---------------------------------------------------
   // Seeded as empty and disabled on purpose: Provet's real profile URLs aren't
@@ -548,6 +714,14 @@ async function main() {
       ],
     });
     console.log("Seeded 3 sample enquiries");
+  }
+
+  const totalRefreshed = refreshed.categories + refreshed.products + refreshed.banners;
+  if (totalRefreshed) {
+    console.log(
+      `Refreshed placeholder images on ${refreshed.categories} categories, ` +
+        `${refreshed.products} products, ${refreshed.banners} banners`
+    );
   }
 
   console.log("Seeding complete.");

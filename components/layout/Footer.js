@@ -3,6 +3,7 @@ import Image from "next/image";
 import { MapPin, Phone, Mail } from "lucide-react";
 import SocialLinks from "@/components/ui/SocialLinks";
 import { getActiveSocialLinks } from "@/lib/data";
+import { FOOTER_NAV } from "@/lib/navigation";
 
 export default async function Footer() {
   const socialLinks = await getActiveSocialLinks();
@@ -22,25 +23,24 @@ export default async function Footer() {
           <SocialLinks links={socialLinks} variant="dark" className="mt-5" />
         </div>
 
-        <div>
-          <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-white">Explore</h4>
-          <ul className="space-y-2.5 text-sm">
-            <li><Link href="/" className="hover:text-accent-300">Home</Link></li>
-            <li><Link href="/products" className="hover:text-accent-300">Products</Link></li>
-            <li><Link href="/about" className="hover:text-accent-300">About Us</Link></li>
-            <li><Link href="/contact" className="hover:text-accent-300">Contact</Link></li>
-          </ul>
-        </div>
-
-        <div>
-          <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-white">Categories</h4>
-          <ul className="space-y-2.5 text-sm">
-            <li><Link href="/products" className="hover:text-accent-300">Antibiotics</Link></li>
-            <li><Link href="/products" className="hover:text-accent-300">Anti-parasitics</Link></li>
-            <li><Link href="/products" className="hover:text-accent-300">Vaccines</Link></li>
-            <li><Link href="/products" className="hover:text-accent-300">Supplements</Link></li>
-          </ul>
-        </div>
+        {/* Both columns come from lib/navigation.js, the same tree the header
+            reads, so the footer can't drift out of step with the menu. The
+            previous "Categories" column listed four names by hand that all
+            pointed at /products; real categories now come from the database. */}
+        {FOOTER_NAV.map((group) => (
+          <div key={group.title}>
+            <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-white">{group.title}</h4>
+            <ul className="space-y-2.5 text-sm">
+              {group.links.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="hover:text-accent-300">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
 
         <div>
           <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-white">Get in Touch</h4>
