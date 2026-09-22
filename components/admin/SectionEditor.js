@@ -13,6 +13,7 @@ const BODY_HINT = {
   richText: "Leave a blank line between paragraphs.",
   list: "One item per line.",
   cards: 'One card per line, written as "Heading: text".',
+  numberedRows: 'One row per line, written as "Heading: text".',
   imageCards: "Optional intro shown above the cards.",
   carousel: "Optional intro shown above the slider.",
   imageText: "Leave a blank line between paragraphs.",

@@ -23,11 +23,15 @@
 //
 // Everything else is the old site's wording as published.
 
-// Images are the client's own, still served from the old WordPress site.
-// That means the new site depends on provet.in staying up for them to load -
-// re-upload each one through the admin image picker (which stores it under
-// public/uploads) before the old site is retired.
-const OLD_SITE = "https://provet.in";
+// Images are served from this repo, under public/content, not hotlinked from
+// provet.in. They were originally referenced at their old WordPress URLs,
+// which made every picture on the new site depend on the old one staying
+// online - the moment provet.in went away or reorganised its uploads folder,
+// they would all have broken. They are the client's own images, so they are
+// committed here and the old site is now only their provenance.
+//
+// public/uploads is deliberately NOT used: it is gitignored (runtime admin
+// uploads), so files there would be missing from a fresh clone or a deploy.
 
 // Page banners. The old site had no hero image on any of these pages, so
 // these are curated Unsplash photos from the same set seed.js already uses
@@ -91,12 +95,12 @@ const menuPages = [
           imageStyle: "avatar",
           items: [
             {
-              image: OLD_SITE + "/wp-content/uploads/2024/08/provet-team-1-01-300x300.png",
+              image: "/content/provet-team-1-01-300x300.png",
               title: "Dr. Muthu Selvan, Managing Director",
               text: "Over 30 years in animal health - Venky's, Hoechst, Intervet (MSD) and Ranbaxy (Animal Health). Co-founded Provet in 2009 and is responsible for the overall profitability and growth of the organization. BVSc, Madras Veterinary College.",
             },
             {
-              image: OLD_SITE + "/wp-content/uploads/2024/08/provet-team-2-01-300x300.png",
+              image: "/content/provet-team-2-01-300x300.png",
               title: "Dr. S. Senthil, Director",
               text: "Over 30 years in animal health - Venkateshwara Hatcheries Ltd., Dabur Ayurvet and Vamso Biotec. Co-founded Provet in 2009 and is responsible for operations. BVSc, Madras Veterinary College.",
             },
@@ -142,7 +146,10 @@ const menuPages = [
       },
       {
         key: "values",
-        type: "cards",
+        // Numbered rows rather than a card grid: the other About pages already
+        // use cards, and five one-line values read better as a list than as
+        // five boxes.
+        type: "numberedRows",
         title: "Our Values",
         body: [
           "Customer Focus: Only reason to be in business.",
@@ -151,7 +158,6 @@ const menuPages = [
           "Team Work: Together in one direction.",
           "Trust and Integrity: Respect for all.",
         ].join("\n"),
-        config: { columns: 3 },
       },
       {
         key: "cta",
@@ -236,15 +242,15 @@ const menuPages = [
           aspect: "portrait",
           items: [
             {
-              image: OLD_SITE + "/wp-content/uploads/2024/09/Anticoccidials.jpg",
+              image: "/content/Anticoccidials.jpg",
               title: "Anticoccidial Feed Additives",
             },
             {
-              image: OLD_SITE + "/wp-content/uploads/2024/09/Injectables.jpg",
+              image: "/content/Injectables.jpg",
               title: "Injectables",
             },
             {
-              image: OLD_SITE + "/wp-content/uploads/2024/09/Natural-growth-promoters-1.jpg",
+              image: "/content/Natural-growth-promoters-1.jpg",
               title: "Natural Growth Promoters",
             },
           ],
@@ -292,14 +298,14 @@ const menuPages = [
           columns: 4,
           aspect: "portrait",
           items: [
-            { image: OLD_SITE + "/wp-content/uploads/2025/08/Aug-2025_Thumbnail.jpg", title: "Propulse August 2025" },
-            { image: OLD_SITE + "/wp-content/uploads/2025/07/Juny-2025_Thumbnail.jpg", title: "Propulse July 2025" },
-            { image: OLD_SITE + "/wp-content/uploads/2025/06/June-2025_Thumbnail.jpg", title: "Propulse June 2025" },
-            { image: OLD_SITE + "/wp-content/uploads/2025/06/May-2025_Thumbnail.jpg", title: "Propulse May 2025" },
-            { image: OLD_SITE + "/wp-content/uploads/2025/06/April-2025_Thumbnail.jpg", title: "Propulse April 2025" },
-            { image: OLD_SITE + "/wp-content/uploads/2025/03/March-2025_Thumbnail.jpg", title: "Propulse March 2025" },
-            { image: OLD_SITE + "/wp-content/uploads/2025/03/February-2025_Thumbnail.jpg", title: "Propulse February 2025" },
-            { image: OLD_SITE + "/wp-content/uploads/2025/01/January-2025_Thumbnail.jpg", title: "Propulse January 2025" },
+            { image: "/content/Aug-2025_Thumbnail.jpg", title: "Propulse August 2025" },
+            { image: "/content/Juny-2025_Thumbnail.jpg", title: "Propulse July 2025" },
+            { image: "/content/June-2025_Thumbnail.jpg", title: "Propulse June 2025" },
+            { image: "/content/May-2025_Thumbnail.jpg", title: "Propulse May 2025" },
+            { image: "/content/April-2025_Thumbnail.jpg", title: "Propulse April 2025" },
+            { image: "/content/March-2025_Thumbnail.jpg", title: "Propulse March 2025" },
+            { image: "/content/February-2025_Thumbnail.jpg", title: "Propulse February 2025" },
+            { image: "/content/January-2025_Thumbnail.jpg", title: "Propulse January 2025" },
           ],
         },
       },
@@ -375,27 +381,27 @@ const menuPages = [
           aspect: "landscape",
           items: [
             {
-              image: OLD_SITE + "/wp-content/uploads/2024/09/Puneet_Taplu_GM_SBU_Head_lighting_the_seminar_inaguration_lamp_in_Bhimavaram.jpg",
+              image: "/content/Puneet_Taplu_GM_SBU_Head_lighting_the_seminar_inaguration_lamp_in_Bhimavaram.jpg",
               title: "BLUNOVA Bhimavaram Seminar (WG District) - 27 October 2017",
               text: "The BLUNOVA Strategic Business Unit organized a technical seminar on Aquamimicry and role of Synbiotics in combination with nucleotides & nucleosides for disease management during culture period on 27th October 2017, in Bhimavaram (West Godavari District in Andhra Pradesh state). A unique non antibiotic growth promoter \"NAGROWALL\", a combination of Probiotic, Prebiotic, Nucleotides and Nucleosides, was launched during the seminar at Hotel Ananda Inn, Bhimavaram. The NagroWall brochures were released by the guest speakers Dr. Suguna, Principal Scientist and Dr. Veerabhadra Rao, Scientist, from Fishery Research Station, Bhimavaram.",
             },
             {
-              image: OLD_SITE + "/wp-content/uploads/2024/09/WVD16.jpg",
+              image: "/content/WVD16.jpg",
               title: "World Veterinary Day - 29 April 2017",
               text: "This year the \"World Veterinary Day\" was celebrated on 29th April 2017, by the entire veterinary community across the world. On this occasion Provet took pride in wishing them and expressed gratitude for their selfless service & invaluable contribution towards the health of both animals & humans, animal welfare, food safety & security. Celebrations were held by Provet's team members with many renowned veterinarians all over India.",
             },
             {
-              image: OLD_SITE + "/wp-content/uploads/2020/08/image1.png",
+              image: "/content/image1.png",
               title: "Launch of Nitrisol HP - 12 December 2016",
               text: "A new and innovative product \"NITRISOL HP\" was launched during the half yearly meeting of BLUNOVA - the aquaculture division of Provet - held at Hotel KAY, Vijayawada, Andhra Pradesh on 22/10/2016. NITRISOL HP is a combination of selected and optimally potentiated probiotics providing adequate colony forming units, for effective control of Nitrite levels in aquaculture ponds. It was launched by Ms. Rashmi Mohare, Assistant Product Manager, with Mr. Puneet Taplu, General Manager & SBU Head, and Mr. Srihari Baburao, Zonal Business Manager - South.",
             },
             {
-              image: OLD_SITE + "/wp-content/uploads/2024/09/provetdayimage1.jpg",
+              image: "/content/provetdayimage1.jpg",
               title: "Provet Day Celebrations - 14 October 2016",
               text: "Birthday and the 7th Anniversary of Provet was celebrated as Provet Day on 14th October, 2016 with much fanfare across the country by our team members along with our esteemed customers, consultants, veterinarians, technicians, stockists, dealers, retailers and business partners.",
             },
             {
-              image: OLD_SITE + "/wp-content/uploads/2024/09/photo-52.jpg",
+              image: "/content/photo-52.jpg",
               title: "Provet Layer Technical Meeting, Anand - 25 July 2016",
               text: "A successful Layer Technical Meeting was organized at Hotel La Casa Inn, Anand on \"Gut Health and Immunity in Poultry\", to emphasise the importance of gut health in poultry production, on 25th July 2016. Dr. K S Prajapati delivered the chief guest address to around 50 farmers, alongside poultry specialists Dr. Nishant Patel, Mr. Nilkamal Patel and Dr. Prabhat Gupta.",
             },

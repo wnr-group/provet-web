@@ -455,19 +455,19 @@ const homeContent = [
       interval: 6000,
       items: [
         {
-          image: "https://provet.in/wp-content/uploads/2024/09/Fepromix_Testimonials-1024x1024.jpg",
+          image: "/content/Fepromix_Testimonials-1024x1024.jpg",
           title: "Fepromix",
         },
         {
-          image: "https://provet.in/wp-content/uploads/2024/09/Final_Nagronex-SNB_Testimonial-1024x1024.jpg",
+          image: "/content/Final_Nagronex-SNB_Testimonial-1024x1024.jpg",
           title: "Nagronex-SNB",
         },
         {
-          image: "https://provet.in/wp-content/uploads/2024/09/Testimonial_Galpromin-XL-1024x1024.jpg",
+          image: "/content/Testimonial_Galpromin-XL-1024x1024.jpg",
           title: "Galpromin-XL",
         },
         {
-          image: "https://provet.in/wp-content/uploads/2024/09/Testimonial_Immulator-1024x1024.jpg",
+          image: "/content/Testimonial_Immulator-1024x1024.jpg",
           title: "Immulator",
         },
       ],

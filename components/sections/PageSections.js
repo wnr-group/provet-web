@@ -157,6 +157,52 @@ function Cards({ section }) {
   );
 }
 
+// Full-width rows rather than a grid of boxes. The oversized pale numeral
+// does the structural work a card's border would, so the page reads as an
+// editorial list - deliberately unlike the card grids elsewhere.
+function NumberedRows({ section }) {
+  const items = splitItems(section.body);
+  if (!items.length) return null;
+
+  return (
+    <div className="mx-auto max-w-4xl">
+      <Enter preset="drop">
+        <Heading title={section.title} align="center" />
+      </Enter>
+      <EnterGroup className="divide-y divide-brand-100" stagger={0.1}>
+        {items.map((item, i) => {
+          const [heading, ...rest] = item.split(/\s*:\s*/);
+          const text = rest.join(": ");
+          return (
+            <EnterItem key={i} preset="slideLeft">
+              <div className="group flex items-baseline gap-6 py-7 transition sm:gap-10">
+                <span
+                  aria-hidden="true"
+                  className="font-display text-4xl font-extrabold leading-none text-brand-100 transition-colors duration-300 group-hover:text-accent-300 sm:text-6xl"
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-display text-lg font-semibold text-ink transition-colors group-hover:text-brand-700 sm:text-xl">
+                    {heading}
+                  </h3>
+                  {text && <p className="mt-1.5 leading-relaxed text-ink-soft">{text}</p>}
+                </div>
+                {/* Grows from nothing on hover, echoing the accent rule under
+                    each section heading without adding another box. */}
+                <span
+                  aria-hidden="true"
+                  className="hidden h-0.5 w-0 shrink-0 self-center rounded-full bg-accent-400 transition-all duration-300 group-hover:w-10 sm:block"
+                />
+              </div>
+            </EnterItem>
+          );
+        })}
+      </EnterGroup>
+    </div>
+  );
+}
+
 const ASPECT = { square: "aspect-square", portrait: "aspect-[3/4]", landscape: "aspect-[4/3]" };
 
 // Cards that each carry a picture: team portraits, booklet covers, magazine
@@ -344,6 +390,7 @@ const RENDERERS = {
   imageText: ImageText,
   list: BulletList,
   cards: Cards,
+  numberedRows: NumberedRows,
   imageCards: ImageCards,
   carousel: CarouselSection,
   productGrid: ProductGrid,
