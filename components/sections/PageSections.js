@@ -5,6 +5,7 @@ import { splitItems } from "@/lib/contentFormat";
 import ProductCard from "@/components/ui/ProductCard";
 import CategoryCard from "@/components/ui/CategoryCard";
 import { Enter, EnterGroup, EnterItem } from "@/components/sections/entrances";
+import Carousel from "@/components/sections/Carousel";
 
 // Renders a page's admin-configured sections. One component per type in
 // lib/sectionTypes.js; anything unknown is skipped rather than crashing the
@@ -236,6 +237,21 @@ function ImageCards({ section }) {
   );
 }
 
+function CarouselSection({ section }) {
+  const { items, aspect, autoplay, interval } = section.config;
+  if (!items?.length) return null;
+  return (
+    <div>
+      <Enter preset="drop">
+        <Heading title={section.title} description={section.body} align="center" />
+      </Enter>
+      <Enter preset="blur">
+        <Carousel items={items} aspect={aspect} autoplay={autoplay} interval={interval} />
+      </Enter>
+    </div>
+  );
+}
+
 function ProductGrid({ section }) {
   if (!section.products?.length) return null;
   return (
@@ -329,6 +345,7 @@ const RENDERERS = {
   list: BulletList,
   cards: Cards,
   imageCards: ImageCards,
+  carousel: CarouselSection,
   productGrid: ProductGrid,
   categoryGrid: CategoryGrid,
   cta: Cta,

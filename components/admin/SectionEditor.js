@@ -14,6 +14,7 @@ const BODY_HINT = {
   list: "One item per line.",
   cards: 'One card per line, written as "Heading: text".',
   imageCards: "Optional intro shown above the cards.",
+  carousel: "Optional intro shown above the slider.",
   imageText: "Leave a blank line between paragraphs.",
   productGrid: "Optional intro shown above the grid.",
   categoryGrid: "Optional intro shown above the grid.",
@@ -58,7 +59,7 @@ function ConfigFields({ section, categories, onConfig }) {
     );
   }
 
-  if (type === "imageCards") {
+  if (type === "imageCards" || type === "carousel") {
     const items = config.items || [];
     const setItem = (i, patch) =>
       onConfig({ items: items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)) });
@@ -66,6 +67,41 @@ function ConfigFields({ section, categories, onConfig }) {
     return (
       <div className="space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
+          {type === "carousel" ? (
+            <>
+              <div>
+                <label className="label">Image shape</label>
+                <select
+                  className="input"
+                  value={config.aspect || "square"}
+                  onChange={(e) => onConfig({ aspect: e.target.value })}
+                >
+                  <option value="square">Square</option>
+                  <option value="portrait">Portrait</option>
+                  <option value="landscape">Landscape</option>
+                  <option value="wide">Wide (16:9)</option>
+                </select>
+              </div>
+              <div>
+                <label className="label">Advance every</label>
+                <select
+                  className="input"
+                  value={config.autoplay === false ? "off" : String(config.interval || 6000)}
+                  onChange={(e) =>
+                    e.target.value === "off"
+                      ? onConfig({ autoplay: false })
+                      : onConfig({ autoplay: true, interval: Number(e.target.value) })
+                  }
+                >
+                  <option value="off">Do not advance on its own</option>
+                  <option value="4000">4 seconds</option>
+                  <option value="6000">6 seconds</option>
+                  <option value="9000">9 seconds</option>
+                </select>
+              </div>
+            </>
+          ) : (
+          <>
           <div>
             <label className="label">Columns</label>
             <select
@@ -91,11 +127,13 @@ function ConfigFields({ section, categories, onConfig }) {
               <option value="avatar">Small circle (people, logos)</option>
             </select>
           </div>
+          </>
+          )}
         </div>
 
-        {/* The crop only applies to the large style - an avatar is always a
-            circle, so offering a shape there would do nothing. */}
-        {(config.imageStyle || "cover") === "cover" && (
+        {/* The crop only applies to the large image-card style - an avatar is
+            always a circle, and a carousel sets its shape above. */}
+        {type === "imageCards" && (config.imageStyle || "cover") === "cover" && (
           <div className="sm:w-1/2">
             <label className="label">Image shape</label>
             <select
@@ -112,14 +150,14 @@ function ConfigFields({ section, categories, onConfig }) {
 
         <div>
           <div className="flex items-center justify-between">
-            <label className="label mb-0">Cards</label>
+            <label className="label mb-0">{type === "carousel" ? "Slides" : "Cards"}</label>
             {items.length < 12 && (
               <button
                 type="button"
                 className="btn-ghost text-xs"
                 onClick={() => onConfig({ items: [...items, { image: "", title: "", text: "", href: "" }] })}
               >
-                <Plus size={14} /> Add card
+                <Plus size={14} /> {type === "carousel" ? "Add slide" : "Add card"}
               </button>
             )}
           </div>
@@ -128,7 +166,7 @@ function ConfigFields({ section, categories, onConfig }) {
               <div key={i} className="rounded-xl border border-brand-100 p-4">
                 <div className="mb-3 flex items-center justify-between">
                   <span className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
-                    Card {i + 1}
+                    {type === "carousel" ? "Slide" : "Card"} {i + 1}
                   </span>
                   <div className="flex items-center gap-1">
                     <button

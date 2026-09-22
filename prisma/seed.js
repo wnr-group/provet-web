@@ -438,6 +438,41 @@ const homeContent = [
     body: "20+ years combined formulation experience - 100+ SKUs across 6 therapeutic categories - Supplying clinics and distributors across the region.",
     order: 2,
   },
+  {
+    // Carried over from the old Provet homepage, where the testimonials are
+    // designed graphics rather than quotable text - the words are inside the
+    // image. That is why there are no quotes or attributions here: they can't
+    // be read out of a JPEG, and inventing them would put words in a real
+    // customer's mouth. Each slide's caption is the product it refers to,
+    // taken from the image's own filename, so the alt text says something.
+    key: "testimonials",
+    type: "carousel",
+    title: "What Our Customers Say",
+    order: 3,
+    config: JSON.stringify({
+      aspect: "square",
+      autoplay: true,
+      interval: 6000,
+      items: [
+        {
+          image: "https://provet.in/wp-content/uploads/2024/09/Fepromix_Testimonials-1024x1024.jpg",
+          title: "Fepromix",
+        },
+        {
+          image: "https://provet.in/wp-content/uploads/2024/09/Final_Nagronex-SNB_Testimonial-1024x1024.jpg",
+          title: "Nagronex-SNB",
+        },
+        {
+          image: "https://provet.in/wp-content/uploads/2024/09/Testimonial_Galpromin-XL-1024x1024.jpg",
+          title: "Galpromin-XL",
+        },
+        {
+          image: "https://provet.in/wp-content/uploads/2024/09/Testimonial_Immulator-1024x1024.jpg",
+          title: "Immulator",
+        },
+      ],
+    }),
+  },
 ];
 
 const aboutContent = [
