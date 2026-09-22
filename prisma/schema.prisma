@@ -1,17 +1,8 @@
 // Prisma schema for Provet.
 //
-// Datasource: SQLite for local development.
-//
-// The dev branch is on Postgres/Supabase, so this diverges from it - moving
-// back means setting `provider` to "postgresql", swapping the adapter in
-// lib/prisma.js to @prisma/adapter-pg, pointing DATABASE_URL at a Postgres
-// connection string, and regenerating the migrations for that provider (a
-// migration folder belongs to one provider; migration_lock.toml records it).
-//
-// The schema itself deliberately avoids provider-specific features so it runs
-// unchanged on either. JSON-ish fields (Product.specifications,
-// Product.images, ContentBlock.config) are stored as plain strings
-// (JSON-encoded) rather than a native Json column, and are
+// Datasource: Postgres, hosted on Supabase. JSON-ish fields
+// (Product.specifications, Product.images, ContentBlock.config) are stored
+// as plain strings (JSON-encoded) rather than a native Json column, and are
 // parsed/serialized in lib/serializers.js.
 
 generator client {
@@ -19,7 +10,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model AdminUser {

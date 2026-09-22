@@ -19,22 +19,13 @@ and magenta `#E5097F`.
 - **Framework**: Next.js 16 (App Router, Turbopack), React 19
 - **Styling**: Tailwind CSS v4
 - **Animation**: Framer Motion
-- **Database**: Prisma ORM on **SQLite** (via `@prisma/adapter-better-sqlite3`)
+- **Database**: Prisma ORM on **Postgres** (Supabase, via `@prisma/adapter-pg`)
 - **Auth**: JWT in an httpOnly cookie (`lib/auth.js`), verified both in
   `proxy.js` (redirects unauthenticated `/admin/*` page visits — a UX
   convenience) and inside every `/api/admin/*` route handler (the actual
   security boundary — see `lib/requireAdmin.js`)
 - **File uploads**: native `request.formData()`, saved to `public/uploads/`
   via `lib/storage.js` (swap this one file for S3/Cloudinary later)
-
-### Why SQLite instead of Supabase/Postgres locally
-
-There's no local Supabase instance and no Docker available on this machine.
-Moving to Postgres/Supabase later:
-
-1. Change `provider = "sqlite"` to `provider = "postgresql"` in `prisma/schema.prisma`
-2. Swap the adapter in `lib/prisma.js` (e.g. `@prisma/adapter-pg`) and update `DATABASE_URL`
-3. Run `npx prisma migrate dev` against it
 
 ### Prisma 7 note
 
