@@ -84,13 +84,20 @@ export default function Navbar({ categories = [] }) {
         scrolled ? "shadow-card" : "shadow-none"
       )}
     >
-      <div className="container-page flex h-16 items-center justify-between sm:h-20">
-        <Link href="/" className="flex items-center gap-2.5 shrink-0">
-          <Image src="/logo-mark.png" alt="" width={36} height={36} className="h-8 w-8 sm:h-9 sm:w-9" />
-          <span className="font-display text-xl font-extrabold tracking-tight text-brand-700">Provet</span>
-        </Link>
+      {/* Three zones, with the outer two sharing the leftover space equally
+          (flex-1 basis-0). The nav then sits dead-centre in the bar whatever
+          the logo and the action cluster happen to measure - justify-between
+          only equalises the gaps, which leaves the nav visibly off-centre
+          when one side is much wider than the other. */}
+      <div className="container-page flex h-16 items-center gap-6 sm:h-20">
+        <div className="flex flex-1 basis-0 items-center">
+          <Link href="/" className="flex shrink-0 items-center gap-2.5">
+            <Image src="/logo-mark.png" alt="" width={36} height={36} className="h-8 w-8 sm:h-9 sm:w-9" />
+            <span className="font-display text-xl font-extrabold tracking-tight text-brand-700">Provet</span>
+          </Link>
+        </div>
 
-        <nav ref={navRef} className="hidden items-center gap-0.5 lg:flex">
+        <nav ref={navRef} className="hidden shrink-0 items-center gap-1 xl:flex">
           {MAIN_NAV.map((item) => {
             const children = resolveChildren(item, categories);
             const active = isBranchActive(pathname, item, children);
@@ -102,12 +109,12 @@ export default function Navbar({ categories = [] }) {
                   href={item.href}
                   onClick={closeAll}
                   className={clsx(
-                    "relative rounded-full px-3.5 py-2 text-sm font-medium transition",
+                    "relative flex h-10 items-center rounded-full px-3 text-sm font-medium transition",
                     active ? "text-brand-700" : "text-ink-soft hover:text-brand-700"
                   )}
                 >
                   {item.label}
-                  {active && <span className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-accent-500" />}
+                  {active && <span className="absolute inset-x-3 bottom-1.5 h-0.5 rounded-full bg-accent-500" />}
                 </Link>
               );
             }
@@ -126,13 +133,13 @@ export default function Navbar({ categories = [] }) {
                   aria-haspopup="true"
                   onClick={() => setOpenMenu((m) => (m === item.label ? null : item.label))}
                   className={clsx(
-                    "relative flex items-center gap-1 rounded-full px-3.5 py-2 text-sm font-medium transition",
+                    "relative flex h-10 items-center gap-1 rounded-full px-3 text-sm font-medium transition",
                     active ? "text-brand-700" : "text-ink-soft hover:text-brand-700"
                   )}
                 >
                   {item.label}
                   <ChevronDown size={14} className={clsx("transition-transform", expanded && "rotate-180")} />
-                  {active && <span className="absolute inset-x-3 -bottom-0.5 h-0.5 rounded-full bg-accent-500" />}
+                  {active && <span className="absolute inset-x-3 bottom-1.5 h-0.5 rounded-full bg-accent-500" />}
                 </button>
 
                 {expanded && (
@@ -174,26 +181,33 @@ export default function Navbar({ categories = [] }) {
           })}
         </nav>
 
-        <div className="flex items-center gap-1 lg:gap-2">
+        {/* Every control here is h-10 so the search pill, the CTA and the
+            menu button share one baseline - the pill used to be 38px against
+            the CTA's 40px, which read as a misalignment. */}
+        <div className="flex flex-1 basis-0 items-center justify-end gap-2">
           {/* Closing the mobile menu on open keeps the overlay from covering
               an expanded accordion nobody can see behind it. */}
           <GlobalSearch onOpen={closeAll} />
-          <Link href="/contact" onClick={closeAll} className="btn-accent ml-1 hidden lg:inline-flex">
-            Enquire Now <ArrowRight size={16} />
+          <Link
+            href="/contact"
+            onClick={closeAll}
+            className="btn-accent hidden h-10 shrink-0 whitespace-nowrap xl:inline-flex"
+          >
+            Enquire Now <ArrowRight size={16} className="shrink-0" />
           </Link>
           <button
-            className="rounded-lg p-2 text-brand-700 lg:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-brand-700 transition hover:bg-brand-50 xl:hidden"
             onClick={() => setOpen((o) => !o)}
             aria-label="Toggle menu"
             aria-expanded={open}
           >
-            {open ? <X size={24} /> : <Menu size={24} />}
+            {open ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
       </div>
 
       {open && (
-        <div className="max-h-[75vh] overflow-y-auto border-t border-brand-100 bg-white px-4 pb-4 lg:hidden">
+        <div className="max-h-[75vh] overflow-y-auto border-t border-brand-100 bg-white px-4 pb-4 xl:hidden">
           <nav className="flex flex-col gap-1 pt-2">
             {MAIN_NAV.map((item) => {
               const children = resolveChildren(item, categories);
