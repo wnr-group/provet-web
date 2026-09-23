@@ -10,7 +10,7 @@ export default function ProductCard({ product }) {
   return (
     <Link
       href={`/products/${product.slug}`}
-      className="card group flex h-full flex-col overflow-hidden transition hover:-translate-y-1 hover:shadow-card"
+      className="panel group flex h-full flex-col overflow-hidden transition duration-300 hover:-translate-y-1.5 hover:shadow-[0_1px_2px_rgba(57,49,133,0.06),0_24px_48px_-18px_rgba(57,49,133,0.32)]"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-mist-100">
         {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary external/uploaded URLs, not a fixed set of remote hosts */}
@@ -20,10 +20,18 @@ export default function ProductCard({ product }) {
           loading="lazy"
           className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
         />
+        {/* A soft scrim at the foot of the image so a pale product shot still
+            separates from the white card below it. */}
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/10 to-transparent"
+        />
         {product.isFeatured && (
-          <span className="badge absolute left-3 top-3 bg-accent-400 text-brand-900">Featured</span>
+          <span className="badge absolute left-3 top-3 bg-white/90 text-accent-700 shadow-soft backdrop-blur">
+            Featured
+          </span>
         )}
-        <span className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-brand-700 opacity-0 transition group-hover:opacity-100">
+        <span className="absolute right-3 top-3 flex h-9 w-9 translate-y-1 items-center justify-center rounded-full bg-white/90 text-brand-700 opacity-0 shadow-soft backdrop-blur transition duration-300 group-hover:translate-y-0 group-hover:opacity-100">
           <ArrowUpRight size={16} />
         </span>
       </div>
@@ -32,13 +40,15 @@ export default function ProductCard({ product }) {
           even when empty. Without that, a product with no category or a
           one-line description produced a shorter card than its neighbours -
           card height followed the copy instead of being uniform. */}
-      <div className="flex flex-1 flex-col gap-2 p-4">
-        <span className="line-clamp-1 min-h-4 text-xs font-semibold uppercase tracking-wide text-accent-600">
+      <div className="flex flex-1 flex-col gap-2 p-5">
+        <span className="line-clamp-1 min-h-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-accent-600">
           {product.category?.name}
         </span>
-        <h3 className="line-clamp-1 font-display font-semibold text-ink">{product.name}</h3>
-        <p className="line-clamp-2 min-h-10 text-sm text-ink-soft">{product.shortDescription}</p>
-        <div className="mt-auto flex items-center justify-between pt-2 text-sm">
+        <h3 className="line-clamp-1 font-display font-bold tracking-tight text-ink transition group-hover:text-brand-700">
+          {product.name}
+        </h3>
+        <p className="line-clamp-2 min-h-10 text-sm leading-relaxed text-ink-soft">{product.shortDescription}</p>
+        <div className="mt-auto flex items-center justify-between border-t border-brand-100/70 pt-3 text-sm">
           {product.packSize ? (
             <span className="inline-flex items-center gap-1.5 text-ink-soft">
               <PackageSearch size={14} /> {product.packSize}

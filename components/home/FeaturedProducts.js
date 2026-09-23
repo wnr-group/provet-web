@@ -22,9 +22,13 @@ export default function FeaturedProducts({ products }) {
             View All <ArrowRight size={16} />
           </Link>
         </div>
-        <RevealGroup className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Products identity: cards deal in from the right, one after another,
+            like a row being laid out. Categories above grow in place and stats
+            below lift - the three grids on this page each move differently on
+            purpose. Hover (lift + image zoom) lives on ProductCard itself. */}
+        <RevealGroup className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4" stagger={0.1}>
           {products.slice(0, 4).map((p) => (
-            <RevealItem key={p.id} className="h-full">
+            <RevealItem key={p.id} className="h-full" direction="left" distance={32} duration={0.55}>
               <ProductCard product={p} />
             </RevealItem>
           ))}

@@ -5,7 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, ArrowRight, ChevronDown } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
+import { DURATION, EASE_OUT } from "@/lib/motion";
 import { MAIN_NAV } from "@/lib/navigation";
 import GlobalSearch from "@/components/search/GlobalSearch";
 
@@ -114,7 +116,16 @@ export default function Navbar({ categories = [] }) {
                   )}
                 >
                   {item.label}
-                  {active && <span className="absolute inset-x-3 bottom-1.5 h-0.5 rounded-full bg-accent-500" />}
+                  {/* layoutId hands the indicator to whichever item is active,
+                      so it slides along the bar between pages instead of
+                      disappearing here and reappearing there. */}
+                  {active && (
+                    <motion.span
+                      layoutId="nav-active"
+                      className="absolute inset-x-3 bottom-1.5 h-0.5 rounded-full bg-accent-500"
+                      transition={{ duration: DURATION.fast, ease: EASE_OUT }}
+                    />
+                  )}
                 </Link>
               );
             }
@@ -138,14 +149,31 @@ export default function Navbar({ categories = [] }) {
                   )}
                 >
                   {item.label}
-                  <ChevronDown size={14} className={clsx("transition-transform", expanded && "rotate-180")} />
-                  {active && <span className="absolute inset-x-3 bottom-1.5 h-0.5 rounded-full bg-accent-500" />}
+                  <ChevronDown
+                    size={14}
+                    className={clsx("transition-transform duration-200", expanded && "rotate-180")}
+                  />
+                  {active && (
+                    <motion.span
+                      layoutId="nav-active"
+                      className="absolute inset-x-3 bottom-1.5 h-0.5 rounded-full bg-accent-500"
+                      transition={{ duration: DURATION.fast, ease: EASE_OUT }}
+                    />
+                  )}
                 </button>
 
-                {expanded && (
-                  // The wrapper's padding keeps the pointer inside the
-                  // hover area while it travels from the button to the panel.
-                  <div className="absolute left-0 top-full z-50 w-60 pt-2">
+                <AnimatePresence>
+                  {expanded && (
+                    // The wrapper's padding keeps the pointer inside the
+                    // hover area while it travels from the button to the panel.
+                    <motion.div
+                      className="absolute left-0 top-full z-50 w-60 pt-2"
+                      initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                      transition={{ duration: 0.18, ease: EASE_OUT }}
+                      style={{ transformOrigin: "top left" }}
+                    >
                     <div className="card max-h-[70vh] overflow-y-auto p-1.5 shadow-lift">
                       {/* The parent stays reachable in its own right when it
                           has a page of its own (About Us, Products). */}
@@ -174,8 +202,9 @@ export default function Navbar({ categories = [] }) {
                         </Link>
                       ))}
                     </div>
-                  </div>
-                )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           })}
@@ -206,8 +235,23 @@ export default function Navbar({ categories = [] }) {
         </div>
       </div>
 
-      {open && (
-        <div className="max-h-[75vh] overflow-y-auto border-t border-brand-100 bg-white px-4 pb-4 xl:hidden">
+      {/* The panel opens by animating its own height, which is a layout
+          property - but it is the one case where that is the right call: a
+          transform-based open would slide the panel over the page instead of
+          pushing it down, and the height is animated once per toggle, not per
+          scroll frame. Content fades slightly behind it so the text does not
+          appear to stretch. */}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="mobile-menu"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: DURATION.fast, ease: EASE_OUT }}
+            className="overflow-hidden border-t border-brand-100 bg-white xl:hidden"
+          >
+        <div className="max-h-[75vh] overflow-y-auto px-4 pb-4">
           <nav className="flex flex-col gap-1 pt-2">
             {MAIN_NAV.map((item) => {
               const children = resolveChildren(item, categories);
@@ -245,10 +289,20 @@ export default function Navbar({ categories = [] }) {
                     )}
                   >
                     {item.label}
-                    <ChevronDown size={16} className={clsx("transition-transform", expanded && "rotate-180")} />
+                    <ChevronDown
+                      size={16}
+                      className={clsx("transition-transform duration-200", expanded && "rotate-180")}
+                    />
                   </button>
+                  <AnimatePresence initial={false}>
                   {expanded && (
-                    <div className="ml-3 border-l border-brand-100 pl-3">
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.22, ease: EASE_OUT }}
+                      className="ml-3 overflow-hidden border-l border-brand-100 pl-3"
+                    >
                       {item.href && (
                         <Link
                           href={item.href}
@@ -273,8 +327,9 @@ export default function Navbar({ categories = [] }) {
                           {child.label}
                         </Link>
                       ))}
-                    </div>
+                    </motion.div>
                   )}
+                  </AnimatePresence>
                 </div>
               );
             })}
@@ -283,7 +338,9 @@ export default function Navbar({ categories = [] }) {
             </Link>
           </nav>
         </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   );
 }

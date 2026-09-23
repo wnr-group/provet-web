@@ -1,4 +1,5 @@
 import Reveal from "@/components/motion/Reveal";
+import { SplitText, DrawLine } from "@/components/motion/effects";
 
 // The "mission" Website Content block, as a calm editorial statement rather
 // than another card grid - the page already has three of those, and a short
@@ -19,25 +20,37 @@ export default function Mission({ section }) {
         className="pointer-events-none absolute left-1/2 top-0 h-72 w-[42rem] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(57,49,133,0.08),transparent_70%)]"
       />
 
-      <Reveal className="container-page relative">
+      {/* This section's motion identity is an editorial type reveal: the
+          heading uncovers word by word from behind its own baseline, the rule
+          draws outward from the centre, and only the body paragraph fades.
+          Nothing here slides in from the side - that belongs to the bands
+          above and below it. */}
+      <div className="container-page relative">
         <div className="mx-auto max-w-3xl text-center">
-          <span className="badge bg-accent-100 text-accent-700">Who We Are</span>
+          <Reveal distance={10}>
+            <span className="badge bg-accent-100 text-accent-700">Who We Are</span>
+          </Reveal>
 
           {section.title && (
-            <h2 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
-              {section.title}
-            </h2>
+            <SplitText
+              as="h2"
+              text={section.title}
+              delay={0.08}
+              className="mt-4 block font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl"
+            />
           )}
 
-          <span aria-hidden="true" className="mx-auto mt-6 block h-1 w-16 rounded-full bg-accent-400" />
+          <DrawLine className="mx-auto mt-6 block h-1 w-16 rounded-full bg-accent-400" delay={0.25} />
 
           {section.body && (
-            <p className="mt-6 whitespace-pre-line text-lg leading-relaxed text-ink-soft sm:text-xl">
-              {section.body}
-            </p>
+            <Reveal delay={0.3} distance={12}>
+              <p className="mt-6 whitespace-pre-line text-lg leading-relaxed text-ink-soft sm:text-xl">
+                {section.body}
+              </p>
+            </Reveal>
           )}
         </div>
-      </Reveal>
+      </div>
     </section>
   );
 }

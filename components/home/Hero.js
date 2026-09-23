@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { ArrowRight, ShieldCheck } from "lucide-react";
-import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import clsx from "clsx";
 import Counter from "@/components/motion/Counter";
+import { useMotionEnv } from "@/components/motion/MotionProvider";
+import { EASE } from "@/lib/motion";
 
 // Requested at full-bleed width now that the image spans the viewport rather
 // than sitting in a ~450px card.
@@ -45,33 +47,51 @@ export default function Hero({ banners = [] }) {
       ];
 
   const [active, setActive] = useState(0);
+  const sectionRef = useRef(null);
+  const { isMobile, reduced } = useMotionEnv();
+
+  // Hero identity: the banner drifts and fades against the scroll while the
+  // copy stays put, so the section has depth as you leave it. Off on mobile
+  // and under reduced motion - it is the only per-frame scroll work on the
+  // page, and a phone is where that costs most.
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
+  const parallaxY = useTransform(scrollYProgress, [0, 1], ["0%", "18%"]);
+  const parallaxScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
+  const copyFade = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
+  const flat = isMobile || reduced;
 
   useEffect(() => {
     if (slides.length <= 1) return;
+    if (reduced) return; // an unbidden rotating banner is what the preference is for
     const t = setInterval(() => setActive((a) => (a + 1) % slides.length), 6000);
     return () => clearInterval(t);
-  }, [slides.length]);
+  }, [slides.length, reduced]);
 
   const slide = slides[active];
 
   return (
-    <section className="relative isolate overflow-hidden bg-brand-900">
+    <section ref={sectionRef} className="relative isolate overflow-hidden bg-brand-900">
       {/* Full-bleed banner: the image covers the whole section rather than
           sitting in a card, so it spans the viewport edge to edge. */}
-      <AnimatePresence mode="sync">
-        <motion.img
-          key={slide.id ?? slide.image}
-          src={slide.image || HERO_FALLBACK}
-          alt=""
-          aria-hidden="true"
-          fetchPriority="high"
-          initial={{ opacity: 0, scale: 1.06 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-0 -z-10 h-full w-full object-cover"
-        />
-      </AnimatePresence>
+      <motion.div
+        className="absolute inset-0 -z-10"
+        style={flat ? undefined : { y: parallaxY, scale: parallaxScale }}
+      >
+        <AnimatePresence mode="sync">
+          <motion.img
+            key={slide.id ?? slide.image}
+            src={slide.image || HERO_FALLBACK}
+            alt=""
+            aria-hidden="true"
+            fetchPriority="high"
+            initial={{ opacity: 0, scale: 1.08 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.1, ease: EASE }}
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </AnimatePresence>
+      </motion.div>
       <div className={clsx("pointer-events-none absolute inset-0 -z-10", OVERLAY_GRADIENT)} />
       <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(229,9,127,0.22),transparent_55%)]" />
 
@@ -81,11 +101,14 @@ export default function Hero({ banners = [] }) {
           inside it and each text block below reserves its maximum number of
           lines, so nothing shifts between slides either. */}
       <div className="container-page relative flex h-[600px] flex-col justify-center pb-20 sm:h-[620px] sm:pb-24 lg:h-[680px]">
-        <div className="max-w-2xl">
+        {/* The copy holds still against the drifting image, then fades as the
+            section leaves - the parallax reads as depth rather than the text
+            sliding off on its own. */}
+        <motion.div className="max-w-2xl" style={flat ? undefined : { opacity: copyFade }}>
           <motion.span
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.5, ease: EASE }}
             className="badge bg-white/10 text-accent-200 backdrop-blur-sm"
           >
             <ShieldCheck size={14} /> Trusted by veterinarians nationwide
@@ -146,7 +169,7 @@ export default function Hero({ banners = [] }) {
               </div>
             ))}
           </motion.dl>
-        </div>
+        </motion.div>
 
       </div>
 

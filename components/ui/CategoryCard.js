@@ -7,11 +7,19 @@ export default function CategoryCard({ category }) {
   return (
     <Link
       href={`/products?category=${category.slug}`}
-      className="card group flex h-full flex-col items-center gap-3 p-5 text-center transition hover:-translate-y-1 hover:border-accent-300 hover:shadow-card"
+      className="card group flex h-full flex-col items-center gap-3 p-5 text-center transition duration-300 hover:-translate-y-1.5 hover:border-accent-300 hover:shadow-card"
     >
+      {/* The thumbnail zooms inside its own rounded frame while the card
+          lifts - two speeds in one gesture, which is what stops a grid of six
+          identical tiles feeling flat on hover. */}
       <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-mist-100">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={category.image || ICON_FALLBACK} alt="" className="h-full w-full object-cover" loading="lazy" />
+        <img
+          src={category.image || ICON_FALLBACK}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+        />
       </div>
       {/* Two lines reserved for the name and one for the count, so a long
           category ("Antibiotics & Anti-infectives") and a short one produce
