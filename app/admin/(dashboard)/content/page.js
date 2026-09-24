@@ -17,8 +17,20 @@ import { ImagePicker } from "@/components/admin/ImagePicker";
 import { contentPages } from "@/lib/navigation";
 import { DEFAULT_SECTION_TYPE, parseSectionConfig } from "@/lib/sectionTypes";
 import { toSlug } from "@/lib/slug";
+import { CONTACT_SECTIONS, withContactDefaults } from "@/lib/contactContent";
 
 const PAGES = contentPages();
+
+// Fixed pages whose blocks have built-in defaults. For these the editor shows
+// every block even before one has been saved, plus a per-block hint - the
+// generic type hints ("One card per line") don't say what the contact
+// page actually does with each block.
+const FIXED_PAGE_DEFAULTS = {
+  contact: {
+    merge: withContactDefaults,
+    meta: Object.fromEntries(CONTACT_SECTIONS.map((s) => [s.key, { hint: s.hint, hideConfig: s.hideConfig }])),
+  },
+};
 
 const emptySettings = { title: "", description: "", heroImage: "", seoTitle: "", seoDescription: "" };
 
@@ -68,7 +80,9 @@ export default function ContentAdmin() {
   const fetchPage = useCallback(async () => {
     if (current.fixed) {
       const res = await adminGetContent(pageKey);
-      return { sections: res.sections.map(normalizeSection), settings: emptySettings };
+      const merge = FIXED_PAGE_DEFAULTS[pageKey]?.merge;
+      const sections = merge ? merge(res.sections) : res.sections;
+      return { sections: sections.map(normalizeSection), settings: emptySettings };
     }
     const res = await adminGetPage(pageKey);
     return {
@@ -282,6 +296,8 @@ export default function ContentAdmin() {
                 total={sections.length}
                 categories={categories}
                 editable={editable}
+                hint={FIXED_PAGE_DEFAULTS[pageKey]?.meta[section.key]?.hint}
+                hideConfig={FIXED_PAGE_DEFAULTS[pageKey]?.meta[section.key]?.hideConfig}
                 open={openKey === section.key}
                 onToggleOpen={() => setOpenKey((k) => (k === section.key ? null : section.key))}
                 onChange={(next) => updateSection(i, next)}

@@ -6,6 +6,7 @@ import ProductCard from "@/components/ui/ProductCard";
 import CategoryCard from "@/components/ui/CategoryCard";
 import { Enter, EnterGroup, EnterItem } from "@/components/sections/entrances";
 import Carousel from "@/components/sections/Carousel";
+import LocationCards from "@/components/sections/LocationCards";
 
 // Renders a page's admin-configured sections. One component per type in
 // lib/sectionTypes.js; anything unknown is skipped rather than crashing the
@@ -385,6 +386,18 @@ function Cta({ section }) {
   );
 }
 
+function Locations({ section }) {
+  if (!section.config.items?.length) return null;
+  return (
+    <div>
+      <Enter preset="drop">
+        <Heading title={section.title} description={section.body} align="center" />
+      </Enter>
+      <LocationCards items={section.config.items} columns={section.config.columns} />
+    </div>
+  );
+}
+
 const RENDERERS = {
   richText: RichText,
   imageText: ImageText,
@@ -393,6 +406,7 @@ const RENDERERS = {
   numberedRows: NumberedRows,
   imageCards: ImageCards,
   carousel: CarouselSection,
+  locations: Locations,
   productGrid: ProductGrid,
   categoryGrid: CategoryGrid,
   cta: Cta,

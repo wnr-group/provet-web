@@ -356,6 +356,32 @@ const menuPages = [
         title: "Trial Reports",
         body: "Our trial reports offer evidence-based results from product trials. It shows the performance and benefits of our solutions in diverse aquaculture environments, contributing to better farm management and yield improvements.",
       },
+      // The reports each range listed. As with the technical articles, every
+      // title on the old site linked to a page with no body, so the titles are
+      // listed on their own. Two slips in the old listing are corrected: a
+      // repeated "in Broiler feeds" and "zymomax pro" in lower case.
+      {
+        key: "poultry-reports",
+        type: "cards",
+        title: "Poultry (Avinova)",
+        body: [
+          "Effects of a multienzyme preparation (Zymomax Forte) on the incidence of loose droppings in layer chicken",
+          "A comparative study on the effects of dietary supplementation of different gut acting growth promoters on performance of male broiler chickens",
+          "Comparative evaluation of Nagronex SNB against competitors' probiotics and Antibiotic Growth Promoters in Broiler feeds",
+          "Study on the efficacy of Zymomax Pro on the performance of commercial broilers",
+        ].join("\n"),
+        config: { columns: 2 },
+      },
+      {
+        key: "aqua-reports",
+        type: "cards",
+        title: "Aquaculture (Blunova)",
+        body: [
+          "Efficacy of BACITOX PLUS in Improving the Water Quality Parameters in Aquaculture Ponds",
+          "Efficacy of Pathostat Blu in controlling mortality due to severe vibrio loads in shrimp farming",
+        ].join("\n"),
+        config: { columns: 2 },
+      },
       {
         key: "cta",
         type: "cta",
