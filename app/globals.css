@@ -36,6 +36,22 @@
   --shadow-soft: 0 2px 8px rgba(57, 49, 133, 0.07), 0 1px 2px rgba(57, 49, 133, 0.08);
   --shadow-card: 0 8px 24px rgba(57, 49, 133, 0.10);
   --shadow-lift: 0 16px 40px rgba(57, 49, 133, 0.18);
+  --shadow-hover: 0 1px 2px rgba(57, 49, 133, 0.06), 0 24px 48px -18px rgba(57, 49, 133, 0.32);
+
+  /* Slow, small ambient loops for decorative pieces only (orbs, a floating
+     stat card). Never on content - and the reduced-motion block below
+     flattens them to a single frame. */
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-gradient-pan: gradient-pan 12s ease-in-out infinite alternate;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes gradient-pan {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
 }
 
 @layer base {
@@ -86,6 +102,15 @@
   h1, h2, h3, h4 {
     @apply font-display;
     color: inherit;
+  }
+
+  /* One visible keyboard focus style for every link and button on the site.
+     :focus-visible only, so a mouse click never leaves a ring behind. */
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--color-accent-400);
+    outline-offset: 3px;
   }
 }
 
@@ -163,4 +188,29 @@
    definition table. */
 @utility stat-tile {
   @apply rounded-2xl bg-mist-50/80 px-4 py-3 transition;
+}
+
+/* --- Shared surfaces -------------------------------------------------- */
+
+/* Navy-to-magenta, the brand pairing, as clipped text for figures and
+   highlighted words. */
+@utility text-gradient {
+  background-image: linear-gradient(120deg, var(--color-brand-600) 0%, var(--color-brand-400) 45%, var(--color-accent-500) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* The brand gradient as a surface (CTA band). Oversized so the pan
+   animation has somewhere to travel. */
+@utility bg-brand-gradient {
+  background-image: linear-gradient(120deg, var(--color-brand-800) 0%, var(--color-brand-600) 40%, var(--color-accent-500) 100%);
+  background-size: 200% 200%;
+}
+
+/* A faint dot grid for dark or tinted bands, so a large flat colour field has
+   some texture. `currentColor` lets the band choose the dot colour. */
+@utility bg-dots {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 22px 22px;
 }

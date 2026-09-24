@@ -174,7 +174,8 @@ export default function Hero({ banners = [] }) {
       </div>
 
       {slides.length > 1 && (
-        <div className="absolute inset-x-0 bottom-8 z-10">
+        // Raised clear of the feature strip, which overlaps the hero's foot.
+        <div className="absolute inset-x-0 bottom-16 z-10 sm:bottom-20">
           <div className="container-page flex gap-2">
             {slides.map((s, i) => (
               <button

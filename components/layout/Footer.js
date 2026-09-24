@@ -10,7 +10,11 @@ export default async function Footer() {
   const socialLinks = await getActiveSocialLinks();
 
   return (
-    <footer className="bg-brand-900 text-brand-100">
+    <footer className="relative bg-brand-900 text-brand-100">
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-brand-500 via-accent-500 to-brand-500"
+      />
       {/* Footer motion is deliberately the quietest on the site: the four
           columns drift up a few pixels in sequence, and everything else is
           hover feedback. A footer that performs on arrival reads as a demo. */}
