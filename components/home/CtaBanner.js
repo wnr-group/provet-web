@@ -2,8 +2,14 @@ import Link from "next/link";
 import { ArrowRight, PhoneCall } from "lucide-react";
 import { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 import { CenterReveal, Parallax } from "@/components/motion/effects";
+import { getContentSections } from "@/lib/data";
+import { contactInfo, telHref } from "@/lib/contactContent";
 
-export default function CtaBanner() {
+export default async function CtaBanner() {
+  // The call button uses the first number in Admin > Website Content >
+  // Contact Us > Contact details, so it always matches the contact page.
+  const { phones } = contactInfo(await getContentSections("contact"));
+  const phone = phones[0];
   return (
     <section className="py-16 sm:py-20">
       <div className="container-page">
@@ -57,13 +63,15 @@ export default function CtaBanner() {
                   Send an Enquiry
                   <ArrowRight size={16} className="transition-transform duration-200 group-hover:translate-x-1" />
                 </Link>
+                {phone && (
                 <a
-                  href="tel:+914422442124"
+                  href={telHref(phone)}
                   className="btn group bg-white/10 text-white ring-1 ring-white/30 backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5 hover:bg-white/20"
                 >
                   <PhoneCall size={16} className="transition-transform duration-200 group-hover:-rotate-12" />
-                  +91 44 2244 2124
+                  {phone}
                 </a>
+                )}
               </div>
             </RevealItem>
           </RevealGroup>

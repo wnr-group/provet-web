@@ -2,12 +2,22 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Phone, Mail } from "lucide-react";
 import SocialLinks from "@/components/ui/SocialLinks";
-import { getActiveSocialLinks } from "@/lib/data";
+import { getActiveSocialLinks, getContentSections } from "@/lib/data";
+import { contactInfo, telHref } from "@/lib/contactContent";
 import { FOOTER_NAV } from "@/lib/navigation";
 import { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 
 export default async function Footer() {
-  const socialLinks = await getActiveSocialLinks();
+  // Contact facts and the tagline come from Admin > Website Content >
+  // Contact Us (the same blocks the contact page shows), so the footer can't
+  // drift out of step with it.
+  const [socialLinks, contactSections] = await Promise.all([
+    getActiveSocialLinks(),
+    getContentSections("contact"),
+  ]);
+  const info = contactInfo(contactSections);
+  // The short line bottom-right: the tagline up to its first dash or full stop.
+  const motto = info.tagline.split(/\s+[—-]\s+|\.\s/)[0].replace(/\.$/, "");
 
   return (
     <footer className="relative bg-brand-900 text-brand-100">
@@ -27,10 +37,9 @@ export default async function Footer() {
             <Image src="/logo-mark.png" alt="" width={36} height={36} className="h-9 w-9" />
             <span className="font-display text-xl font-extrabold text-white">Provet</span>
           </Link>
-          <p className="mt-4 max-w-xs text-sm leading-relaxed text-brand-200">
-            Excellence through innovation — solution-oriented veterinary healthcare products
-            backed by expert technical guidance.
-          </p>
+          {info.tagline && (
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-brand-200">{info.tagline}</p>
+          )}
           <SocialLinks links={socialLinks} variant="dark" className="mt-5" />
         </RevealItem>
 
@@ -61,29 +70,45 @@ export default async function Footer() {
         <RevealItem distance={12} duration={0.45}>
           <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-white">Get in Touch</h4>
           <ul className="space-y-3 text-sm">
-            <li className="flex items-start gap-2.5">
-              <MapPin size={16} className="mt-0.5 shrink-0 text-accent-300" />
-              <span>
-                No. 9, 1st Floor, 2nd Lane, Chakrapani Street, Narasingapuram Extension,
-                Maduvankarai, Guindy, Chennai - 600 032
-              </span>
-            </li>
-            <li className="flex items-center gap-2.5">
-              <Phone size={16} className="shrink-0 text-accent-300" />
-              <span>+91 44 2244 2124</span>
-            </li>
-            <li className="flex items-center gap-2.5">
-              <Mail size={16} className="shrink-0 text-accent-300" />
-              <span>info@provet.in</span>
-            </li>
+            {info.address && (
+              <li className="flex items-start gap-2.5">
+                <MapPin size={16} className="mt-0.5 shrink-0 text-accent-300" />
+                <span>{info.address}</span>
+              </li>
+            )}
+            {info.phones.length > 0 && (
+              <li className="flex items-start gap-2.5">
+                <Phone size={16} className="mt-0.5 shrink-0 text-accent-300" />
+                <span>
+                  {info.phones.map((phone, i) => (
+                    <span key={phone}>
+                      {i > 0 && " / "}
+                      <a href={telHref(phone)} className="transition-colors hover:text-accent-300">
+                        {phone}
+                      </a>
+                    </span>
+                  ))}
+                </span>
+              </li>
+            )}
+            {info.email && (
+              <li className="flex items-center gap-2.5">
+                <Mail size={16} className="shrink-0 text-accent-300" />
+                <a href={`mailto:${info.email}`} className="break-all transition-colors hover:text-accent-300">
+                  {info.email}
+                </a>
+              </li>
+            )}
           </ul>
         </RevealItem>
       </RevealGroup>
 
       <div className="border-t border-white/10 py-5">
         <div className="container-page flex flex-col items-center justify-between gap-2 text-xs text-brand-300 sm:flex-row">
-          <p>&copy; {new Date().getFullYear()} Provet Pharma Private Limited. All rights reserved.</p>
-          <p>Excellence through innovation.</p>
+          <p>
+            &copy; {new Date().getFullYear()} {info.companyName || "Provet"}. All rights reserved.
+          </p>
+          {motto && <p>{motto}.</p>}
         </div>
       </div>
     </footer>
