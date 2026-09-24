@@ -1,10 +1,10 @@
 // Seed script for local development / demos.
 //
-// NOTE: All copy below (category/product descriptions, about/home content
-// blocks) is realistic-sounding PLACEHOLDER content written for this seed
-// script because the real client content has not been provided yet. Swap it
-// out via the admin panel (or by editing this file and re-seeding) once real
-// copy is available.
+// NOTE: The product catalogue is Provet's real range, carried over from the
+// old provet.in site (see prisma/oldSiteProducts.js). The banners and the
+// home/about content blocks below are still realistic-sounding PLACEHOLDER
+// copy written for this script - swap them out via the admin panel (or by
+// editing this file and re-seeding) once real copy is available.
 
 require("dotenv").config();
 const bcrypt = require("bcryptjs");
@@ -13,6 +13,7 @@ const { PLATFORMS } = require("../lib/socialSchema");
 const { DEFAULT_FEEDBACK_CONFIG, DEFAULT_FEEDBACK_FIELDS } = require("../lib/feedbackSchema");
 // Real copy carried over from the old provet.in site - see the notes there.
 const { menuPages } = require("./menuPages");
+const { oldSiteCategories } = require("./oldSiteProducts");
 
 function slug(s) {
   return s
@@ -65,308 +66,6 @@ function img(id, w = 600, h = 400) {
   return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
 }
 
-const CATEGORY_PHOTO = {
-  "Antibiotics & Anti-infectives": PHOTO.tabletsSpilled,
-  "Anti-parasitics": PHOTO.dogAtVet,
-  "Vaccines & Biologicals": PHOTO.vialsAndIvBottle,
-  "Nutritional Supplements": PHOTO.supplementBottle,
-  "Pain Management & Anti-inflammatories": PHOTO.dogRunningBeach,
-  "Wound Care & Antiseptics": PHOTO.antisepticSpray,
-};
-
-const categoriesData = [
-  {
-    name: "Antibiotics & Anti-infectives",
-    description:
-      "Broad and narrow-spectrum antibacterial formulations for treating bacterial infections in companion and farm animals.",
-    products: [
-      {
-        name: "Amoxiclav Vet 250mg Tablets",
-        sku: "AMX-250-TAB",
-        shortDescription: "Amoxicillin-clavulanate combination tablets for bacterial infections.",
-        composition: "Amoxicillin trihydrate 200mg + Clavulanic acid 50mg per tablet.",
-        uses:
-          "Indicated for skin, soft tissue, respiratory and urinary tract infections caused by susceptible bacteria in dogs and cats.",
-        dosage: "12.5mg/kg body weight twice daily, orally, for 5-7 days or as directed by a veterinarian.",
-        applications: "Companion animals - dogs and cats.",
-        specifications: { packSize: "10 x 10 tablets", form: "Tablet", storage: "Store below 25°C, protect from light" },
-        packSize: "10 x 10 tablets",
-        images: [img(PHOTO.tabletsSpilled), img(PHOTO.blisterPack)],
-        isFeatured: true,
-      },
-      {
-        name: "Oxytetracycline LA Injection",
-        sku: "OXY-LA-100",
-        shortDescription: "Long-acting oxytetracycline injection for livestock.",
-        composition: "Oxytetracycline dihydrate 200mg/ml, long-acting formulation.",
-        uses:
-          "Treatment of respiratory infections, foot rot, pink eye and wound infections in cattle, sheep and goats.",
-        dosage: "1ml per 10kg body weight, single intramuscular injection, repeat after 72 hours if needed.",
-        applications: "Cattle, sheep, goats, swine.",
-        specifications: { packSize: "100ml", form: "Injectable", storage: "Store below 25°C, do not freeze" },
-        packSize: "100ml",
-        images: [img(PHOTO.vialsAndIvBottle), img(PHOTO.cattleGrazing)],
-        isFeatured: false,
-      },
-      {
-        name: "Enrofloxacin 10% Oral Solution",
-        sku: "ENR-10-OS",
-        shortDescription: "Fluoroquinolone oral solution for poultry and swine.",
-        composition: "Enrofloxacin 100mg/ml.",
-        uses: "Control of colibacillosis, chronic respiratory disease and other bacterial infections in poultry.",
-        dosage: "1ml per 4 litres of drinking water for 3-5 consecutive days.",
-        applications: "Poultry, swine.",
-        specifications: { packSize: "1 litre", form: "Oral solution", storage: "Store below 25°C, protect from light" },
-        packSize: "1 litre",
-        images: [img(PHOTO.oralMedicineBottle), img(PHOTO.poultryBarn)],
-        isFeatured: false,
-      },
-      {
-        name: "Ceftiofur Sterile Suspension",
-        sku: "CEF-STR-50",
-        shortDescription: "Third-generation cephalosporin injectable suspension.",
-        composition: "Ceftiofur hydrochloride equivalent to 50mg ceftiofur/ml.",
-        uses: "Treatment of bovine respiratory disease and foot rot associated with susceptible organisms.",
-        dosage: "1ml per 50kg body weight, once daily by intramuscular injection for 3-5 days.",
-        applications: "Cattle.",
-        specifications: { packSize: "100ml", form: "Injectable suspension", storage: "Refrigerate 2-8°C" },
-        packSize: "100ml",
-        images: [img(PHOTO.vialsAndIvBottle), img(PHOTO.cattleGrazing)],
-        isFeatured: false,
-      },
-    ],
-  },
-  {
-    name: "Anti-parasitics",
-    description:
-      "Endo- and ecto-parasiticide solutions to control worms, ticks, fleas and mites across species.",
-    products: [
-      {
-        name: "Ivermectin 1% Injection",
-        sku: "IVM-1-INJ",
-        shortDescription: "Broad-spectrum endectocide injection for livestock.",
-        composition: "Ivermectin 10mg/ml.",
-        uses: "Controls gastrointestinal roundworms, lungworms, mites, lice and ticks in cattle, sheep and pigs.",
-        dosage: "1ml per 50kg body weight, single subcutaneous injection.",
-        applications: "Cattle, sheep, pigs.",
-        specifications: { packSize: "50ml", form: "Injectable", storage: "Store below 30°C" },
-        packSize: "50ml",
-        images: [img(PHOTO.vialsAndIvBottle), img(PHOTO.goatsGrazing)],
-        isFeatured: true,
-      },
-      {
-        name: "Fipronil Spot-On for Dogs",
-        sku: "FIP-SPT-DOG",
-        shortDescription: "Topical spot-on for flea and tick control in dogs.",
-        composition: "Fipronil 10% w/v topical solution.",
-        uses: "Kills fleas, ticks and chewing lice; provides protection for up to 4 weeks.",
-        dosage: "One pipette per dog applied to the skin between the shoulder blades, once monthly.",
-        applications: "Dogs.",
-        specifications: { packSize: "3 x 1.34ml pipettes", form: "Spot-on", storage: "Store below 25°C" },
-        packSize: "3 x 1.34ml pipettes",
-        images: [img(PHOTO.dogAtVet)],
-        isFeatured: true,
-      },
-      {
-        name: "Albendazole 10% Suspension",
-        sku: "ALB-10-SUS",
-        shortDescription: "Broad-spectrum dewormer suspension for livestock.",
-        composition: "Albendazole 100mg/ml.",
-        uses: "Effective against roundworms, tapeworms, lungworms and liver flukes in cattle, sheep and goats.",
-        dosage: "1ml per 10kg body weight, single oral dose; repeat as advised by veterinarian.",
-        applications: "Cattle, sheep, goats.",
-        specifications: { packSize: "1 litre", form: "Oral suspension", storage: "Shake well before use" },
-        packSize: "1 litre",
-        images: [img(PHOTO.oralMedicineBottle), img(PHOTO.goatsGrazing)],
-        isFeatured: false,
-      },
-    ],
-  },
-  {
-    name: "Vaccines & Biologicals",
-    description:
-      "Preventive vaccines and biological products supporting herd health and companion animal immunization programs.",
-    products: [
-      {
-        name: "Canine Combo DHPPi Vaccine",
-        sku: "VAC-DHPPI",
-        shortDescription: "Multivalent vaccine for core canine diseases.",
-        composition: "Modified live virus vaccine against Distemper, Hepatitis, Parainfluenza and Parvovirus.",
-        uses: "Active immunization of healthy dogs against the four core canine viral diseases.",
-        dosage: "1ml dose administered subcutaneously; primary course followed by annual boosters.",
-        applications: "Dogs.",
-        specifications: { packSize: "1 dose vial + diluent", form: "Lyophilized vaccine", storage: "Store 2-8°C, protect from light" },
-        packSize: "1 dose vial + diluent",
-        images: [img(PHOTO.vialsAndIvBottle), img(PHOTO.vetWithDachshund)],
-        isFeatured: true,
-      },
-      {
-        name: "FMD Trivalent Vaccine",
-        sku: "VAC-FMD-TRI",
-        shortDescription: "Inactivated trivalent vaccine against Foot-and-Mouth Disease.",
-        composition: "Inactivated FMD virus antigens (serotypes O, A, Asia-1) with oil adjuvant.",
-        uses: "Active immunization of cattle, buffalo, sheep and goats against Foot-and-Mouth Disease.",
-        dosage: "2ml dose administered intramuscularly; revaccinate every 6 months.",
-        applications: "Cattle, buffalo, sheep, goats.",
-        specifications: { packSize: "50 dose vial", form: "Injectable emulsion", storage: "Store 2-8°C, do not freeze" },
-        packSize: "50 dose vial",
-        images: [img(PHOTO.vialsAndIvBottle), img(PHOTO.cattleGrazing)],
-        isFeatured: false,
-      },
-      {
-        name: "Feline Tricat Vaccine",
-        sku: "VAC-TRICAT",
-        shortDescription: "Trivalent vaccine for core feline diseases.",
-        composition: "Modified live vaccine against Feline Panleukopenia, Rhinotracheitis and Calicivirus.",
-        uses: "Active immunization of healthy cats against the three core feline viral diseases.",
-        dosage: "1ml dose administered subcutaneously; primary course followed by annual boosters.",
-        applications: "Cats.",
-        specifications: { packSize: "1 dose vial + diluent", form: "Lyophilized vaccine", storage: "Store 2-8°C" },
-        packSize: "1 dose vial + diluent",
-        images: [img(PHOTO.vialsAndIvBottle)],
-        isFeatured: false,
-      },
-    ],
-  },
-  {
-    name: "Nutritional Supplements",
-    description:
-      "Vitamin, mineral and tonic formulations to support growth, fertility, immunity and general wellness.",
-    products: [
-      {
-        name: "Multivitamin Booster Syrup",
-        sku: "MVB-SYP-200",
-        shortDescription: "Multivitamin liquid tonic for growth and recovery support.",
-        composition: "Vitamins A, D3, E, B-complex with lysine and essential trace minerals.",
-        uses: "Supports appetite, growth and recovery during and after illness or stress in pets and livestock.",
-        dosage: "5-10ml per day orally, or as directed by a veterinarian, mixed with feed or water.",
-        applications: "Dogs, cats, cattle, poultry.",
-        specifications: { packSize: "200ml", form: "Oral liquid", storage: "Store below 25°C" },
-        packSize: "200ml",
-        images: [img(PHOTO.oralMedicineBottle), img(PHOTO.supplementBottle)],
-        isFeatured: false,
-      },
-      {
-        name: "Calcium & Phosphorus Bolus",
-        sku: "CAP-BOL-10",
-        shortDescription: "Mineral bolus supporting bone health and milk production.",
-        composition: "Calcium 250g, Phosphorus 125g, Vitamin D3 and trace minerals per bolus pack.",
-        uses: "Prevents and manages milk fever, downer cow syndrome and supports peak lactation performance.",
-        dosage: "One bolus daily for 5 days around calving, or as directed by a veterinarian.",
-        applications: "Dairy cattle, buffalo.",
-        specifications: { packSize: "10 boluses", form: "Bolus", storage: "Store in a cool, dry place" },
-        packSize: "10 boluses",
-        images: [img(PHOTO.blisterPack), img(PHOTO.cattleGrazing)],
-        isFeatured: true,
-      },
-      {
-        name: "Liver Tonic Suspension",
-        sku: "LIV-TON-200",
-        shortDescription: "Hepatoprotective herbal-mineral tonic.",
-        composition: "Silymarin, choline chloride, sorbitol and B-complex vitamins.",
-        uses: "Supports liver function and appetite recovery in animals under metabolic stress.",
-        dosage: "10-20ml orally once daily for 7-10 days.",
-        applications: "Dogs, cats, cattle.",
-        specifications: { packSize: "200ml", form: "Oral suspension", storage: "Store below 25°C, shake well" },
-        packSize: "200ml",
-        images: [img(PHOTO.oralMedicineBottle)],
-        isFeatured: false,
-      },
-    ],
-  },
-  {
-    name: "Pain Management & Anti-inflammatories",
-    description:
-      "NSAID and analgesic formulations to manage pain, fever and inflammation in a range of species.",
-    products: [
-      {
-        name: "Meloxicam 0.5% Oral Suspension",
-        sku: "MEL-05-OS",
-        shortDescription: "NSAID suspension for pain and inflammation relief.",
-        composition: "Meloxicam 1.5mg/ml oral suspension.",
-        uses: "Relief of pain and inflammation in musculoskeletal disorders and post-operative pain in dogs and cats.",
-        dosage: "0.2mg/kg on day one, then 0.1mg/kg once daily, orally, mixed with food.",
-        applications: "Dogs, cats.",
-        specifications: { packSize: "100ml", form: "Oral suspension", storage: "Store below 25°C" },
-        packSize: "100ml",
-        images: [img(PHOTO.oralMedicineBottle), img(PHOTO.dogRunningBeach)],
-        isFeatured: true,
-      },
-      {
-        name: "Flunixin Meglumine Injection",
-        sku: "FLU-MEG-100",
-        shortDescription: "Injectable NSAID for pain, fever and inflammation.",
-        composition: "Flunixin meglumine equivalent to 50mg flunixin/ml.",
-        uses: "Control of pyrexia and inflammation associated with respiratory disease and mastitis in cattle.",
-        dosage: "2ml per 45kg body weight, once daily by intravenous or intramuscular injection, up to 3 days.",
-        applications: "Cattle, horses.",
-        specifications: { packSize: "100ml", form: "Injectable", storage: "Store below 25°C, protect from light" },
-        packSize: "100ml",
-        images: [img(PHOTO.vialsAndIvBottle), img(PHOTO.cattleGrazing)],
-        isFeatured: false,
-      },
-      {
-        name: "Diclofenac Gel for Animals",
-        sku: "DIC-GEL-30",
-        shortDescription: "Topical anti-inflammatory gel for localized pain relief.",
-        composition: "Diclofenac diethylamine 1.16% w/w gel.",
-        uses: "Local relief of pain and swelling associated with sprains, strains and joint inflammation.",
-        dosage: "Apply a thin layer to the affected area 2-3 times daily.",
-        applications: "Dogs, horses.",
-        specifications: { packSize: "30g tube", form: "Topical gel", storage: "Store below 25°C" },
-        packSize: "30g tube",
-        images: [img(PHOTO.gelTube)],
-        isFeatured: false,
-      },
-    ],
-  },
-  {
-    name: "Wound Care & Antiseptics",
-    description:
-      "Topical antiseptic and wound-management products to clean, protect and support healing of wounds and skin conditions.",
-    products: [
-      {
-        name: "Povidone-Iodine Antiseptic Solution",
-        sku: "PVI-SOL-500",
-        shortDescription: "Broad-spectrum antiseptic solution for wound cleaning.",
-        composition: "Povidone-iodine 10% w/v solution.",
-        uses: "Disinfection of wounds, cuts, abrasions and pre/post-surgical skin preparation.",
-        dosage: "Apply topically to the affected area 1-2 times daily, diluted as required.",
-        applications: "All species.",
-        specifications: { packSize: "500ml", form: "Topical solution", storage: "Store below 25°C" },
-        packSize: "500ml",
-        images: [img(PHOTO.clearSprayBottle)],
-        isFeatured: false,
-      },
-      {
-        name: "Herbal Wound Healing Spray",
-        sku: "HWS-SPR-100",
-        shortDescription: "Fast-drying antiseptic spray with fly-repellent action.",
-        composition: "Chlorhexidine gluconate, neem extract and herbal actives in an aerosol base.",
-        uses: "Protects fresh wounds, cuts and post-surgical sites from infection and flies.",
-        dosage: "Spray liberally on the affected area once or twice daily until healed.",
-        applications: "Cattle, horses, dogs.",
-        specifications: { packSize: "100ml aerosol", form: "Spray", storage: "Store below 25°C, away from flame" },
-        packSize: "100ml aerosol",
-        images: [img(PHOTO.antisepticSpray)],
-        isFeatured: true,
-      },
-      {
-        name: "Silver Sulfadiazine Cream",
-        sku: "SSD-CRM-50",
-        shortDescription: "Antimicrobial cream for burns and infected wounds.",
-        composition: "Silver sulfadiazine 1% w/w cream.",
-        uses: "Prevention and treatment of infection in burns, ulcers and chronic wounds.",
-        dosage: "Apply a thin layer to cleaned wound area once or twice daily.",
-        applications: "Dogs, cats, horses.",
-        specifications: { packSize: "50g tube", form: "Cream", storage: "Store below 25°C" },
-        packSize: "50g tube",
-        images: [img(PHOTO.gelTube)],
-        isFeatured: false,
-      },
-    ],
-  },
-];
 
 const bannersData = [
   {
@@ -534,7 +233,7 @@ async function main() {
   const isPlaceholder = (value) => typeof value === "string" && value.includes("picsum.photos");
   const featuredSlugs = [];
 
-  for (const catData of categoriesData) {
+  for (const catData of oldSiteCategories) {
     const catSlug = slug(catData.name);
     const category = await prisma.category.upsert({
       where: { slug: catSlug },
@@ -543,33 +242,35 @@ async function main() {
         name: catData.name,
         slug: catSlug,
         description: catData.description,
-        image: img(CATEGORY_PHOTO[catData.name]),
+        image: catData.image,
       },
     });
 
     if (isPlaceholder(category.image)) {
       await prisma.category.update({
         where: { id: category.id },
-        data: { image: img(CATEGORY_PHOTO[catData.name]) },
+        data: { image: catData.image },
       });
       refreshed.categories += 1;
     }
 
     for (const p of catData.products) {
-      const pSlug = slug(p.name);
+      // Slugs come from the data file rather than slug(p.name): the aqua
+      // ECTOCYP / NAGROWALL share a name with their poultry namesakes.
+      const pSlug = p.slug;
       const product = await prisma.product.upsert({
         where: { slug: pSlug },
         update: {},
         create: {
           name: p.name,
           slug: pSlug,
-          sku: p.sku,
+          sku: p.sku || null,
           categoryId: category.id,
           shortDescription: p.shortDescription,
           composition: p.composition,
           uses: p.uses,
           dosage: p.dosage,
-          applications: p.applications,
+          applications: p.applications || null,
           specifications: JSON.stringify(p.specifications),
           images: JSON.stringify(p.images),
           packSize: p.packSize,
