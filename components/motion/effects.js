@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { DURATION, EASE, STAGGER, VIEWPORT, VIEWPORT_WIDE } from "@/lib/motion";
 import { useMotionEnv } from "@/components/motion/MotionProvider";
 
@@ -72,6 +72,15 @@ export function SplitText({ text, as: Tag = "span", className, delay = 0, stagge
 --------------------------------------------------------------------------- */
 export function MaskReveal({ children, className, direction = "up", delay = 0 }) {
   const { reduced } = useMotionEnv();
+  // Visibility is watched on an unclipped wrapper, never on the masked
+  // element itself. At rest that element is clipped to nothing, and browsers
+  // disagree on whether a zero-area target counts as "in view" - on mobile
+  // Safari it didn't, so the wipe never started and the photo stayed hidden
+  // for good. The inner zoom had the same problem one level down (its
+  // ancestor's clip made it invisible too), so both are driven from this one
+  // signal instead of each running its own observer.
+  const ref = useRef(null);
+  const inView = useInView(ref, VIEWPORT);
   // A clip-path clips every descendant, including absolutely-positioned ones
   // that are *meant* to overhang the frame. Once the wipe has finished the
   // clip has no job left to do, so it is dropped entirely - otherwise an
@@ -90,26 +99,26 @@ export function MaskReveal({ children, className, direction = "up", delay = 0 })
   if (reduced) return <div className={className}>{children}</div>;
 
   return (
-    <motion.div
-      data-motion=""
-      className={className}
-      initial={{ clipPath: from }}
-      whileInView={{ clipPath: "inset(0% 0 0 0)" }}
-      viewport={VIEWPORT}
-      transition={{ duration: DURATION.slow, ease: EASE, delay }}
-      onAnimationComplete={() => setSettled(true)}
-      style={settled ? { clipPath: "none" } : undefined}
-    >
+    <div ref={ref}>
       <motion.div
-        initial={{ scale: 1.14 }}
-        whileInView={{ scale: 1 }}
-        viewport={VIEWPORT}
-        transition={{ duration: 1.1, ease: EASE, delay }}
-        className="h-full w-full"
+        data-motion=""
+        className={className}
+        initial={{ clipPath: from }}
+        animate={inView ? { clipPath: "inset(0% 0 0 0)" } : undefined}
+        transition={{ duration: DURATION.slow, ease: EASE, delay }}
+        onAnimationComplete={() => setSettled(true)}
+        style={settled ? { clipPath: "none" } : undefined}
       >
-        {children}
+        <motion.div
+          initial={{ scale: 1.14 }}
+          animate={inView ? { scale: 1 } : undefined}
+          transition={{ duration: 1.1, ease: EASE, delay }}
+          className="h-full w-full"
+        >
+          {children}
+        </motion.div>
       </motion.div>
-    </motion.div>
+    </div>
   );
 }
 

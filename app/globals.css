@@ -104,6 +104,31 @@
     color: inherit;
   }
 
+  /* White scrollbar: a white track that blends into the page, with a pale
+     grey-lavender thumb - pure white on white would leave nothing to see or
+     grab. `scrollbar-color` covers Firefox and current Chrome/Edge (which then
+     ignore the -webkit rules below); the -webkit rules are for Safari, which
+     doesn't support it yet and also gets a slightly darker hover. Set on html
+     so inner scroll areas (the admin sidebar, dropdowns) inherit it. */
+  html {
+    scrollbar-color: var(--color-mist-200) #ffffff;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #ffffff;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-mist-200);
+    border: 2px solid #ffffff;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-mist-300);
+  }
+
   /* One visible keyboard focus style for every link and button on the site.
      :focus-visible only, so a mouse click never leaves a ring behind. */
   a:focus-visible,
