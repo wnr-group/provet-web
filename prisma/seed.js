@@ -640,6 +640,20 @@ async function main() {
         heroImage: page.heroImage ?? null,
       },
     });
+    // Section ordering. Blocks sort on `order` alone, so a section added to
+    // this file after a database was seeded would otherwise take a number an
+    // existing block already holds (e.g. land level with the page's CTA) and
+    // sort unpredictably. When a run adds a block to a page that already had
+    // some, the page's seeded blocks are renumbered to this file's order;
+    // blocks the admin added themselves (keys not in this file) go after
+    // them in their existing order. Pages that gained nothing are untouched,
+    // so an admin's reordering survives every ordinary reseed.
+    const existingKeys = new Set(
+      (await prisma.contentBlock.findMany({ where: { page: page.key }, select: { key: true } })).map((b) => b.key)
+    );
+    const addedToExistingPage =
+      existingKeys.size > 0 && page.sections.some((section) => !existingKeys.has(section.key));
+
     for (const [index, section] of page.sections.entries()) {
       await prisma.contentBlock.upsert({
         where: { page_key: { page: page.key, key: section.key } },
@@ -651,6 +665,23 @@ async function main() {
           config: section.config ? JSON.stringify(section.config) : null,
         },
       });
+    }
+
+    if (addedToExistingPage) {
+      const fileKeys = page.sections.map((section) => section.key);
+      const others = await prisma.contentBlock.findMany({
+        where: { page: page.key, key: { notIn: fileKeys } },
+        orderBy: { order: "asc" },
+      });
+      for (const [index, key] of fileKeys.entries()) {
+        await prisma.contentBlock.update({
+          where: { page_key: { page: page.key, key } },
+          data: { order: index },
+        });
+      }
+      for (const [index, block] of others.entries()) {
+        await prisma.contentBlock.update({ where: { id: block.id }, data: { order: fileKeys.length + index } });
+      }
     }
   }
   console.log(`Seeded ${menuPages.length} menu pages`);

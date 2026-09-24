@@ -217,6 +217,33 @@ const menuPages = [
         ].join("\n"),
         config: { columns: 2 },
       },
+      // The articles each range listed. On the old site every title linked to
+      // a page with no body, so the titles are all there is to carry over -
+      // they are listed as cards rather than linked to empty pages.
+      {
+        key: "poultry-articles",
+        type: "cards",
+        title: "Poultry (Avinova)",
+        body: [
+          "Comparative efficacy of various growth promoters on the performance of broiler chicken",
+          "Essential oils and their benefits in poultry",
+          "Synbiotics and gut health",
+        ].join("\n"),
+        config: { columns: 3 },
+      },
+      {
+        key: "aqua-articles",
+        type: "cards",
+        title: "Aquaculture (Blunova)",
+        body: [
+          "Black gill disease in pacific",
+          "An overview of Argulus (Fish Lice) infestation in fish ponds",
+          "An overview of Hepatopancreatic Microsporidiosis (HPM) in shrimp farming",
+          "Infectious Myonecrosis Virus (IMNV)",
+          "Stress management in aquaculture",
+        ].join("\n"),
+        config: { columns: 3 },
+      },
       {
         key: "cta",
         type: "cta",

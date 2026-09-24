@@ -1,4 +1,4 @@
-import { MapPin, Phone, Mail, Clock } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, User } from "lucide-react";
 import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 import ContactForm from "@/components/contact/ContactForm";
 import SocialLinks from "@/components/ui/SocialLinks";
@@ -9,6 +9,55 @@ export const metadata = {
   title: "Contact Us",
   description: "Get in touch with Provet for product enquiries, bulk orders or veterinary support.",
 };
+
+// Branch and distributor (CFA) locations, as listed on the old provet.in
+// contact page.
+const BRANCHES = [
+  {
+    label: "Chennai (CWH)",
+    address: ["260, First Floor, Gnanam Complex,", "Poonamallee Bye Pass Road,", "Poonamalle, Thiruvallur,", "Tamil Nadu - 600 056"],
+    contact: "Rajesh Devan",
+    phone: "+91 97908 16924",
+  },
+  {
+    label: "Nashik (CFA)",
+    company: "ARV Enterprises",
+    address: ["Shop No. 1, Darshan Apartment,", "Upnagar, Nashik,", "Maharashtra - 422 006"],
+    contact: "Bablu Kalekar",
+    phone: "+91 91464 56873",
+  },
+  {
+    label: "Kolkata (Branch)",
+    address: ["268-XII, Makaltala, Bally,", "Durgapur, Howrah,", "West Bengal - 711 205"],
+    contact: "Sanjoy Sau",
+    phone: "+91 75501 99914",
+  },
+  {
+    label: "Bhimavaram (Branch)",
+    address: [
+      "19-16-113, Old Jagadamba Rice Mill,",
+      "Near Ganganama Temple, Rest House Road,",
+      "Bhimavaram, West Godavari District,",
+      "Andhra Pradesh - 534 201",
+    ],
+    contact: "Omkar Vara Prasad",
+    phone: "+91 95422 20291",
+  },
+  {
+    label: "Hyderabad (CFA)",
+    company: "Sun Vet Enterprises",
+    address: ["1-5-1118/1/20, Jannabanda,", "Near St. Paul's School, Old Alwal,", "Secunderabad, Telangana - 500 010"],
+    contact: "Shiva Krishna",
+    phone: "+91 63000 82953",
+  },
+  {
+    label: "Ambala (CFA)",
+    company: "Somya Nutraceuticals",
+    address: ["Third Floor, 3-A-3, Alvid House,", "Grand Trunk Road, New Kuldeep Nagar,", "Ambala, Haryana - 133 001"],
+    contact: "Sushil",
+    phone: "+91 93503 65689",
+  },
+];
 
 export default async function Contact({ searchParams }) {
   const params = await searchParams;
@@ -41,7 +90,7 @@ export default async function Contact({ searchParams }) {
         <RevealGroup mode="mount" className="space-y-4">
           {[
             [MapPin, "Visit Us", "No. 9, 1st Floor, 2nd Lane, Chakrapani Street, Guindy, Chennai - 600 032"],
-            [Phone, "Call Us", "+91 44 2244 2124"],
+            [Phone, "Call Us", "+91 44 2244 2124 / +91 44 2244 2127"],
             [Mail, "Email Us", "info@provet.in"],
             [Clock, "Working Hours", "Mon – Sat, 9:00 AM – 6:00 PM"],
           ].map(([Icon, title, value]) => (
@@ -69,6 +118,53 @@ export default async function Contact({ searchParams }) {
           <ContactForm productName={productName} />
         </Reveal>
       </div>
+
+      <section className="border-t border-brand-100 bg-white">
+        <div className="container-page py-14 sm:py-20">
+          <Reveal className="mx-auto max-w-2xl text-center">
+            <span className="badge bg-accent-100 text-accent-700">Across India</span>
+            <h2 className="mt-4 font-display text-2xl font-extrabold text-ink sm:text-3xl">Branch Locations</h2>
+            <p className="mx-auto mt-3 max-w-lg text-ink-soft">
+              Our branches and distribution partners, for stock and support close to your farm.
+            </p>
+          </Reveal>
+          <RevealGroup className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3" stagger={0.08}>
+            {BRANCHES.map((branch) => (
+              <RevealItem key={branch.label} className="h-full">
+                <div className="card flex h-full flex-col p-6 transition duration-300 hover:-translate-y-1 hover:shadow-card">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-100 text-accent-700">
+                      <MapPin size={18} />
+                    </span>
+                    <div>
+                      <h3 className="font-display font-semibold text-ink">{branch.label}</h3>
+                      {branch.company && <p className="text-xs text-ink-soft">{branch.company}</p>}
+                    </div>
+                  </div>
+                  <address className="mt-4 text-sm not-italic leading-relaxed text-ink-soft">
+                    {branch.address.map((line) => (
+                      <span key={line} className="block">
+                        {line}
+                      </span>
+                    ))}
+                  </address>
+                  <div className="mt-auto space-y-1.5 border-t border-brand-100 pt-4 text-sm">
+                    <p className="flex items-center gap-2 text-ink">
+                      <User size={14} className="shrink-0 text-accent-600" /> {branch.contact}
+                    </p>
+                    <a
+                      href={`tel:${branch.phone.replace(/\s+/g, "")}`}
+                      className="flex items-center gap-2 font-medium text-brand-700 hover:text-accent-600"
+                    >
+                      <Phone size={14} className="shrink-0 text-accent-600" /> {branch.phone}
+                    </a>
+                  </div>
+                </div>
+              </RevealItem>
+            ))}
+          </RevealGroup>
+        </div>
+      </section>
 
       {/* Separate from the enquiry form above on purpose: an enquiry expects a
           reply, feedback doesn't. Hidden entirely when the admin disables it. */}
