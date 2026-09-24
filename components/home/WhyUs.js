@@ -11,7 +11,14 @@ const DEFAULT_POINTS = [
 ];
 
 export default function WhyUs({ section }) {
-  const points = section?.body ? section.body.split("\n").filter(Boolean) : DEFAULT_POINTS;
+  // The admin copy is written as a "- " / "• " list; the markers are stripped
+  // because each point already gets its own check icon.
+  const points = section?.body
+    ? section.body
+        .split("\n")
+        .map((line) => line.replace(/^\s*[-•*]\s*/, "").trim())
+        .filter(Boolean)
+    : DEFAULT_POINTS;
 
   return (
     <section className="relative isolate overflow-hidden bg-brand-800 py-16 text-white sm:py-24">
@@ -50,21 +57,23 @@ export default function WhyUs({ section }) {
           {/* The stat card deliberately overhangs the photo's bottom-right
               corner, so it has to sit OUTSIDE MaskReveal: a clip-path clips
               every descendant, wherever it is positioned, so nesting it inside
-              the mask sliced the card off at the frame's edge. */}
+              the mask sliced the card off at the frame's edge. On phones it is
+              smaller and tucked inside the right edge (the photo is full width
+              there, so overhanging sideways would run off the screen); from
+              `sm` up it overhangs both edges. */}
           <Reveal
             direction="up"
             delay={0.5}
             distance={16}
-            className="absolute -bottom-6 -right-4 hidden max-w-[220px] sm:block"
+            className="absolute -bottom-6 right-3 max-w-[180px] sm:-right-4 sm:max-w-[220px]"
           >
             {/* Drifts gently once it has landed - a slow CSS loop on the inner
                 card, so it never fights the entrance transform on Reveal. */}
-            <div className="animate-float rounded-2xl bg-accent-400 p-5 text-brand-900 shadow-lift ring-4 ring-brand-800">
-
-              <p className="font-display text-3xl font-extrabold">
+            <div className="animate-float rounded-2xl bg-accent-400 p-4 text-brand-900 shadow-lift ring-4 ring-brand-800 sm:p-5">
+              <p className="font-display text-2xl font-extrabold sm:text-3xl">
                 <Counter value="98%" />
               </p>
-              <p className="text-sm font-medium">Client satisfaction across partner clinics</p>
+              <p className="text-xs font-medium sm:text-sm">Client satisfaction across partner clinics</p>
             </div>
           </Reveal>
         </div>
