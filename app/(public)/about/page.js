@@ -2,6 +2,8 @@ import { Award, Microscope, Users, Target } from "lucide-react";
 import { getContentSections } from "@/lib/data";
 import CtaBanner from "@/components/home/CtaBanner";
 import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
+import { Tilt } from "@/components/motion/effects";
+import PageBanner from "@/components/ui/PageBanner";
 
 const ICONS = { story: Target, mission: Target, quality: Award, team: Users };
 
@@ -25,31 +27,30 @@ export default async function About() {
 
   return (
     <div>
-      <div className="relative isolate overflow-hidden bg-brand-900 py-14 text-center text-white sm:py-20">
-        {/* eslint-disable-next-line @next/next/no-img-element -- fixed decorative background, not a dynamic host */}
-        <img
-          src="https://images.unsplash.com/photo-1498191923457-88552caeccb3?auto=format&fit=crop&w=1920&h=800&q=80"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 h-full w-full object-cover"
-        />
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(21,18,48,0.92),rgba(21,18,48,0.8)_55%,rgba(21,18,48,0.9))]" />
-        <Reveal mode="mount" className="container-page">
-          <span className="badge bg-white/10 text-accent-200">About Provet</span>
-          <h1 className="mx-auto mt-4 max-w-2xl font-display text-3xl font-extrabold sm:text-4xl">
-            {story?.title || "Dedicated to Better Animal Health"}
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-brand-100">
-            {story?.body ||
-              "For over 15 years, Provet has partnered with veterinarians and clinics to deliver reliable, research-backed animal healthcare products."}
-          </p>
-        </Reveal>
-      </div>
+      <PageBanner
+        eyebrow="About Us"
+        title={story?.title || "Dedicated to Better Animal Health"}
+        description={
+          story?.body ||
+          "For over 15 years, Provet has partnered with veterinarians and clinics to deliver reliable, research-backed animal healthcare products."
+        }
+        image="https://images.unsplash.com/photo-1498191923457-88552caeccb3?auto=format&fit=crop&w=900&h=700&q=80"
+        imageAlt="Cattle grazing in an open field"
+        chip={{ value: "15+", label: "Years in animal health" }}
+      />
 
       {team && (
         <div className="container-page grid items-center gap-10 pt-14 sm:pt-20 lg:grid-cols-2">
           <Reveal direction="right">
-            <div className="aspect-[4/3] overflow-hidden rounded-3xl bg-mist-100">
+            {/* The team photo as a 3D stack: a gradient plate set back, the
+                photo, and a "founded" card floating in front. */}
+            <Tilt max={10} shadow className="mx-auto max-w-lg">
+            <div className="relative [transform-style:preserve-3d]">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 rounded-3xl bg-gradient-to-br from-brand-400 to-accent-400 [transform:translateZ(-40px)_translate(-16px,16px)_rotate(-3deg)]"
+            />
+            <div className="relative aspect-[4/3] overflow-hidden rounded-3xl bg-mist-100 shadow-card">
               {/* eslint-disable-next-line @next/next/no-img-element -- fixed decorative photo, not a dynamic host */}
               <img
                 src={TEAM_PHOTO}
@@ -58,6 +59,12 @@ export default async function About() {
                 className="h-full w-full object-cover"
               />
             </div>
+            <div className="absolute -bottom-5 -right-3 rounded-2xl bg-white px-4 py-3 shadow-card ring-1 ring-brand-100 [transform:translateZ(70px)] sm:-right-6">
+              <p className="font-display text-xl font-extrabold leading-none text-brand-700">2009</p>
+              <p className="mt-1 text-xs font-medium text-ink-soft">Year founded</p>
+            </div>
+            </div>
+            </Tilt>
           </Reveal>
           <Reveal direction="left" delay={0.1}>
             <span className="badge bg-accent-100 text-accent-700">
@@ -75,12 +82,17 @@ export default async function About() {
           .map((section) => {
             const Icon = ICONS[section.key] || Microscope;
             return (
-              <RevealItem key={section.key} className="card p-7">
-                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-100 text-accent-700">
-                  <Icon size={20} />
-                </span>
-                <h3 className="mt-4 font-display text-lg font-semibold text-ink">{section.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-ink-soft whitespace-pre-line">{section.body}</p>
+              <RevealItem key={section.key} className="h-full">
+                {/* 3D card: leans to the pointer, the icon floats in front. */}
+                <Tilt max={10} shadow className="h-full">
+                  <div className="card h-full p-7 [transform-style:preserve-3d]">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-accent-500 text-white shadow-[0_12px_20px_-8px_rgba(72,62,168,0.6)] [transform:translateZ(50px)]">
+                      <Icon size={20} />
+                    </span>
+                    <h3 className="mt-4 font-display text-lg font-semibold text-ink">{section.title}</h3>
+                    <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink-soft">{section.body}</p>
+                  </div>
+                </Tilt>
               </RevealItem>
             );
           })}

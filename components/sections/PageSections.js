@@ -2,11 +2,13 @@ import Link from "next/link";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 import clsx from "clsx";
 import { splitItems } from "@/lib/contentFormat";
-import ProductCard from "@/components/ui/ProductCard";
 import CategoryCard from "@/components/ui/CategoryCard";
 import { Enter, EnterGroup, EnterItem } from "@/components/sections/entrances";
 import Carousel from "@/components/sections/Carousel";
 import LocationCards from "@/components/sections/LocationCards";
+import CatalogueCard from "@/components/catalogue/CatalogueCard";
+import ProductRail from "@/components/catalogue/ProductRail";
+import { ScrollTilt, Tilt } from "@/components/motion/effects";
 
 // Renders a page's admin-configured sections. One component per type in
 // lib/sectionTypes.js; anything unknown is skipped rather than crashing the
@@ -37,11 +39,11 @@ function Paragraphs({ body, className }) {
 }
 
 // Heading plus the accent rule the homepage uses under its section titles.
-function Heading({ title, description, align = "left" }) {
+function Heading({ title, description, align = "left", className }) {
   if (!title && !description) return null;
   const centered = align === "center";
   return (
-    <div className={clsx("mb-8", centered && "mx-auto max-w-2xl text-center")}>
+    <div className={clsx("mb-8", centered && "mx-auto max-w-2xl text-center", className)}>
       {title && (
         <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{title}</h2>
       )}
@@ -58,11 +60,30 @@ function Heading({ title, description, align = "left" }) {
 // which made a page of six sections animate identically six times over and
 // read as one long shrug. The movement now says something about the content:
 // prose drifts, lists deal in from the side, cards pop, a CTA arrives whole.
+// Prose sits in a card, never loose on the band: a gradient rule along the top,
+// the title on the left, the copy on the right (stacked on phones).
 function RichText({ section }) {
   return (
-    <Enter preset="blur" className="mx-auto max-w-3xl">
-      <Heading title={section.title} align="center" />
-      <Paragraphs body={section.body} className="text-center text-lg text-ink-soft sm:text-xl" />
+    <Enter
+      preset="blur"
+      className={clsx(
+        "relative mx-auto rounded-3xl bg-white p-6 shadow-card ring-1 ring-brand-100/80 sm:p-10",
+        section.title ? "max-w-5xl" : "max-w-3xl text-center"
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className="absolute inset-x-8 top-0 h-1 rounded-b-full bg-gradient-to-r from-brand-500 via-accent-500 to-brand-500"
+      />
+      <div className={clsx("grid gap-6", section.title && "lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-10")}>
+        {section.title && (
+          <div>
+            <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{section.title}</h2>
+            <span aria-hidden="true" className="mt-4 block h-1 w-12 rounded-full bg-accent-400" />
+          </div>
+        )}
+        <Paragraphs body={section.body} className="text-lg text-ink-soft" />
+      </div>
     </Enter>
   );
 }
@@ -99,11 +120,15 @@ function BulletList({ section }) {
       </Enter>
       <EnterGroup className="grid gap-4 sm:grid-cols-2" stagger={0.08}>
         {items.map((item, i) => (
-          <EnterItem key={i} preset="wipe">
-            <div className="flex h-full items-start gap-3 rounded-2xl border border-brand-100/70 bg-white p-4 transition hover:border-accent-200 hover:shadow-soft">
-              <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-accent-500" />
-              <span className="leading-relaxed text-ink-soft">{item}</span>
-            </div>
+          <EnterItem key={i} preset="wipe" className="h-full">
+            {/* Each point lifts and leans a little under the pointer; the
+                tick floats in front of its card. */}
+            <Tilt max={8} lift={1.03} className="h-full">
+              <div className="flex h-full items-start gap-3 rounded-2xl bg-white p-4 shadow-soft ring-1 ring-brand-100/70 transition hover:shadow-card [transform-style:preserve-3d]">
+                <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-accent-500 [transform:translateZ(30px)]" />
+                <span className="leading-relaxed text-ink-soft">{item}</span>
+              </div>
+            </Tilt>
           </EnterItem>
         ))}
       </EnterGroup>
@@ -135,21 +160,24 @@ function Cards({ section }) {
           const [heading, ...rest] = item.split(/\s*:\s*/);
           const text = rest.join(": ");
           return (
-            <EnterItem key={i} preset="flip">
-              {/* The accent bar grows across the top on hover, which gives a
-                  grid of pure-text cards something to respond to without
-                  needing a picture. */}
-              <div className="group relative h-full overflow-hidden rounded-2xl border border-brand-100/70 bg-white p-6 shadow-soft transition hover:-translate-y-1 hover:shadow-card">
-                <span
-                  aria-hidden="true"
-                  className="absolute inset-x-0 top-0 h-1 w-1/4 bg-accent-400 transition-all duration-300 group-hover:w-full"
-                />
-                <span className="font-display text-xs font-bold text-accent-500">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h3 className="mt-2 font-display text-lg font-semibold text-ink">{heading}</h3>
-                {text && <p className="mt-2.5 text-sm leading-relaxed text-ink-soft">{text}</p>}
-              </div>
+            <EnterItem key={i} preset="flip" className="h-full">
+              {/* A 3D card: it leans toward the pointer with a shadow sliding
+                  the other way, and the number badge floats in front of it.
+                  No overflow clipping (that would flatten the depth), so the
+                  accent bar rounds its own ends. */}
+              <Tilt max={12} shadow className="h-full">
+                <div className="group relative h-full rounded-2xl bg-white p-6 shadow-soft ring-1 ring-brand-100/70 transition hover:shadow-card [transform-style:preserve-3d]">
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-6 top-0 h-1 w-1/4 rounded-b-full bg-accent-400 transition-all duration-300 group-hover:w-[calc(100%-3rem)]"
+                  />
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-accent-500 font-display text-sm font-bold text-white shadow-[0_12px_20px_-8px_rgba(72,62,168,0.6)] [transform:translateZ(50px)]">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className="mt-4 font-display text-lg font-semibold text-ink [transform:translateZ(20px)]">{heading}</h3>
+                  {text && <p className="mt-2.5 text-sm leading-relaxed text-ink-soft">{text}</p>}
+                </div>
+              </Tilt>
             </EnterItem>
           );
         })}
@@ -205,82 +233,187 @@ function NumberedRows({ section }) {
 }
 
 const ASPECT = { square: "aspect-square", portrait: "aspect-[3/4]", landscape: "aspect-[4/3]" };
+// Cover width on desktop for 2 / 3 / 4 covers across (gaps accounted for).
+const SHELF_WIDTH = { 2: "lg:w-[calc(50%-0.7rem)]", 3: "lg:w-[calc(33.333%-0.9rem)]", 4: "lg:w-[calc(25%-1rem)]" };
 
-// Cards that each carry a picture: team portraits, booklet covers, magazine
-// issues. They rise and tilt upright, which is a motion nothing else uses.
+// Cards that each carry a picture, in two presentations:
+//
+//   - Photo cards (imageStyle "card", and any landscape pictures such as
+//     event photos): a grid of cards, the admin's "Columns" per row.
+//   - Covers (booklets, magazine issues): a 3D shelf in a
+//     sideways rail. Each cover stands turned away on its vertical axis,
+//     visibly 3D at rest, and squares up and lifts when hovered.
+//   - People (imageStyle "avatar"): portrait cards that tilt toward the
+//     pointer, the photo floating in front of the card.
 function ImageCards({ section }) {
   const items = (section.config.items || []).filter((it) => it && (it.image || it.title));
   if (!items.length) return null;
-  const columns = section.config.columns || 3;
   const aspect = ASPECT[section.config.aspect] || ASPECT.square;
   const isAvatar = section.config.imageStyle === "avatar";
+  // Photo cards in a grid when the admin picks that style - and always for
+  // landscape pictures (event photos), which don't suit a book shelf.
+  const isCardGrid = !isAvatar && (section.config.imageStyle === "card" || section.config.aspect === "landscape");
+  // The admin "Columns" setting: people per row, or covers visible across
+  // the shelf on desktop (more than that scroll).
+  const columns = section.config.columns || 3;
 
-  return (
-    <div>
-      <Enter preset="drop">
-        <Heading title={section.title} description={section.body} align="center" />
-      </Enter>
-      <EnterGroup
-        className={clsx(
-          "grid gap-6 sm:grid-cols-2",
-          columns === 3 && "lg:grid-cols-3",
-          columns === 4 && "lg:grid-cols-4"
-        )}
-        stagger={0.11}
-      >
-        {items.map((item, i) => {
-          const card = isAvatar ? (
-            <div className="group h-full rounded-2xl border border-brand-100/70 bg-white p-6 text-center shadow-soft transition hover:-translate-y-1 hover:shadow-card">
-              {item.image && (
-                <div className="mx-auto h-24 w-24 overflow-hidden rounded-full bg-mist-100 ring-4 ring-brand-50">
-                  {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs, not a fixed set of remote hosts */}
-                  <img
-                    src={item.image}
-                    alt={item.title || ""}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
+  if (isCardGrid) {
+    return (
+      <div>
+        <Enter preset="drop">
+          <Heading title={section.title} description={section.body} align="center" />
+        </Enter>
+        <EnterGroup
+          className={clsx(
+            "grid gap-6 sm:grid-cols-2",
+            columns === 3 && "lg:grid-cols-3",
+            columns === 4 && "lg:grid-cols-4"
+          )}
+          stagger={0.1}
+        >
+          {items.map((item, i) => {
+            const card = (
+              <Tilt max={8} shadow className="h-full">
+                <div className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-soft ring-1 ring-brand-100/70 transition hover:shadow-card">
+                  {item.image && (
+                    <div className={clsx("overflow-hidden bg-mist-100", aspect)}>
+                      {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs, not a fixed set of remote hosts */}
+                      <img
+                        src={item.image}
+                        alt={item.title || ""}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                  )}
+                  {(item.title || item.text) && (
+                    <div className="flex flex-1 flex-col p-5 sm:p-6">
+                      <span aria-hidden="true" className="mb-3 block h-1 w-10 rounded-full bg-gradient-to-r from-brand-500 to-accent-500" />
+                      {item.title && <h3 className="font-display text-lg font-bold text-ink group-hover:text-brand-700">{item.title}</h3>}
+                      {item.text && <p className="mt-2 text-sm leading-relaxed text-ink-soft">{item.text}</p>}
+                    </div>
+                  )}
                 </div>
-              )}
-              {item.title && <h3 className="mt-4 font-display font-semibold text-ink">{item.title}</h3>}
-              {item.text && <p className="mt-2 text-sm leading-relaxed text-ink-soft">{item.text}</p>}
-            </div>
-          ) : (
-            <div className="group h-full overflow-hidden rounded-2xl border border-brand-100/70 bg-white shadow-soft transition hover:-translate-y-1 hover:shadow-card">
-              {item.image && (
-                <div className={clsx("overflow-hidden bg-mist-100", aspect)}>
-                  {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs, not a fixed set of remote hosts */}
-                  <img
-                    src={item.image}
-                    alt={item.title || ""}
-                    loading="lazy"
-                    className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                  />
-                </div>
-              )}
-              {(item.title || item.text) && (
-                <div className="p-5">
-                  {item.title && <h3 className="font-display font-semibold text-ink">{item.title}</h3>}
-                  {item.text && <p className="mt-2 text-sm leading-relaxed text-ink-soft">{item.text}</p>}
-                </div>
-              )}
-            </div>
-          );
+              </Tilt>
+            );
+            return (
+              <EnterItem key={i} preset="spring" className="h-full">
+                {item.href ? (
+                  <Link href={item.href} className="block h-full">
+                    {card}
+                  </Link>
+                ) : (
+                  card
+                )}
+              </EnterItem>
+            );
+          })}
+        </EnterGroup>
+      </div>
+    );
+  }
 
-          return (
-            <EnterItem key={i} preset="spring">
-              {item.href ? (
-                <Link href={item.href} className="block h-full">
-                  {card}
-                </Link>
-              ) : (
-                card
-              )}
+  if (isAvatar) {
+    return (
+      <div>
+        <Enter preset="drop">
+          <Heading title={section.title} description={section.body} align="center" />
+        </Enter>
+        <EnterGroup
+          className={clsx(
+            "mx-auto grid gap-6 sm:grid-cols-2",
+            columns === 2 && "max-w-5xl",
+            columns === 3 && "lg:grid-cols-3",
+            columns === 4 && "lg:grid-cols-4"
+          )}
+          stagger={0.11}
+        >
+          {items.map((item, i) => (
+            <EnterItem key={i} preset="spring" className="h-full">
+              <Tilt max={10} shadow className="h-full">
+                <div className="flex h-full flex-col items-center gap-5 rounded-3xl bg-white p-6 text-center shadow-soft ring-1 ring-brand-100/70 [transform-style:preserve-3d] sm:flex-row sm:items-start sm:text-left">
+                  {item.image && (
+                    <div className="relative h-28 w-28 shrink-0 [transform-style:preserve-3d]">
+                      <span
+                        aria-hidden="true"
+                        className="absolute inset-0 rounded-3xl bg-gradient-to-br from-brand-400 to-accent-400 [transform:translate(8px,8px)]"
+                      />
+                      <div className="relative h-full w-full overflow-hidden rounded-3xl bg-mist-100 [transform:translateZ(40px)]">
+                        {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs, not a fixed set of remote hosts */}
+                        <img src={item.image} alt={item.title || ""} loading="lazy" className="h-full w-full object-cover" />
+                      </div>
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    {item.title && <h3 className="font-display text-lg font-bold text-ink">{item.title}</h3>}
+                    {item.text && <p className="mt-2 text-sm leading-relaxed text-ink-soft">{item.text}</p>}
+                  </div>
+                </div>
+              </Tilt>
             </EnterItem>
-          );
-        })}
-      </EnterGroup>
-    </div>
+          ))}
+        </EnterGroup>
+      </div>
+    );
+  }
+
+  // The cover shelf advances on its own (see ProductRail for when it pauses).
+  return (
+    <ProductRail
+      autoplay={3500}
+      title={
+        <Enter preset="drop">
+          <Heading title={section.title} description={section.body} className="mb-0" />
+        </Enter>
+      }
+    >
+      {items.map((item, i) => {
+        const cover = (
+          <div className="group [perspective:1200px]">
+            <div
+              className={clsx(
+                "relative overflow-hidden rounded-2xl bg-mist-100 shadow-[0_24px_40px_-18px_rgba(21,18,48,0.55)] ring-1 ring-black/5 transition duration-500 ease-out",
+                "[transform:rotateY(-18deg)_rotateX(4deg)] group-hover:[transform:rotateY(0deg)_translateY(-10px)_scale(1.04)] group-hover:shadow-[0_40px_60px_-24px_rgba(21,18,48,0.6)]",
+                aspect
+              )}
+            >
+              {item.image && (
+                /* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs, not a fixed set of remote hosts */
+                <img src={item.image} alt={item.title || ""} loading="lazy" className="h-full w-full object-cover" />
+              )}
+              {/* Spine shading, and a sheen that sweeps across on hover. */}
+              <span aria-hidden="true" className="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/25 to-transparent" />
+              <span
+                aria-hidden="true"
+                className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/40 to-transparent transition-transform duration-700 group-hover:translate-x-full"
+              />
+            </div>
+            {(item.title || item.text) && (
+              <div className="mt-4">
+                {item.title && (
+                  <h3 className="font-display text-sm font-bold text-ink transition-colors group-hover:text-brand-700">
+                    {item.title}
+                  </h3>
+                )}
+                {item.text && <p className="mt-1 text-sm leading-relaxed text-ink-soft">{item.text}</p>}
+              </div>
+            )}
+          </div>
+        );
+
+        return (
+          <div key={i} className={clsx("w-[46%] shrink-0 snap-start pt-3 sm:w-[30%]", SHELF_WIDTH[columns] || SHELF_WIDTH[3])}>
+            {item.href ? (
+              <Link href={item.href} className="block">
+                {cover}
+              </Link>
+            ) : (
+              cover
+            )}
+          </div>
+        );
+      })}
+    </ProductRail>
   );
 }
 
@@ -306,10 +439,10 @@ function ProductGrid({ section }) {
       <Enter preset="drop">
         <Heading title={section.title} description={section.body} align="center" />
       </Enter>
-      <EnterGroup className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3" stagger={0.1}>
+      <EnterGroup className="grid grid-cols-2 gap-4 sm:gap-5 lg:grid-cols-4" stagger={0.1}>
         {section.products.map((product) => (
-          <EnterItem key={product.id} preset="slideLeft">
-            <ProductCard product={product} />
+          <EnterItem key={product.id} preset="slideLeft" className="h-full">
+            <CatalogueCard product={product} />
           </EnterItem>
         ))}
       </EnterGroup>
@@ -331,8 +464,10 @@ function CategoryGrid({ section }) {
       </Enter>
       <EnterGroup className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6" stagger={0.06}>
         {section.categories.map((category) => (
-          <EnterItem key={category.id} preset="pop">
-            <CategoryCard category={category} />
+          <EnterItem key={category.id} preset="pop" className="h-full">
+            <Tilt max={12} shadow className="h-full">
+              <CategoryCard category={category} />
+            </Tilt>
           </EnterItem>
         ))}
       </EnterGroup>
@@ -443,7 +578,10 @@ export default function PageSections({ sections }) {
               />
             )}
             <div className="container-page relative">
-              <Renderer section={section} />
+              {/* Every section stands up in 3D as it scrolls into view. */}
+              <ScrollTilt amount={12}>
+                <Renderer section={section} />
+              </ScrollTilt>
             </div>
           </section>
         );

@@ -431,6 +431,7 @@ const menuPages = [
         // being flattened to a line of text.
         config: {
           columns: 2,
+          imageStyle: "card",
           aspect: "landscape",
           items: [
             {

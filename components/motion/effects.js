@@ -1,8 +1,17 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { motion, useInView, useScroll, useTransform } from "framer-motion";
-import { DURATION, EASE, STAGGER, VIEWPORT, VIEWPORT_WIDE } from "@/lib/motion";
+import {
+  motion,
+  useInView,
+  useMotionTemplate,
+  useMotionValue,
+  useScroll,
+  useSpring,
+  useTransform,
+} from "framer-motion";
+import clsx from "clsx";
+import { DURATION, EASE, STAGGER, TILT, VIEWPORT, VIEWPORT_WIDE } from "@/lib/motion";
 import { useMotionEnv } from "@/components/motion/MotionProvider";
 
 /* ---------------------------------------------------------------------------
@@ -185,5 +194,133 @@ export function CenterReveal({ children, className, delay = 0 }) {
     >
       {children}
     </motion.div>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Tilt - a surface that leans toward the cursor in 3D.
+
+   The pointer's position maps to rotateX/rotateY (`max` degrees at the
+   edges), eased through the shared TILT spring. On hover the surface also
+   lifts (`lift` scale) and, with `shadow`, a soft shadow beneath it slides
+   the opposite way to the tilt - the cue that makes the lean read as a real
+   object in light rather than a skewed rectangle. `glare` adds a highlight
+   that follows the pointer. Children can float above the surface with
+   translateZ: the rotating layer keeps `preserve-3d` (anything between it and
+   them must too, and `overflow: hidden` in between flattens it).
+
+   Flat, with no work done, under reduced motion and on touch devices. The
+   element structure is the same either way, so switching on after hydration
+   remounts nothing (no image reloads).
+--------------------------------------------------------------------------- */
+export function Tilt({
+  children,
+  className,
+  max = 12,
+  lift = 1.03,
+  glare = false,
+  shadow = false,
+  glareClassName,
+  shadowClassName,
+}) {
+  const { reduced, canHover } = useMotionEnv();
+  const enabled = canHover && !reduced;
+
+  const px = useMotionValue(0.5);
+  const py = useMotionValue(0.5);
+  const rotateX = useSpring(useTransform(py, [0, 1], [max, -max]), TILT.spring);
+  const rotateY = useSpring(useTransform(px, [0, 1], [-max, max]), TILT.spring);
+  const scale = useSpring(1, TILT.spring);
+  const active = useSpring(0, TILT.spring);
+  const glareX = useTransform(px, (v) => `${v * 100}%`);
+  const glareY = useTransform(py, (v) => `${v * 100}%`);
+  const glareBackground = useMotionTemplate`radial-gradient(circle at ${glareX} ${glareY}, rgba(255,255,255,0.5), transparent 55%)`;
+  // The shadow moves against the tilt and grows as the surface lifts.
+  const shadowX = useSpring(useTransform(px, [0, 1], [22, -22]), TILT.spring);
+  const shadowY = useSpring(useTransform(py, [0, 1], [30, 6]), TILT.spring);
+  const shadowScale = useTransform(active, [0, 1], [0.92, 1]);
+  const shadowOpacity = useTransform(active, [0, 1], [0, 1]);
+
+  const onPointerEnter = (e) => {
+    if (!enabled || e.pointerType !== "mouse") return;
+    scale.set(lift);
+    active.set(1);
+  };
+  const onPointerMove = (e) => {
+    if (!enabled || e.pointerType !== "mouse") return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    px.set((e.clientX - rect.left) / rect.width);
+    py.set((e.clientY - rect.top) / rect.height);
+    scale.set(lift);
+    active.set(1);
+  };
+  const onPointerLeave = () => {
+    px.set(0.5);
+    py.set(0.5);
+    scale.set(1);
+    active.set(0);
+  };
+
+  return (
+    <div
+      className={clsx("relative", className)}
+      style={enabled ? { perspective: TILT.perspective } : undefined}
+      onPointerEnter={onPointerEnter}
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+    >
+      {shadow && enabled && (
+        <motion.span
+          aria-hidden="true"
+          className={clsx(
+            "pointer-events-none absolute inset-x-[8%] bottom-0 top-[12%] -z-10 rounded-3xl bg-brand-900/35 blur-2xl",
+            shadowClassName
+          )}
+          style={{ x: shadowX, y: shadowY, scale: shadowScale, opacity: shadowOpacity }}
+        />
+      )}
+      <motion.div
+        className="relative h-full"
+        style={enabled ? { rotateX, rotateY, scale, transformStyle: "preserve-3d" } : undefined}
+      >
+        {children}
+        {glare && enabled && (
+          <motion.span
+            aria-hidden="true"
+            className={clsx("pointer-events-none absolute inset-0 z-20 mix-blend-overlay", glareClassName)}
+            style={{ background: glareBackground, opacity: active }}
+          />
+        )}
+      </motion.div>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   ScrollTilt - 3D you see without touching anything.
+
+   As the block scrolls up into view it swings from lying back (rotateX
+   `amount` degrees, slightly scaled down) to flat, pivoting on its bottom
+   edge - like a board being stood up. It is tied to scroll position, not a
+   one-off animation, so it tracks the reader's own movement. Content is
+   never hidden (no opacity), so nothing depends on it running.
+
+   Off under reduced motion. Don't wrap anything position:sticky - a
+   transformed ancestor breaks sticky positioning.
+--------------------------------------------------------------------------- */
+export function ScrollTilt({ children, className, amount = 16 }) {
+  const ref = useRef(null);
+  const { reduced } = useMotionEnv();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "start 45%"] });
+  const rotateX = useTransform(scrollYProgress, [0, 1], [amount, 0]);
+  const scale = useTransform(scrollYProgress, [0, 1], [0.94, 1]);
+  const y = useTransform(scrollYProgress, [0, 1], [40, 0]);
+
+  return (
+    <div ref={ref} className={className} style={reduced ? undefined : { perspective: 1400 }}>
+      <motion.div style={reduced ? undefined : { rotateX, scale, y, transformOrigin: "50% 100%" }}>
+        {children}
+      </motion.div>
+    </div>
   );
 }

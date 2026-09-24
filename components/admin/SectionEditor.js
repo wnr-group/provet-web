@@ -14,7 +14,7 @@ const BODY_HINT = {
   list: "One item per line.",
   cards: 'One card per line, written as "Heading: text".',
   numberedRows: 'One row per line, written as "Heading: text".',
-  imageCards: "Optional intro shown above the cards.",
+  imageCards: "Optional intro shown under the heading.",
   carousel: "Optional intro shown above the slider.",
   locations: "Optional intro shown above the address cards.",
   imageText: "Leave a blank line between paragraphs.",
@@ -105,7 +105,11 @@ function ConfigFields({ section, categories, onConfig }) {
           ) : (
           <>
           <div>
-            <label className="label">Columns</label>
+            {/* What "Columns" means depends on the style: cards per row for
+                photo and portrait cards, covers visible across the shelf. */}
+            <label className="label">
+              {(config.imageStyle || "cover") === "cover" ? "Covers visible across the shelf" : "Cards per row"}
+            </label>
             <select
               className="input"
               value={config.columns || 3}
@@ -125,8 +129,9 @@ function ConfigFields({ section, categories, onConfig }) {
               value={config.imageStyle || "cover"}
               onChange={(e) => onConfig({ imageStyle: e.target.value })}
             >
-              <option value="cover">Large picture (covers, artwork)</option>
-              <option value="avatar">Small circle (people, logos)</option>
+              <option value="cover">Covers on a 3D shelf (booklets, magazines)</option>
+              <option value="card">Photo cards in a grid (events, news)</option>
+              <option value="avatar">Portrait cards (people)</option>
             </select>
           </div>
           </>
@@ -135,7 +140,7 @@ function ConfigFields({ section, categories, onConfig }) {
 
         {/* The crop only applies to the large image-card style - an avatar is
             always a circle, and a carousel sets its shape above. */}
-        {type === "imageCards" && (config.imageStyle || "cover") === "cover" && (
+        {type === "imageCards" && config.imageStyle !== "avatar" && (
           <div className="sm:w-1/2">
             <label className="label">Image shape</label>
             <select

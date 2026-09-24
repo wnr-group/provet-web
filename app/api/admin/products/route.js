@@ -17,7 +17,12 @@ export async function GET(request) {
 
   const where = {};
   if (search) {
-    where.OR = [{ name: { contains: search } }, { sku: { contains: search } }];
+    // Case-insensitive: on Postgres a bare `contains` is case-sensitive, and
+    // product names are stored in capitals (see lib/search.js).
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { sku: { contains: search, mode: "insensitive" } },
+    ];
   }
   if (category) {
     where.categoryId = category;

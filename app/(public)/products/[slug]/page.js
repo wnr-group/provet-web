@@ -1,48 +1,31 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ChevronRight,
-  PackageCheck,
-  FlaskConical,
-  Stethoscope,
-  ListChecks,
-  Mail,
-  Phone,
-  ShieldCheck,
-} from "lucide-react";
+import { ChevronRight, Mail, Phone, ShieldCheck, Sparkles } from "lucide-react";
 import { getProductBySlug, getRelatedProducts } from "@/lib/data";
-import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
+import Reveal from "@/components/motion/Reveal";
 import ProductGallery from "@/components/products/ProductGallery";
 import ProductSpecs from "@/components/products/ProductSpecs";
-import ProductCard from "@/components/ui/ProductCard";
+import CatalogueCard from "@/components/catalogue/CatalogueCard";
+import ProductTabs from "@/components/catalogue/ProductTabs";
+import ProductRail from "@/components/catalogue/ProductRail";
+import { ScrollTilt } from "@/components/motion/effects";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1664216294580-079bc527ae49?auto=format&fit=crop&w=800&h=600&q=80";
 
-// The long-form fields, in the order a vet reads them. Declared as data so the
-// page can ask how many actually have copy before deciding how to lay them
-// out - a product with one populated field should not render a lopsided
-// two-column grid with a hole in it.
+// The long-form fields, in the order a vet reads them. Only the ones with
+// copy become tabs.
 const DETAIL_FIELDS = [
-  { key: "composition", title: "Composition", icon: FlaskConical },
-  { key: "uses", title: "Uses", icon: Stethoscope },
-  { key: "dosage", title: "Dosage & Administration", icon: ListChecks },
-  { key: "applications", title: "Target Species", icon: PackageCheck },
+  { key: "composition", title: "Composition" },
+  { key: "uses", title: "Uses" },
+  { key: "dosage", title: "Dosage & Administration" },
+  { key: "applications", title: "Target Species" },
 ];
 
-function DetailCard({ icon: Icon, title, children }) {
-  return (
-    <div className="panel group h-full p-6 transition duration-300 hover:-translate-y-1 hover:shadow-[0_1px_2px_rgba(57,49,133,0.06),0_20px_44px_-16px_rgba(57,49,133,0.28)] sm:p-7">
-      <h2 className="flex items-center gap-3 font-display text-base font-semibold text-ink">
-        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-50 to-accent-100 text-accent-600 transition duration-300 group-hover:from-accent-100 group-hover:to-accent-200">
-          <Icon size={18} />
-        </span>
-        {title}
-      </h2>
-      <div className="mt-4 whitespace-pre-line text-sm leading-relaxed text-ink-soft">{children}</div>
-    </div>
-  );
-}
+// Rendered on every request: this page is built from admin-edited data, and
+// without this Next.js would serve a cached copy in production, so changes
+// saved in the admin would not show up on the live site.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -60,91 +43,85 @@ export default async function ProductDetail({ params }) {
   if (!product) notFound();
 
   const images = product.images?.length ? product.images : [FALLBACK_IMG];
-  const details = DETAIL_FIELDS.filter((field) => product[field.key]);
+  const details = DETAIL_FIELDS.filter((field) => product[field.key]).map((field) => ({
+    ...field,
+    value: product[field.key],
+  }));
   const related = await getRelatedProducts({
     categoryId: product.category?.id,
     excludeId: product.id,
+    limit: 8,
   });
 
   return (
-    <div className="bg-white">
-      <nav aria-label="Breadcrumb" className="relative z-10">
-        <ol className="container-page flex flex-wrap items-center gap-1.5 py-5 text-sm text-ink-soft">
-          <li>
-            <Link href="/" className="transition hover:text-brand-700">Home</Link>
-          </li>
-          <ChevronRight size={14} aria-hidden="true" className="shrink-0" />
-          <li>
-            <Link href="/products" className="transition hover:text-brand-700">Products</Link>
-          </li>
-          {product.category && (
-            <>
-              <ChevronRight size={14} aria-hidden="true" className="shrink-0" />
-              <li>
-                <Link
-                  href={`/products?category=${product.category.slug}`}
-                  className="transition hover:text-brand-700"
-                >
-                  {product.category.name}
-                </Link>
-              </li>
-            </>
-          )}
-          <ChevronRight size={14} aria-hidden="true" className="shrink-0" />
-          <li aria-current="page" className="font-medium text-ink">{product.name}</li>
-        </ol>
-      </nav>
-
-      {/* Gallery and summary only. The long-form copy used to sit in this
-          right-hand column too, which left the gallery's column empty for the
-          whole scroll - it now runs full width below. */}
-      <div className="relative">
-        {/* Brand-tinted wash behind the hero. The page was flat white edge to
-            edge, which is what made it read as a generic template. */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 -top-24 bottom-0 -z-10 overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-b from-mist-50 via-white to-white" />
-          <div className="absolute -left-32 top-0 h-96 w-96 rounded-full bg-brand-100/50 blur-3xl" />
-          <div className="absolute -right-24 top-32 h-80 w-80 rounded-full bg-accent-100/40 blur-3xl" />
+    <div className="bg-mist-50/40">
+      {/* ---- Banner -----------------------------------------------------
+          Dark navy, matching the catalogue. The product stage (gallery) sits
+          on the right and hangs a little below the band into the page, so
+          the product reads as lifted off the banner rather than boxed in it.
+          The band's decoration is clipped in its own layer - the section
+          itself can't clip, or the overhang would be cut off. */}
+      <section className="relative isolate text-white">
+        <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
+          <div className="absolute inset-0 bg-[linear-gradient(120deg,var(--color-brand-900)_0%,var(--color-brand-800)_60%,#2c1447_100%)]" />
+          <div className="absolute -left-32 -top-40 h-[26rem] w-[26rem] rounded-full bg-[radial-gradient(circle,rgba(229,9,127,0.2),transparent_65%)]" />
+          <div className="bg-dots absolute inset-0 text-white/[0.05] [mask-image:radial-gradient(ellipse_at_top_left,black,transparent_60%)]" />
         </div>
 
-        <div className="container-page grid gap-10 pb-14 pt-4 lg:grid-cols-2 lg:gap-16">
-          <Reveal direction="right" mode="mount">
-            <ProductGallery images={images} name={product.name} />
-          </Reveal>
+        <div className="container-page grid items-center gap-8 pb-10 pt-8 md:grid-cols-[1.15fr_0.85fr] md:gap-12 md:pb-0">
+          <Reveal mode="mount" distance={14} className="md:pb-14">
+            <nav aria-label="Breadcrumb">
+              <ol className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-brand-200">
+                <li>
+                  <Link href="/" className="transition-colors hover:text-white">Home</Link>
+                </li>
+                <ChevronRight size={12} aria-hidden="true" className="shrink-0" />
+                <li>
+                  <Link href="/products" className="transition-colors hover:text-white">Products</Link>
+                </li>
+                {product.category && (
+                  <>
+                    <ChevronRight size={12} aria-hidden="true" className="shrink-0" />
+                    <li>
+                      <Link
+                        href={`/products?category=${product.category.slug}`}
+                        className="transition-colors hover:text-white"
+                      >
+                        {product.category.name}
+                      </Link>
+                    </li>
+                  </>
+                )}
+                <ChevronRight size={12} aria-hidden="true" className="shrink-0" />
+                <li aria-current="page" className="text-white">{product.name}</li>
+              </ol>
+            </nav>
 
-          <Reveal direction="left" delay={0.08} mode="mount" className="lg:py-4">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="mt-5 flex flex-wrap items-center gap-2">
               {product.category?.name && (
                 <Link
                   href={`/products?category=${product.category.slug}`}
-                  className="badge bg-white text-accent-700 shadow-soft ring-1 ring-accent-100 transition hover:ring-accent-300"
+                  className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-accent-200 ring-1 ring-white/15 transition hover:bg-white/15"
                 >
                   {product.category.name}
                 </Link>
               )}
               {product.isFeatured && (
-                <span className="badge bg-brand-600 text-white shadow-soft">
-                  <ShieldCheck size={13} /> Featured
+                <span className="inline-flex items-center gap-1 rounded-full bg-accent-500 px-3 py-1 text-xs font-semibold text-white">
+                  <Sparkles size={12} /> Featured
                 </span>
               )}
             </div>
 
-            <h1 className="mt-4 font-display text-3xl font-extrabold leading-[1.1] tracking-tight text-ink sm:text-5xl">
+            <h1 className="mt-4 break-words font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
               {product.name}
             </h1>
-
+            <span aria-hidden="true" className="mt-4 block h-1 w-12 rounded-full bg-accent-400" />
             {product.shortDescription && (
-              <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-soft">
-                {product.shortDescription}
-              </p>
+              <p className="mt-4 max-w-xl leading-relaxed text-brand-100">{product.shortDescription}</p>
             )}
 
-            <ProductSpecs product={product} className="mt-8" />
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href={`/contact?product=${encodeURIComponent(product.name)}`}
                 className="btn-gradient w-full sm:w-auto"
@@ -153,80 +130,80 @@ export default async function ProductDetail({ params }) {
               </Link>
               <Link
                 href="/contact"
-                className="btn w-full bg-white text-brand-700 shadow-soft ring-1 ring-brand-100 transition hover:ring-brand-300 sm:w-auto"
+                className="btn w-full bg-white/10 text-white ring-1 ring-white/25 transition hover:bg-white/20 sm:w-auto"
               >
                 <Phone size={16} /> Talk to Our Team
               </Link>
             </div>
+          </Reveal>
 
-            <p className="mt-5 flex items-start gap-2 text-xs leading-relaxed text-ink-soft/80">
-              <ShieldCheck size={14} className="mt-0.5 shrink-0 text-brand-400" />
-              For veterinary use only. Dosage and administration should be confirmed by a
-              registered veterinary practitioner.
-            </p>
+          {/* The stage overhangs the band's bottom edge by 3rem on desktop. */}
+          <Reveal mode="mount" delay={0.1} distance={24} className="mx-auto w-full max-w-sm md:-mb-12 md:py-10">
+            <ProductGallery images={images} name={product.name} />
           </Reveal>
         </div>
-      </div>
+      </section>
 
-      {details.length > 0 && (
-        <section className="bg-gradient-to-b from-mist-50/70 to-white py-14 sm:py-20">
-          <div className="container-page">
-            <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-600">
-              Details
-            </span>
-            <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
-              Product Information
-            </h2>
-            <RevealGroup
-              className={`mt-8 grid gap-5 ${details.length > 1 ? "md:grid-cols-2" : ""}`}
-            >
-              {details.map((field) => (
-                <RevealItem key={field.key} className="h-full">
-                  <DetailCard icon={field.icon} title={field.title}>
-                    {product[field.key]}
-                  </DetailCard>
-                </RevealItem>
-              ))}
-            </RevealGroup>
+      {/* ---- Information --------------------------------------------------
+          The long-form copy in one tabbed card, beside a key-details card and
+          the safety note. */}
+      <section className="container-page grid items-start gap-6 pb-14 pt-10 md:pt-20 lg:grid-cols-[1fr_22rem] lg:gap-8">
+        <Reveal distance={16}>
+          <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink">Product information</h2>
+          <span aria-hidden="true" className="mb-6 mt-3 block h-1 w-12 rounded-full bg-gradient-to-r from-brand-500 to-accent-500" />
+          {details.length > 0 ? (
+            <ScrollTilt amount={10}>
+              <ProductTabs fields={details} />
+            </ScrollTilt>
+          ) : (
+            <p className="rounded-3xl bg-white p-6 text-sm text-ink-soft shadow-soft ring-1 ring-brand-100">
+              Detailed information for this product is available on request.
+            </p>
+          )}
+        </Reveal>
+
+        <Reveal delay={0.08} distance={16} className="space-y-4 lg:sticky lg:top-24">
+          <div className="rounded-3xl bg-white p-5 shadow-soft ring-1 ring-brand-100">
+            <h2 className="font-display text-base font-bold text-ink">Key details</h2>
+            <ProductSpecs product={product} className="mt-4" />
           </div>
-        </section>
-      )}
+          <p className="flex items-start gap-2.5 rounded-2xl bg-brand-50 p-4 text-xs leading-relaxed text-ink-soft ring-1 ring-brand-100">
+            <ShieldCheck size={16} className="mt-0.5 shrink-0 text-brand-500" />
+            For veterinary use only. Dosage and administration should be confirmed by a registered
+            veterinary practitioner.
+          </p>
+        </Reveal>
+      </section>
 
+      {/* ---- Related: a sideways rail ------------------------------------ */}
       {related.length > 0 && (
-        <section className="py-14 sm:py-20">
-          <div className="container-page">
-            <div className="flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-accent-600">
-                  Explore
-                </span>
-                <h2 className="mt-2 font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
-                  Related Products
-                </h2>
-                {product.category?.name && (
-                  <p className="mt-1.5 text-sm text-ink-soft">
-                    More from {product.category.name}
-                  </p>
-                )}
-              </div>
-              {product.category && (
-                <Link
-                  href={`/products?category=${product.category.slug}`}
-                  className="text-sm font-semibold text-brand-600 link-underline"
-                >
-                  View all
-                </Link>
-              )}
-            </div>
-
-            <RevealGroup className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="border-t border-brand-100 bg-white py-12 sm:py-14">
+          <ScrollTilt amount={12} className="container-page">
+            <ProductRail
+              title={
+                <div>
+                  <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink">Related products</h2>
+                  {product.category?.name && (
+                    <p className="mt-1 text-sm text-ink-soft">
+                      More from{" "}
+                      <Link
+                        href={`/products?category=${product.category.slug}`}
+                        className="font-semibold text-brand-600 link-underline"
+                      >
+                        {product.category.name}
+                      </Link>
+                    </p>
+                  )}
+                </div>
+              }
+            >
               {related.map((item) => (
-                <RevealItem key={item.id} className="h-full">
-                  <ProductCard product={item} />
-                </RevealItem>
+                <div key={item.id} className="w-[46%] shrink-0 snap-start sm:w-[31%] lg:w-[23%]">
+                  <CatalogueCard product={item} />
+                </div>
               ))}
-            </RevealGroup>
-          </div>
+            </ProductRail>
+          </ScrollTilt>
         </section>
       )}
     </div>

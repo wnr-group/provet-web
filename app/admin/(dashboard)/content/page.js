@@ -252,7 +252,7 @@ export default function ContentAdmin() {
                 </div>
               </div>
               <div>
-                <label className="label">Intro (shown under the heading)</label>
+                <label className="label">Intro (shown under the heading in the banner)</label>
                 <textarea
                   rows={2}
                   className="input resize-none"
@@ -271,7 +271,7 @@ export default function ContentAdmin() {
                 />
               </div>
               <div>
-                <label className="label">Hero image</label>
+                <label className="label">Banner image (shown on the right of the banner)</label>
                 <ImagePicker
                   value={settings.heroImage}
                   onChange={(heroImage) => setSettings((s) => ({ ...s, heroImage }))}
