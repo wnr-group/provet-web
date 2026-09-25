@@ -63,7 +63,7 @@ export default async function ProductDetail({ params }) {
           itself can't clip, or the overhang would be cut off. */}
       <section className="relative isolate text-white">
         <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute inset-0 bg-[linear-gradient(120deg,var(--color-brand-900)_0%,var(--color-brand-800)_60%,#2c1447_100%)]" />
+          <div className="absolute inset-0 bg-banner" />
           <div className="absolute -left-32 -top-40 h-[26rem] w-[26rem] rounded-full bg-[radial-gradient(circle,rgba(229,9,127,0.2),transparent_65%)]" />
           <div className="bg-dots absolute inset-0 text-white/[0.05] [mask-image:radial-gradient(ellipse_at_top_left,black,transparent_60%)]" />
         </div>

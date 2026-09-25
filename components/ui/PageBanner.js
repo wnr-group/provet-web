@@ -26,7 +26,7 @@ export default function PageBanner({ eyebrow, title, description, image, imageAl
     ));
 
   return (
-    <section className="relative isolate overflow-hidden bg-[linear-gradient(120deg,var(--color-brand-900)_0%,var(--color-brand-800)_60%,#2c1447_100%)] text-white">
+    <section className="relative isolate overflow-hidden bg-banner text-white">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -left-32 -top-40 -z-10 h-[26rem] w-[26rem] rounded-full bg-[radial-gradient(circle,rgba(229,9,127,0.2),transparent_65%)]"
