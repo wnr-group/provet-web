@@ -124,7 +124,7 @@ export default async function ProductDetail({ params }) {
             <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href={`/contact?product=${encodeURIComponent(product.name)}`}
-                className="btn-gradient w-full sm:w-auto"
+                className="btn-accent w-full sm:w-auto"
               >
                 <Mail size={16} /> Enquire About This Product
               </Link>
