@@ -23,10 +23,13 @@ export const ENTRANCES = {
     show: { opacity: 1, filter: "blur(0px)", transition: { duration: 0.85, ease: EASE } },
   },
 
-  // Uncovers left to right, like a line being drawn.
+  // Uncovers left to right, like a line being drawn. The clip stays applied
+  // once the wipe finishes, so it rests on negative insets: an inset of 0
+  // would slice off anything drawn outside the box - a card's ring outline,
+  // its shadow, and its corners when it lifts on hover.
   wipe: {
-    hidden: { opacity: 0, clipPath: "inset(0 100% 0 0)" },
-    show: { opacity: 1, clipPath: "inset(0 0% 0 0)", transition: { duration: 0.6, ease: EASE } },
+    hidden: { opacity: 0, clipPath: "inset(-24px 100% -24px -24px)" },
+    show: { opacity: 1, clipPath: "inset(-24px -24px -24px -24px)", transition: { duration: 0.6, ease: EASE } },
   },
 
   // Tips upright from lying back. Needs perspective on the container, which

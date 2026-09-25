@@ -246,6 +246,14 @@
   background-size: 200% 200%;
 }
 
+/* The inner-page banner band (page banners, catalogue, product detail). Kept
+   to the mid navies rather than the deepest ones so it doesn't read as
+   near-black, while white copy still has ample contrast. */
+@utility bg-banner {
+  /* Each stop sits halfway between two brand shades (700/600, 600/500). */
+  background-image: linear-gradient(120deg, #322b75 0%, #413897 60%, #5a2f88 100%);
+}
+
 /* A faint dot grid for dark or tinted bands, so a large flat colour field has
    some texture. `currentColor` lets the band choose the dot colour. */
 @utility bg-dots {
