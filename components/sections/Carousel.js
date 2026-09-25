@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { motion } from "framer-motion";
 import clsx from "clsx";
+import { EASE } from "@/lib/motion";
 
 // A slide carousel for image-led content - testimonials on the old Provet
 // site are designed graphics rather than quotable text, so the slide is the
@@ -81,9 +83,30 @@ export default function Carousel({ items = [], aspect = "square", autoplay = tru
         tabIndex={0}
         onKeyDown={onKeyDown}
       >
-        <div
-          className="flex transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]"
-          style={{ transform: `translateX(-${index * step}%)` }}
+        {/* The track is dragged rather than only stepped: on touch, flicking a
+            carousel is the expected gesture, and the same handler gives the
+            pointer a grab affordance on desktop. A drag that clears a tenth of
+            the track, or is thrown hard enough, commits to the next slide;
+            anything smaller springs back to where it started.
+
+            `x` is animated, never `left`, so the whole gesture stays on the
+            compositor. */}
+        <motion.div
+          className="flex cursor-grab active:cursor-grabbing"
+          drag={total > 1 ? "x" : false}
+          dragElastic={0.12}
+          dragMomentum={false}
+          dragConstraints={{ left: 0, right: 0 }}
+          onDragStart={() => setPaused(true)}
+          onDragEnd={(_, info) => {
+            setPaused(false);
+            const threshold = (trackRef.current?.offsetWidth ?? 0) / 10;
+            const thrown = Math.abs(info.velocity.x) > 500;
+            if (info.offset.x < -threshold || (thrown && info.velocity.x < 0)) next();
+            else if (info.offset.x > threshold || (thrown && info.velocity.x > 0)) prev();
+          }}
+          animate={{ x: `-${index * step}%` }}
+          transition={{ duration: 0.5, ease: EASE }}
         >
           {items.map((item, i) => (
             <div
@@ -104,7 +127,10 @@ export default function Carousel({ items = [], aspect = "square", autoplay = tru
                     // admin's caption where there is one.
                     alt={item.title || "Customer testimonial"}
                     loading="lazy"
-                    className="h-full w-full object-cover"
+                    // The browser's native image drag would otherwise fight
+                    // the track's drag gesture and leave a ghost image.
+                    draggable={false}
+                    className="h-full w-full object-cover transition-transform duration-500 ease-out hover:scale-105"
                   />
                 </div>
                 {(item.title || item.text) && (
@@ -116,7 +142,7 @@ export default function Carousel({ items = [], aspect = "square", autoplay = tru
               </figure>
             </div>
           ))}
-        </div>
+        </motion.div>
       </div>
 
       {total > 1 && (
@@ -125,7 +151,7 @@ export default function Carousel({ items = [], aspect = "square", autoplay = tru
             type="button"
             onClick={prev}
             aria-label="Previous testimonial"
-            className="absolute -left-2 top-1/3 flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 bg-white text-brand-700 shadow-soft transition hover:bg-brand-50 sm:-left-4"
+            className="group absolute -left-2 top-1/3 flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 bg-white text-brand-700 shadow-soft transition duration-200 hover:-translate-x-0.5 hover:bg-brand-50 hover:shadow-card sm:-left-4"
           >
             <ChevronLeft size={18} />
           </button>
@@ -133,7 +159,7 @@ export default function Carousel({ items = [], aspect = "square", autoplay = tru
             type="button"
             onClick={next}
             aria-label="Next testimonial"
-            className="absolute -right-2 top-1/3 flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 bg-white text-brand-700 shadow-soft transition hover:bg-brand-50 sm:-right-4"
+            className="group absolute -right-2 top-1/3 flex h-10 w-10 items-center justify-center rounded-full border border-brand-200 bg-white text-brand-700 shadow-soft transition duration-200 hover:translate-x-0.5 hover:bg-brand-50 hover:shadow-card sm:-right-4"
           >
             <ChevronRight size={18} />
           </button>

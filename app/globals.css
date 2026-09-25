@@ -36,18 +36,119 @@
   --shadow-soft: 0 2px 8px rgba(57, 49, 133, 0.07), 0 1px 2px rgba(57, 49, 133, 0.08);
   --shadow-card: 0 8px 24px rgba(57, 49, 133, 0.10);
   --shadow-lift: 0 16px 40px rgba(57, 49, 133, 0.18);
+  --shadow-hover: 0 1px 2px rgba(57, 49, 133, 0.06), 0 24px 48px -18px rgba(57, 49, 133, 0.32);
+
+  /* Slow, small ambient loops for decorative pieces only (orbs, a floating
+     stat card). Never on content - and the reduced-motion block below
+     flattens them to a single frame. */
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-gradient-pan: gradient-pan 12s ease-in-out infinite alternate;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  @keyframes gradient-pan {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+  }
+}
+
+/* A slow 3D sway for showcase pieces (the catalogue banner fan, photo stacks,
+   product stages): visible depth without the visitor doing anything. Used
+   on a wrapper that does nothing else, so it never fights a hover tilt or an
+   entrance transform. The reduced-motion rule below flattens it. */
+@keyframes sway3d {
+  0% { transform: rotateY(-12deg) rotateX(6deg); }
+  100% { transform: rotateY(12deg) rotateX(-3deg); }
+}
+.animate-sway3d {
+  animation: sway3d 7s ease-in-out infinite alternate;
+  transform-style: preserve-3d;
 }
 
 @layer base {
   html {
     scroll-behavior: smooth;
   }
+
+  /* Motion safety net - see the inline script in app/layout.js.
+     Entrance wrappers carry data-motion and are server-rendered at opacity:0.
+     If scripting is off, or the bundle never hydrates, that content would stay
+     invisible; these rules put it back. They stop matching the moment
+     `motion-ready` lands, so a healthy page still animates normally. */
+  html:not(.js) [data-motion],
+  html.motion-timeout:not(.motion-ready) [data-motion] {
+    opacity: 1 !important;
+    transform: none !important;
+    clip-path: none !important;
+    filter: none !important;
+  }
+
+  /* Reduced motion is handled properly in JS (MotionConfig reducedMotion="user"
+     lets framer-motion apply final states without tweening). This block is the
+     backstop for everything CSS drives - hover lifts, the carousel track, the
+     gradient button's sweep - and it also turns off smooth scrolling, which is
+     itself motion the preference is asking us to stop. */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
   body {
     @apply bg-white text-ink font-sans antialiased;
+    /* Entrance animations start a few pixels off to one side, and on a narrow
+       viewport that overhang is enough to create a horizontal scrollbar before
+       the element settles. `clip` rather than `hidden` on purpose: `hidden`
+       would make the body a scroll container and break the sticky header and
+       the sticky product gallery. */
+    overflow-x: clip;
   }
   h1, h2, h3, h4 {
     @apply font-display;
     color: inherit;
+  }
+
+  /* White scrollbar: a white track that blends into the page, with a pale
+     grey-lavender thumb - pure white on white would leave nothing to see or
+     grab. `scrollbar-color` covers Firefox and current Chrome/Edge (which then
+     ignore the -webkit rules below); the -webkit rules are for Safari, which
+     doesn't support it yet and also gets a slightly darker hover. Set on html
+     so inner scroll areas (the admin sidebar, dropdowns) inherit it. */
+  html {
+    scrollbar-color: var(--color-mist-200) #ffffff;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #ffffff;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-mist-200);
+    border: 2px solid #ffffff;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-mist-300);
+  }
+
+  /* One visible keyboard focus style for every link and button on the site.
+     :focus-visible only, so a mouse click never leaves a ring behind. */
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--color-accent-400);
+    outline-offset: 3px;
   }
 }
 
@@ -83,4 +184,71 @@
 }
 @utility link-underline {
   @apply relative after:absolute after:-bottom-0.5 after:left-0 after:h-0.5 after:w-0 after:bg-accent-400 after:transition-all hover:after:w-full;
+}
+
+/* --- Product detail surfaces -------------------------------------------
+   The flat white panels and hairline grey borders the detail page was built
+   from read as dated next to the rest of the site. These give it depth
+   instead: a brand-tinted gradient, a larger radius and a coloured shadow
+   that picks up the navy rather than the neutral grey every other site
+   uses. Kept here as utilities so the look can be reused. */
+
+@utility btn-gradient {
+  @apply btn relative overflow-hidden text-white;
+  background-image: linear-gradient(135deg, var(--color-brand-600) 0%, var(--color-brand-500) 45%, var(--color-accent-500) 100%);
+  background-size: 160% 160%;
+  background-position: 0% 50%;
+  box-shadow: 0 8px 24px rgba(229, 9, 127, 0.28);
+  transition: background-position 0.45s ease, box-shadow 0.3s ease, transform 0.2s ease;
+
+  &:hover {
+    background-position: 100% 50%;
+    box-shadow: 0 12px 32px rgba(229, 9, 127, 0.38);
+  }
+  &:active {
+    transform: translateY(1px);
+  }
+}
+
+/* A panel that sits on the page rather than being drawn onto it: no border,
+   a soft tinted fill and a shadow tuned to the brand navy. */
+@utility panel {
+  @apply rounded-3xl bg-white;
+  box-shadow: 0 1px 2px rgba(57, 49, 133, 0.06), 0 12px 32px -12px rgba(57, 49, 133, 0.18);
+}
+@utility panel-tint {
+  @apply rounded-3xl;
+  background-image: linear-gradient(160deg, #ffffff 0%, var(--color-mist-50) 100%);
+  box-shadow: 0 1px 2px rgba(57, 49, 133, 0.06), 0 12px 32px -12px rgba(57, 49, 133, 0.16);
+}
+
+/* Label-over-value tile used for the key details grid, replacing the bordered
+   definition table. */
+@utility stat-tile {
+  @apply rounded-2xl bg-mist-50/80 px-4 py-3 transition;
+}
+
+/* --- Shared surfaces -------------------------------------------------- */
+
+/* Navy-to-magenta, the brand pairing, as clipped text for figures and
+   highlighted words. */
+@utility text-gradient {
+  background-image: linear-gradient(120deg, var(--color-brand-600) 0%, var(--color-brand-400) 45%, var(--color-accent-500) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* The brand gradient as a surface (CTA band). Oversized so the pan
+   animation has somewhere to travel. */
+@utility bg-brand-gradient {
+  background-image: linear-gradient(120deg, var(--color-brand-800) 0%, var(--color-brand-600) 40%, var(--color-accent-500) 100%);
+  background-size: 200% 200%;
+}
+
+/* A faint dot grid for dark or tinted bands, so a large flat colour field has
+   some texture. `currentColor` lets the band choose the dot colour. */
+@utility bg-dots {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 22px 22px;
 }

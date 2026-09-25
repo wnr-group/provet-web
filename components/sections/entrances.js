@@ -81,6 +81,7 @@ export function Enter({ children, as: Component = motion.div, preset = "blur", d
   const variants = ENTRANCES[preset] || ENTRANCES.blur;
   return (
     <Component
+      data-motion=""
       className={className}
       style={PERSPECTIVE}
       initial="hidden"
@@ -100,6 +101,7 @@ export function Enter({ children, as: Component = motion.div, preset = "blur", d
 export function EnterGroup({ children, className, stagger = 0.09, delay = 0, ...props }) {
   return (
     <motion.div
+      data-motion=""
       className={className}
       style={PERSPECTIVE}
       initial="hidden"
@@ -115,7 +117,7 @@ export function EnterGroup({ children, className, stagger = 0.09, delay = 0, ...
 
 export function EnterItem({ children, className, preset = "spring" }) {
   return (
-    <motion.div className={className} variants={ENTRANCES[preset] || ENTRANCES.spring}>
+    <motion.div data-motion="" className={className} variants={ENTRANCES[preset] || ENTRANCES.spring}>
       {children}
     </motion.div>
   );

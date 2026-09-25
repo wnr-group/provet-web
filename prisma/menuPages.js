@@ -217,6 +217,33 @@ const menuPages = [
         ].join("\n"),
         config: { columns: 2 },
       },
+      // The articles each range listed. On the old site every title linked to
+      // a page with no body, so the titles are all there is to carry over -
+      // they are listed as cards rather than linked to empty pages.
+      {
+        key: "poultry-articles",
+        type: "cards",
+        title: "Poultry (Avinova)",
+        body: [
+          "Comparative efficacy of various growth promoters on the performance of broiler chicken",
+          "Essential oils and their benefits in poultry",
+          "Synbiotics and gut health",
+        ].join("\n"),
+        config: { columns: 3 },
+      },
+      {
+        key: "aqua-articles",
+        type: "cards",
+        title: "Aquaculture (Blunova)",
+        body: [
+          "Black gill disease in pacific",
+          "An overview of Argulus (Fish Lice) infestation in fish ponds",
+          "An overview of Hepatopancreatic Microsporidiosis (HPM) in shrimp farming",
+          "Infectious Myonecrosis Virus (IMNV)",
+          "Stress management in aquaculture",
+        ].join("\n"),
+        config: { columns: 3 },
+      },
       {
         key: "cta",
         type: "cta",
@@ -329,6 +356,32 @@ const menuPages = [
         title: "Trial Reports",
         body: "Our trial reports offer evidence-based results from product trials. It shows the performance and benefits of our solutions in diverse aquaculture environments, contributing to better farm management and yield improvements.",
       },
+      // The reports each range listed. As with the technical articles, every
+      // title on the old site linked to a page with no body, so the titles are
+      // listed on their own. Two slips in the old listing are corrected: a
+      // repeated "in Broiler feeds" and "zymomax pro" in lower case.
+      {
+        key: "poultry-reports",
+        type: "cards",
+        title: "Poultry (Avinova)",
+        body: [
+          "Effects of a multienzyme preparation (Zymomax Forte) on the incidence of loose droppings in layer chicken",
+          "A comparative study on the effects of dietary supplementation of different gut acting growth promoters on performance of male broiler chickens",
+          "Comparative evaluation of Nagronex SNB against competitors' probiotics and Antibiotic Growth Promoters in Broiler feeds",
+          "Study on the efficacy of Zymomax Pro on the performance of commercial broilers",
+        ].join("\n"),
+        config: { columns: 2 },
+      },
+      {
+        key: "aqua-reports",
+        type: "cards",
+        title: "Aquaculture (Blunova)",
+        body: [
+          "Efficacy of BACITOX PLUS in Improving the Water Quality Parameters in Aquaculture Ponds",
+          "Efficacy of Pathostat Blu in controlling mortality due to severe vibrio loads in shrimp farming",
+        ].join("\n"),
+        config: { columns: 2 },
+      },
       {
         key: "cta",
         type: "cta",
@@ -378,6 +431,7 @@ const menuPages = [
         // being flattened to a line of text.
         config: {
           columns: 2,
+          imageStyle: "card",
           aspect: "landscape",
           items: [
             {

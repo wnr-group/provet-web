@@ -23,22 +23,38 @@ export default function Stats({ section }) {
         {section?.title && (
           <Reveal className="mx-auto max-w-2xl text-center">
             <span className="badge bg-accent-100 text-accent-700">Track Record</span>
-            <h2 className="mt-3 font-display text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+            <h2 className="mt-3 font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
               {section.title}
             </h2>
+            <span
+              aria-hidden="true"
+              className="mx-auto mt-4 block h-1 w-12 rounded-full bg-gradient-to-r from-brand-500 to-accent-500"
+            />
           </Reveal>
         )}
 
         {figures.length > 0 && (
+          // Stats identity: the panel itself uncovers, then each figure lifts
+          // in sequence while its number counts up. No card stagger here - the
+          // products and categories grids own that, and this has to read as
+          // one instrument panel rather than three cards.
           <RevealGroup
-            className="card mt-10 flex flex-col divide-y divide-brand-100 sm:flex-row sm:divide-x sm:divide-y-0"
-            stagger={0.1}
+            className="panel mt-10 flex flex-col divide-y divide-brand-100 overflow-hidden sm:flex-row sm:divide-x sm:divide-y-0"
+            stagger={0.14}
+            delay={0.1}
           >
             {figures.map((item) => (
               // flex-1 + the row's default stretch keeps every cell the same
               // width and height however long its caption runs.
-              <RevealItem key={item.label} className="flex-1 px-6 py-8 text-center">
-                <p className="font-display text-4xl font-extrabold tracking-tight text-brand-600 sm:text-5xl">
+              <RevealItem
+                key={item.label}
+                className="group flex-1 px-6 py-9 text-center transition-colors duration-300 hover:bg-mist-50/70"
+                distance={18}
+                duration={0.6}
+              >
+                {/* Brand gradient clipped to the figure; inline-block so the
+                    gradient spans the number rather than the whole cell. */}
+                <p className="text-gradient inline-block font-display text-4xl font-extrabold tracking-tight transition-transform duration-300 group-hover:scale-105 sm:text-5xl">
                   <Counter value={item.value} />
                 </p>
                 {/* The seeded captions start lower-case ("years combined

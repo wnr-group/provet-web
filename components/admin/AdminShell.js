@@ -46,12 +46,18 @@ export default function AdminShell({ admin, children }) {
 
   return (
     <div className="flex min-h-screen bg-mist-50/60">
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-brand-100 bg-white lg:flex">
+      {/* Sticky and exactly one viewport tall, so the page (the right-hand
+          content) scrolls while the sidebar stays put. `self-start` stops the
+          flex row stretching it to the content's height, which is what made
+          it scroll away before. */}
+      <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col self-start border-r border-brand-100 bg-white lg:flex">
         <div className="flex h-16 items-center gap-2 border-b border-brand-100 px-5">
           <Image src="/logo-mark.png" alt="" width={32} height={32} className="h-8 w-8" />
           <span className="font-display text-lg font-extrabold text-ink">Provet</span>
         </div>
-        <nav className="flex-1 space-y-1 p-4">
+        {/* Scrolls on its own if the links ever outgrow a short screen, keeping
+            the account footer pinned at the bottom. */}
+        <nav className="flex-1 space-y-1 overflow-y-auto p-4">
           {links.map(({ href, label, icon: Icon, end }) => (
             <Link
               key={href}
@@ -87,7 +93,7 @@ export default function AdminShell({ admin, children }) {
         </div>
       </aside>
 
-      <div className="flex flex-1 flex-col">
+      <div className="flex min-w-0 flex-1 flex-col">
         <header className="border-b border-brand-100 bg-white lg:hidden">
           <div className="flex h-16 items-center justify-between px-4">
             <span className="font-display font-extrabold text-ink">Provet Admin</span>
