@@ -37,7 +37,7 @@ export default function ProductsFilters({ categories, category, search }) {
         {filtersOpen ? <X size={16} /> : null}
       </button>
 
-      <div className={clsx("card space-y-6 p-5", !filtersOpen && "hidden lg:block")}>
+      <div className={clsx("panel space-y-6 p-5", !filtersOpen && "hidden lg:block")}>
         <div>
           <label className="label">Search</label>
           <form
@@ -60,27 +60,18 @@ export default function ProductsFilters({ categories, category, search }) {
         <div>
           <p className="label">Category</p>
           <div className="space-y-1">
-            <button
-              onClick={() => updateParams({ category: "" })}
-              className={clsx(
-                "block w-full rounded-lg px-3 py-2 text-left text-sm transition",
-                !category ? "bg-brand-50 font-semibold text-brand-700" : "text-ink-soft hover:bg-brand-50"
-              )}
-            >
+            <CategoryOption active={!category} onClick={() => updateParams({ category: "" })}>
               All Categories
-            </button>
+            </CategoryOption>
             {categories.map((c) => (
-              <button
+              <CategoryOption
                 key={c.id}
+                active={category === c.slug}
+                count={c.productCount}
                 onClick={() => updateParams({ category: c.slug })}
-                className={clsx(
-                  "flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-sm transition",
-                  category === c.slug ? "bg-brand-50 font-semibold text-brand-700" : "text-ink-soft hover:bg-brand-50"
-                )}
               >
-                <span>{c.name}</span>
-                {typeof c.productCount === "number" && <span className="text-xs text-ink-soft">{c.productCount}</span>}
-              </button>
+                {c.name}
+              </CategoryOption>
             ))}
           </div>
         </div>
@@ -98,5 +89,40 @@ export default function ProductsFilters({ categories, category, search }) {
         )}
       </div>
     </aside>
+  );
+}
+
+// One row in the category list. The active row carries an accent bar on its
+// leading edge and a filled count pill, so the current filter is obvious at a
+// glance rather than only a shade darker than its neighbours.
+function CategoryOption({ active, count, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      aria-pressed={active}
+      className={clsx(
+        "group relative flex w-full items-center justify-between gap-2 rounded-xl px-3 py-2 text-left text-sm transition",
+        active ? "bg-brand-50 font-semibold text-brand-700" : "text-ink-soft hover:bg-mist-50 hover:text-ink"
+      )}
+    >
+      <span
+        aria-hidden="true"
+        className={clsx(
+          "absolute inset-y-2 left-0 w-1 rounded-full bg-gradient-to-b from-brand-500 to-accent-500 transition-transform duration-300",
+          active ? "scale-y-100" : "scale-y-0"
+        )}
+      />
+      <span className="transition-transform duration-200 group-hover:translate-x-0.5">{children}</span>
+      {typeof count === "number" && (
+        <span
+          className={clsx(
+            "rounded-full px-2 py-0.5 text-[11px] font-medium tabular-nums transition-colors",
+            active ? "bg-brand-600 text-white" : "bg-mist-100 text-ink-soft"
+          )}
+        >
+          {count}
+        </span>
+      )}
+    </button>
   );
 }

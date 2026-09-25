@@ -342,23 +342,20 @@ export default function GlobalSearch({ onOpen }) {
 
   return (
     <>
+      {/* One trigger at every width, 40x40 to match the header's Enquire CTA
+          and menu button so the controls share a baseline and a rhythm. It is
+          icon-only by necessity as much as by taste: a labelled "Search..."
+          pill is ~116px wide, and the header centres its nav by giving the
+          logo and action zones equal widths - at the 1216px content width
+          that left the CTA too little room and wrapped it onto two lines. */}
       <button
         type="button"
         onClick={openSearch}
         aria-label={triggerLabel}
-        className="hidden items-center gap-2 rounded-full border border-brand-200 bg-white px-3 py-2 text-sm text-ink-soft transition hover:border-brand-300 hover:text-brand-700 lg:flex"
+        title={triggerLabel}
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-brand-700 transition hover:bg-brand-50"
       >
-        <Search size={16} />
-        <span className="hidden xl:inline">Search...</span>
-      </button>
-
-      <button
-        type="button"
-        onClick={openSearch}
-        aria-label={triggerLabel}
-        className="rounded-lg p-2 text-brand-700 lg:hidden"
-      >
-        <Search size={22} />
+        <Search size={20} />
       </button>
 
       {/* No document during SSR, and nothing rendered until it is opened. */}

@@ -2,12 +2,12 @@ import Link from "next/link";
 import { ArrowUpRight, LayoutGrid, FileText, Search as SearchIcon } from "lucide-react";
 import { globalSearch } from "@/lib/data";
 import { MIN_QUERY_LENGTH, normalizeQuery, isSearchableQuery } from "@/lib/search";
-import ProductCard from "@/components/ui/ProductCard";
+import CatalogueCard from "@/components/catalogue/CatalogueCard";
 import EmptyState from "@/components/ui/EmptyState";
 import ProductsPagination from "@/components/products/ProductsPagination";
 import SearchInput from "@/components/search/SearchInput";
 import Highlight from "@/components/search/Highlight";
-import Reveal from "@/components/motion/Reveal";
+import PageBanner from "@/components/ui/PageBanner";
 
 const LIMIT = 12;
 
@@ -44,30 +44,17 @@ export default async function SearchPage({ searchParams }) {
 
   return (
     <div className="bg-white">
-      <div className="relative isolate overflow-hidden bg-brand-900 py-12 text-white sm:py-16">
-        {/* eslint-disable-next-line @next/next/no-img-element -- fixed decorative background, not a dynamic host */}
-        <img
-          src="https://images.unsplash.com/photo-1579165466949-3180a3d056d5?auto=format&fit=crop&w=1920&h=500&q=80"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 -z-10 h-full w-full object-cover"
-        />
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-[linear-gradient(to_bottom,rgba(21,18,48,0.92),rgba(21,18,48,0.8)_55%,rgba(21,18,48,0.9))]" />
-        <Reveal mode="mount" className="container-page">
-          <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
-            {query ? `Results for "${query}"` : "Search"}
-          </h1>
-          <span aria-hidden="true" className="mt-5 block h-1 w-16 rounded-full bg-accent-400" />
-          <p className="mt-5 text-brand-100">
-            {result
-              ? `${result.total} ${result.total === 1 ? "result" : "results"} across products, categories and pages.`
-              : "Find a product, a category or a page anywhere on the site."}
-          </p>
-          <div className="mt-6">
-            <SearchInput query={query} />
-          </div>
-        </Reveal>
-      </div>
+      <PageBanner
+        eyebrow="Search"
+        title={query ? `Results for "${query}"` : "Search"}
+        description={
+          result
+            ? `${result.total} ${result.total === 1 ? "result" : "results"} across products, categories and pages.`
+            : "Find a product, a category or a page anywhere on the site."
+        }
+      >
+        <SearchInput query={query} />
+      </PageBanner>
 
       <div className="container-page space-y-12 py-12 sm:py-16">
         {!searchable ? (
@@ -144,7 +131,7 @@ export default async function SearchPage({ searchParams }) {
                 {result.products.items.length ? (
                   <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {result.products.items.map((product) => (
-                      <ProductCard key={product.id} product={product} />
+                      <CatalogueCard key={product.id} product={product} />
                     ))}
                   </div>
                 ) : (

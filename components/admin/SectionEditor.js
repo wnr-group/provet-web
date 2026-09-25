@@ -14,8 +14,9 @@ const BODY_HINT = {
   list: "One item per line.",
   cards: 'One card per line, written as "Heading: text".',
   numberedRows: 'One row per line, written as "Heading: text".',
-  imageCards: "Optional intro shown above the cards.",
+  imageCards: "Optional intro shown under the heading.",
   carousel: "Optional intro shown above the slider.",
+  locations: "Optional intro shown above the address cards.",
   imageText: "Leave a blank line between paragraphs.",
   productGrid: "Optional intro shown above the grid.",
   categoryGrid: "Optional intro shown above the grid.",
@@ -104,7 +105,11 @@ function ConfigFields({ section, categories, onConfig }) {
           ) : (
           <>
           <div>
-            <label className="label">Columns</label>
+            {/* What "Columns" means depends on the style: cards per row for
+                photo and portrait cards, covers visible across the shelf. */}
+            <label className="label">
+              {(config.imageStyle || "cover") === "cover" ? "Covers visible across the shelf" : "Cards per row"}
+            </label>
             <select
               className="input"
               value={config.columns || 3}
@@ -124,8 +129,9 @@ function ConfigFields({ section, categories, onConfig }) {
               value={config.imageStyle || "cover"}
               onChange={(e) => onConfig({ imageStyle: e.target.value })}
             >
-              <option value="cover">Large picture (covers, artwork)</option>
-              <option value="avatar">Small circle (people, logos)</option>
+              <option value="cover">Covers on a 3D shelf (booklets, magazines)</option>
+              <option value="card">Photo cards in a grid (events, news)</option>
+              <option value="avatar">Portrait cards (people)</option>
             </select>
           </div>
           </>
@@ -134,7 +140,7 @@ function ConfigFields({ section, categories, onConfig }) {
 
         {/* The crop only applies to the large image-card style - an avatar is
             always a circle, and a carousel sets its shape above. */}
-        {type === "imageCards" && (config.imageStyle || "cover") === "cover" && (
+        {type === "imageCards" && config.imageStyle !== "avatar" && (
           <div className="sm:w-1/2">
             <label className="label">Image shape</label>
             <select
@@ -226,6 +232,125 @@ function ConfigFields({ section, categories, onConfig }) {
                     placeholder="Link (optional) - /products or https://..."
                     value={item.href || ""}
                     onChange={(e) => setItem(i, { href: e.target.value })}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (type === "locations") {
+    const items = config.items || [];
+    const setItem = (i, patch) =>
+      onConfig({ items: items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)) });
+    const move = (i, delta) => {
+      const next = [...items];
+      [next[i], next[i + delta]] = [next[i + delta], next[i]];
+      onConfig({ items: next });
+    };
+
+    return (
+      <div className="space-y-4">
+        <div className="sm:w-1/2">
+          <label className="label">Columns</label>
+          <select
+            className="input"
+            value={config.columns || 3}
+            onChange={(e) => onConfig({ columns: Number(e.target.value) })}
+          >
+            {[2, 3, 4].map((n) => (
+              <option key={n} value={n}>
+                {n} per row
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between">
+            <label className="label mb-0">Locations</label>
+            {items.length < 24 && (
+              <button
+                type="button"
+                className="btn-ghost text-xs"
+                onClick={() =>
+                  onConfig({ items: [...items, { title: "", subtitle: "", address: "", contact: "", phone: "" }] })
+                }
+              >
+                <Plus size={14} /> Add location
+              </button>
+            )}
+          </div>
+          <div className="mt-2 space-y-3">
+            {items.map((item, i) => (
+              <div key={i} className="rounded-xl border border-brand-100 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                    {item.title || `Location ${i + 1}`}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      aria-label="Move location up"
+                      disabled={i === 0}
+                      onClick={() => move(i, -1)}
+                      className="rounded-lg p-1.5 text-ink-soft hover:bg-brand-50 disabled:opacity-30"
+                    >
+                      <ChevronUp size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Move location down"
+                      disabled={i === items.length - 1}
+                      onClick={() => move(i, 1)}
+                      className="rounded-lg p-1.5 text-ink-soft hover:bg-brand-50 disabled:opacity-30"
+                    >
+                      <ChevronDown size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label="Remove location"
+                      onClick={() => onConfig({ items: items.filter((_, idx) => idx !== i) })}
+                      className="rounded-lg p-1.5 text-ink-soft hover:bg-red-50 hover:text-red-600"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <input
+                    className="input"
+                    placeholder="Name - e.g. Kolkata (Branch)"
+                    value={item.title || ""}
+                    onChange={(e) => setItem(i, { title: e.target.value })}
+                  />
+                  <input
+                    className="input"
+                    placeholder="Company (optional)"
+                    value={item.subtitle || ""}
+                    onChange={(e) => setItem(i, { subtitle: e.target.value })}
+                  />
+                  <textarea
+                    rows={3}
+                    className="input resize-none sm:col-span-2"
+                    placeholder="Address - one line per row"
+                    value={item.address || ""}
+                    onChange={(e) => setItem(i, { address: e.target.value })}
+                  />
+                  <input
+                    className="input"
+                    placeholder="Contact person (optional)"
+                    value={item.contact || ""}
+                    onChange={(e) => setItem(i, { contact: e.target.value })}
+                  />
+                  <input
+                    className="input"
+                    placeholder="Phone (optional)"
+                    value={item.phone || ""}
+                    onChange={(e) => setItem(i, { phone: e.target.value })}
                   />
                 </div>
               </div>
@@ -368,6 +493,11 @@ export default function SectionEditor({
   total,
   categories,
   editable,
+  // Optional per-block overrides from a fixed page (see FIXED_PAGE_DEFAULTS
+  // in the content admin): a hint saying what this block does on its page,
+  // and hiding type settings the page's layout ignores.
+  hint,
+  hideConfig = false,
   open,
   onToggleOpen,
   onChange,
@@ -471,7 +601,7 @@ export default function SectionEditor({
             value={section.body || ""}
             onChange={(e) => set({ body: e.target.value })}
           />
-          <p className="mt-1 text-xs text-ink-soft">{BODY_HINT[section.type]}</p>
+          <p className="mt-1 text-xs text-ink-soft">{hint || BODY_HINT[section.type]}</p>
         </div>
       )}
 
@@ -482,7 +612,7 @@ export default function SectionEditor({
         </div>
       )}
 
-      <ConfigFields section={section} categories={categories} onConfig={onConfig} />
+      {!hideConfig && <ConfigFields section={section} categories={categories} onConfig={onConfig} />}
         </>
       )}
     </div>

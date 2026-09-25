@@ -35,7 +35,10 @@ export default function SocialLinks({ links = [], variant = "dark", className, i
             title={label}
             aria-label={`${label} (opens in a new tab)`}
             className={clsx(
-              "flex h-9 w-9 items-center justify-center rounded-full transition",
+              // Lifts and grows very slightly on hover - the same vocabulary
+              // as the footer links and the card grids, at icon scale.
+              "flex h-9 w-9 items-center justify-center rounded-full transition duration-200 ease-out",
+              "hover:-translate-y-0.5 hover:scale-110",
               VARIANTS[variant] || VARIANTS.dark
             )}
           >
