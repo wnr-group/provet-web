@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
-import { Save, FileText, Plus, ExternalLink } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Save, FileText, Plus, ExternalLink, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
 import {
@@ -18,6 +18,8 @@ import { contentPages } from "@/lib/navigation";
 import { DEFAULT_SECTION_TYPE, parseSectionConfig } from "@/lib/sectionTypes";
 import { toSlug } from "@/lib/slug";
 import { CONTACT_SECTIONS, withContactDefaults } from "@/lib/contactContent";
+import { HOME_SECTIONS, withHomeDefaults } from "@/lib/homeContent";
+import { isBuiltInSection, addedSections } from "@/lib/fixedPages";
 
 const PAGES = contentPages();
 
@@ -25,10 +27,19 @@ const PAGES = contentPages();
 // every block even before one has been saved, plus a per-block hint - the
 // generic type hints ("One card per line") don't say what the contact
 // page actually does with each block.
+//
+// `reorderable`: the page's built-in blocks can be moved, and their order is
+// the order they appear on the page (the homepage). Elsewhere the layout fixes
+// where each built-in block goes, so only added sections move.
 const FIXED_PAGE_DEFAULTS = {
   contact: {
     merge: withContactDefaults,
     meta: Object.fromEntries(CONTACT_SECTIONS.map((s) => [s.key, { hint: s.hint, hideConfig: s.hideConfig }])),
+  },
+  home: {
+    merge: withHomeDefaults,
+    meta: Object.fromEntries(HOME_SECTIONS.map((s) => [s.key, { hint: s.hint, hideConfig: s.hideConfig }])),
+    reorderable: true,
   },
 };
 
@@ -61,14 +72,19 @@ export default function ContentAdmin() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
+  const errorRef = useRef(null);
   // Which section card is expanded. One at a time keeps the page scannable;
   // a freshly added section opens itself, since you added it to fill it in.
   const [openKey, setOpenKey] = useState(null);
 
   const current = PAGES.find((p) => p.key === pageKey);
-  // The bespoke home/about layouts render a fixed set of section keys, so
-  // those pages allow editing but not adding, deleting or retyping.
+  // The bespoke home/about/contact layouts render a fixed set of built-in
+  // blocks (lib/fixedPages.js): those can be edited but not deleted, moved or
+  // retyped. Sections added on top of them are fully editable, and every page
+  // can take new ones.
   const editable = !current.fixed;
+  const isFixedPage = Boolean(current.fixed);
+  const isLocked = (section) => isFixedPage && isBuiltInSection(pageKey, section.key);
   const loading = loadedKey !== pageKey;
 
   useEffect(() => {
@@ -81,8 +97,9 @@ export default function ContentAdmin() {
     if (current.fixed) {
       const res = await adminGetContent(pageKey);
       const merge = FIXED_PAGE_DEFAULTS[pageKey]?.merge;
-      const sections = merge ? merge(res.sections) : res.sections;
-      return { sections: sections.map(normalizeSection), settings: emptySettings };
+      const builtIn = (merge ? merge(res.sections) : res.sections).filter((s) => isBuiltInSection(pageKey, s.key));
+      const added = addedSections(pageKey, res.sections);
+      return { sections: [...builtIn, ...added].map(normalizeSection), settings: emptySettings };
     }
     const res = await adminGetPage(pageKey);
     return {
@@ -130,6 +147,10 @@ export default function ContentAdmin() {
       const next = [...secs];
       const target = index + delta;
       if (target < 0 || target >= next.length) return secs;
+      // Built-in blocks move only among themselves, and only on a page whose
+      // layout follows their order; added sections move among themselves.
+      if (isLocked(next[index]) !== isLocked(next[target])) return secs;
+      if (isLocked(next[index]) && !FIXED_PAGE_DEFAULTS[pageKey]?.reorderable) return secs;
       [next[index], next[target]] = [next[target], next[index]];
       return next;
     });
@@ -163,7 +184,8 @@ export default function ContentAdmin() {
       if (current.fixed) {
         await adminUpdateContent(
           pageKey,
-          sections.map((s, i) => ({ ...s, order: i }))
+          sections.map((s, i) => ({ ...s, order: i })),
+          { replaceAdded: true }
         );
       } else {
         if (!settings.title.trim()) {
@@ -185,6 +207,12 @@ export default function ContentAdmin() {
       setSaving(false);
     }
   };
+
+  // A failed save is usually noticed from far down the page (the section
+  // being edited), and the reason is shown up here - bring it into view.
+  useEffect(() => {
+    if (error) errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [error]);
 
   return (
     <div>
@@ -223,7 +251,16 @@ export default function ContentAdmin() {
         ))}
       </div>
 
-      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p
+          ref={errorRef}
+          role="alert"
+          className="mt-4 flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 ring-1 ring-red-200"
+        >
+          <AlertCircle size={16} className="mt-0.5 shrink-0" />
+          <span>{error}</span>
+        </p>
+      )}
 
       {loading || !sections ? (
         <PageSpinner />
@@ -288,29 +325,50 @@ export default function ContentAdmin() {
               </p>
             </div>
           ) : (
-            sections.map((section, i) => (
-              <SectionEditor
-                key={section.key}
-                section={section}
-                index={i}
-                total={sections.length}
-                categories={categories}
-                editable={editable}
-                hint={FIXED_PAGE_DEFAULTS[pageKey]?.meta[section.key]?.hint}
-                hideConfig={FIXED_PAGE_DEFAULTS[pageKey]?.meta[section.key]?.hideConfig}
-                open={openKey === section.key}
-                onToggleOpen={() => setOpenKey((k) => (k === section.key ? null : section.key))}
-                onChange={(next) => updateSection(i, next)}
-                onMove={moveSection}
-                onRemove={removeSection}
-              />
-            ))
+            sections.map((section, i) => {
+              // On a fixed page, arrows and indices work within a group: the
+              // built-in blocks, or the added sections.
+              const locked = isLocked(section);
+              const group = isFixedPage ? sections.filter((s) => isLocked(s) === locked) : sections;
+              const offset = sections.indexOf(group[0]);
+              const firstAdded = isFixedPage && !locked && i === offset;
+              return (
+                <div key={section.key}>
+                  {firstAdded && (
+                    <div className="mb-3 mt-8 flex items-center gap-3">
+                      <span className="h-px flex-1 bg-brand-100" />
+                      <span className="text-xs font-semibold uppercase tracking-wider text-ink-soft">
+                        Added sections · shown after the page&apos;s main content
+                      </span>
+                      <span className="h-px flex-1 bg-brand-100" />
+                    </div>
+                  )}
+                  <SectionEditor
+                    section={section}
+                    index={i - offset}
+                    total={group.length}
+                    categories={categories}
+                    editable={editable || !locked}
+                    hint={FIXED_PAGE_DEFAULTS[pageKey]?.meta[section.key]?.hint}
+                    hideConfig={FIXED_PAGE_DEFAULTS[pageKey]?.meta[section.key]?.hideConfig}
+                    open={openKey === section.key}
+                    onToggleOpen={() => setOpenKey((k) => (k === section.key ? null : section.key))}
+                    onChange={(next) => updateSection(i, next)}
+                    onMove={(_, delta) => moveSection(i, delta)}
+                    onRemove={() => removeSection(i)}
+                  />
+                </div>
+              );
+            })
           )}
 
-          {editable && (
-            <button onClick={addSection} className="btn-outline w-full justify-center">
-              <Plus size={16} /> Add section
-            </button>
+          <button onClick={addSection} className="btn-outline w-full justify-center">
+            <Plus size={16} /> Add section
+          </button>
+          {current.fixed && (
+            <p className="text-center text-xs text-ink-soft">
+              New sections - videos, cards, product grids and more - appear on the page after its built-in content.
+            </p>
           )}
         </div>
       )}

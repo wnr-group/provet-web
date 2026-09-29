@@ -9,17 +9,20 @@ export default function LocationCards({ items, columns = 3 }) {
   const locations = (items || []).filter((item) => item?.title || item?.address);
   if (!locations.length) return null;
 
+  // Phones: a swipeable row, the next location peeking in from the edge,
+  // rather than a long stack of full-width cards. A grid from tablets up.
   return (
     <RevealGroup
       className={clsx(
-        "grid gap-5 sm:grid-cols-2",
+        "-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
+        "sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0",
         columns === 3 && "lg:grid-cols-3",
         columns === 4 && "lg:grid-cols-4"
       )}
       stagger={0.08}
     >
       {locations.map((item, i) => (
-        <RevealItem key={`${item.title}-${i}`} className="h-full">
+        <RevealItem key={`${item.title}-${i}`} className="w-[82%] shrink-0 snap-start sm:h-full sm:w-auto">
           <div className="card flex h-full flex-col p-6 transition duration-300 hover:-translate-y-1 hover:shadow-card">
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-accent-100 text-accent-700">
