@@ -2,7 +2,8 @@ const prisma = require("../../../../../lib/prisma");
 const { requireAdmin } = require("../../../../../lib/requireAdmin");
 const { toSlug } = require("../../../../../lib/slug");
 const { serializeProductDetail } = require("../../../../../lib/serializers");
-const { productSchema, toDbData } = require("../../../../../lib/productSchema");
+const { productSchema, toDbData, uniqueConflictMessage } = require("../../../../../lib/productSchema");
+const { productPlacementError } = require("../../../../../lib/categoryTree");
 
 // GET /api/admin/products/:id
 export async function GET(request, { params }) {
@@ -10,7 +11,7 @@ export async function GET(request, { params }) {
   if (!session) return Response.json({ error: "Not authenticated" }, { status: 401 });
 
   const { id } = await params;
-  const product = await prisma.product.findUnique({ where: { id }, include: { category: true } });
+  const product = await prisma.product.findUnique({ where: { id }, include: { category: { include: { parent: true } } } });
   if (!product) return Response.json({ error: "Product not found" }, { status: 404 });
 
   return Response.json(serializeProductDetail(product));
@@ -33,17 +34,24 @@ export async function PUT(request, { params }) {
 
   if (parsed.data.categoryId) {
     const category = await prisma.category.findUnique({ where: { id: parsed.data.categoryId } });
-    if (!category) {
-      return Response.json({ error: "categoryId does not reference an existing category" }, { status: 400 });
-    }
+    const placementError = productPlacementError(category);
+    if (placementError) return Response.json({ error: placementError }, { status: 400 });
   }
 
   const input = { ...parsed.data };
   if (input.slug) input.slug = toSlug(input.slug);
 
   const data = toDbData(input);
-  const product = await prisma.product.update({ where: { id }, data, include: { category: true } });
-  return Response.json(serializeProductDetail(product));
+  try {
+    const product = await prisma.product.update({ where: { id }, data, include: { category: { include: { parent: true } } } });
+    return Response.json(serializeProductDetail(product));
+  } catch (err) {
+    // A duplicate SKU or name reads as a message the admin can act on
+    // rather than a bare 500.
+    const conflict = uniqueConflictMessage(err);
+    if (conflict) return Response.json({ error: conflict }, { status: 409 });
+    throw err;
+  }
 }
 
 // DELETE /api/admin/products/:id
