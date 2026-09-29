@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronRight, Mail, Phone, ShieldCheck, Sparkles } from "lucide-react";
@@ -8,7 +9,9 @@ import ProductSpecs from "@/components/products/ProductSpecs";
 import CatalogueCard from "@/components/catalogue/CatalogueCard";
 import ProductTabs from "@/components/catalogue/ProductTabs";
 import ProductRail from "@/components/catalogue/ProductRail";
-import { ScrollTilt } from "@/components/motion/effects";
+import { ScrollTilt, Tilt } from "@/components/motion/effects";
+import { categoryTheme } from "@/lib/categoryTheme";
+import { Enter } from "@/components/sections/entrances";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1664216294580-079bc527ae49?auto=format&fit=crop&w=800&h=600&q=80";
@@ -47,63 +50,83 @@ export default async function ProductDetail({ params }) {
     ...field,
     value: product[field.key],
   }));
+  // Siblings from the same subcategory - the closest match. A product filed
+  // directly on a category (none should be) falls back to that category.
+  const filedUnder = product.subcategory || product.category;
   const related = await getRelatedProducts({
-    categoryId: product.category?.id,
+    categoryId: filedUnder?.id,
     excludeId: product.id,
     limit: 8,
   });
 
+  // The product's range colour (amber for Avinova, ocean for Blunova).
+  const tone = categoryTheme(product.category).ui.accent;
+
   return (
     <div className="bg-mist-50/40">
       {/* ---- Banner -----------------------------------------------------
-          Dark navy, matching the catalogue. The product stage (gallery) sits
-          on the right and hangs a little below the band into the page, so
-          the product reads as lifted off the banner rather than boxed in it.
-          The band's decoration is clipped in its own layer - the section
-          itself can't clip, or the overhang would be cut off. */}
-      <section className="relative isolate text-white">
-        <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden">
-          <div className="absolute inset-0 bg-banner" />
-          <div className="absolute -left-32 -top-40 h-[26rem] w-[26rem] rounded-full bg-[radial-gradient(circle,rgba(229,9,127,0.2),transparent_65%)]" />
-          <div className="bg-dots absolute inset-0 text-white/[0.05] [mask-image:radial-gradient(ellipse_at_top_left,black,transparent_60%)]" />
+          Product-focused, in the catalogue's light banner language
+          (components/ui/PageBanner.js "product"): the copy on the left, and
+          the product itself as the visual - a large white stage lit by a
+          soft glow in the range's colour, leaning toward the pointer. The
+          stage hangs a little below the band into the page, so the product
+          reads as lifted off it. The band's decoration is clipped in its own
+          layer - the section itself can't clip, or the overhang would be cut
+          off. */}
+      <section className="relative isolate border-b border-brand-100">
+        <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden bg-mist-50">
+          {/* Blue into pink: a soft brand-blue glow top left, magenta bottom
+              left, the range's colour behind the product. */}
+          <div className="absolute -left-40 -top-40 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,rgba(97,87,193,0.16),transparent_65%)]" />
+          <div className="absolute -bottom-48 left-1/3 h-[28rem] w-[28rem] rounded-full bg-[radial-gradient(circle,rgba(229,9,127,0.1),transparent_65%)]" />
+          <div
+            className="absolute -right-24 top-1/2 h-[42rem] w-[42rem] -translate-y-1/2 rounded-full opacity-[0.16]"
+            style={{ backgroundImage: `radial-gradient(circle, ${tone}, transparent 65%)` }}
+          />
         </div>
 
-        <div className="container-page grid items-center gap-8 pb-10 pt-8 md:grid-cols-[1.15fr_0.85fr] md:gap-12 md:pb-0">
-          <Reveal mode="mount" distance={14} className="md:pb-14">
+        <div className="container-page grid items-center gap-10 pb-10 pt-10 md:grid-cols-2 md:gap-14 md:pb-0 md:pt-14">
+          <Reveal mode="mount" distance={14} className="md:pb-16">
             <nav aria-label="Breadcrumb">
-              <ol className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-brand-200">
+              <ol className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-ink-soft">
                 <li>
-                  <Link href="/" className="transition-colors hover:text-white">Home</Link>
+                  <Link href="/" className="transition-colors hover:text-brand-700">Home</Link>
                 </li>
-                <ChevronRight size={12} aria-hidden="true" className="shrink-0" />
+                <ChevronRight size={12} aria-hidden="true" className="shrink-0 opacity-60" />
                 <li>
-                  <Link href="/products" className="transition-colors hover:text-white">Products</Link>
+                  <Link href="/products" className="transition-colors hover:text-brand-700">Products</Link>
                 </li>
-                {product.category && (
-                  <>
-                    <ChevronRight size={12} aria-hidden="true" className="shrink-0" />
+                {[product.category, product.subcategory].filter(Boolean).map((level) => (
+                  <Fragment key={level.id}>
+                    <ChevronRight size={12} aria-hidden="true" className="shrink-0 opacity-60" />
                     <li>
-                      <Link
-                        href={`/products?category=${product.category.slug}`}
-                        className="transition-colors hover:text-white"
-                      >
-                        {product.category.name}
+                      <Link href={`/products?category=${level.slug}`} className="transition-colors hover:text-brand-700">
+                        {level.name}
                       </Link>
                     </li>
-                  </>
-                )}
-                <ChevronRight size={12} aria-hidden="true" className="shrink-0" />
-                <li aria-current="page" className="text-white">{product.name}</li>
+                  </Fragment>
+                ))}
+                <ChevronRight size={12} aria-hidden="true" className="shrink-0 opacity-60" />
+                <li aria-current="page" className="font-semibold text-ink">{product.name}</li>
               </ol>
             </nav>
 
-            <div className="mt-5 flex flex-wrap items-center gap-2">
+            <div className="mt-6 flex flex-wrap items-center gap-2">
               {product.category?.name && (
                 <Link
                   href={`/products?category=${product.category.slug}`}
-                  className="rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-accent-200 ring-1 ring-white/15 transition hover:bg-white/15"
+                  className="rounded-full bg-white px-3 py-1 text-xs font-semibold ring-1 ring-brand-100 transition hover:ring-brand-300"
+                  style={{ color: tone }}
                 >
                   {product.category.name}
+                </Link>
+              )}
+              {product.subcategory?.name && (
+                <Link
+                  href={`/products?category=${product.subcategory.slug}`}
+                  className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink-soft ring-1 ring-brand-100 transition hover:text-ink hover:ring-brand-300"
+                >
+                  {product.subcategory.name}
                 </Link>
               )}
               {product.isFeatured && (
@@ -113,34 +136,35 @@ export default async function ProductDetail({ params }) {
               )}
             </div>
 
-            <h1 className="mt-4 break-words font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+            <h1 className="mt-5 break-words text-balance font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-brand-900 sm:text-5xl lg:text-6xl">
               {product.name}
             </h1>
-            <span aria-hidden="true" className="mt-4 block h-1 w-12 rounded-full bg-accent-400" />
             {product.shortDescription && (
-              <p className="mt-4 max-w-xl leading-relaxed text-brand-100">{product.shortDescription}</p>
+              <p className="mt-5 max-w-xl text-pretty text-lg leading-relaxed text-ink-soft">{product.shortDescription}</p>
             )}
 
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
                 href={`/contact?product=${encodeURIComponent(product.name)}`}
                 className="btn-accent w-full sm:w-auto"
               >
                 <Mail size={16} /> Enquire About This Product
               </Link>
-              <Link
-                href="/contact"
-                className="btn w-full bg-white/10 text-white ring-1 ring-white/25 transition hover:bg-white/20 sm:w-auto"
-              >
+              <Link href="/contact" className="btn-outline w-full bg-white sm:w-auto">
                 <Phone size={16} /> Talk to Our Team
               </Link>
             </div>
           </Reveal>
 
-          {/* The stage overhangs the band's bottom edge by 3rem on desktop. */}
-          <Reveal mode="mount" delay={0.1} distance={24} className="mx-auto w-full max-w-sm md:-mb-12 md:py-10">
-            <ProductGallery images={images} name={product.name} />
-          </Reveal>
+          {/* The stage: a white plate on the band, leaning toward the
+              pointer; it overhangs the band's foot by 3rem on desktop. */}
+          <Enter preset="depth" delay={0.15} className="mx-auto w-full max-w-md md:-mb-12">
+            <Tilt max={6} lift={1.01}>
+              <div className="rounded-[2rem] bg-white p-4 shadow-[0_40px_70px_-40px_rgba(21,18,48,0.5)] ring-1 ring-brand-100 sm:p-5">
+                <ProductGallery images={images} name={product.name} />
+              </div>
+            </Tilt>
+          </Enter>
         </div>
       </section>
 
@@ -162,7 +186,9 @@ export default async function ProductDetail({ params }) {
           )}
         </Reveal>
 
-        <Reveal delay={0.08} distance={16} className="space-y-4 lg:sticky lg:top-24">
+        {/* The key details slide in from the side while the tabs rise, so the
+            information arrives as two columns, not one block. */}
+        <Reveal delay={0.12} direction="left" distance={28} className="space-y-4 lg:sticky lg:top-24">
           <div className="rounded-3xl bg-white p-5 shadow-soft ring-1 ring-brand-100">
             <h2 className="font-display text-base font-bold text-ink">Key details</h2>
             <ProductSpecs product={product} className="mt-4" />
@@ -183,14 +209,14 @@ export default async function ProductDetail({ params }) {
               title={
                 <div>
                   <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink">Related products</h2>
-                  {product.category?.name && (
+                  {filedUnder?.name && (
                     <p className="mt-1 text-sm text-ink-soft">
                       More from{" "}
                       <Link
-                        href={`/products?category=${product.category.slug}`}
+                        href={`/products?category=${filedUnder.slug}`}
                         className="font-semibold text-brand-600 link-underline"
                       >
-                        {product.category.name}
+                        {filedUnder.name}
                       </Link>
                     </p>
                   )}

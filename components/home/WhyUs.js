@@ -47,8 +47,8 @@ export default function WhyUs({ section }) {
             <Parallax distance={18} className="h-full w-full">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="https://images.unsplash.com/photo-1770836037793-95bdbf190f71?auto=format&fit=crop&w=800&h=800&q=80"
-                alt="Veterinarian warmly examining a dog during a clinic visit"
+                src="https://images.unsplash.com/photo-1619598951257-68e45c835908?auto=format&fit=crop&w=800&h=800&q=80"
+                alt="Healthy broiler hens on a commercial poultry farm"
                 className="h-full w-full scale-110 object-cover"
               />
             </Parallax>

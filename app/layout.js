@@ -1,6 +1,7 @@
 import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import { MotionProvider } from "@/components/motion/MotionProvider";
+import InlineScript from "@/components/InlineScript";
 
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-plus-jakarta",
@@ -40,12 +41,11 @@ export default function RootLayout({ children }) {
             reveals everything. Three failure modes covered: JS disabled (no
             `js` class), JS blocked or erroring (`motion-timeout` without
             `motion-ready`), and everything fine (rule never matches). */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html:
-              "(function(){var d=document.documentElement;d.classList.add('js');" +
-              "setTimeout(function(){d.classList.add('motion-timeout')},2500)})()",
-          }}
+        <InlineScript
+          html={
+            "(function(){var d=document.documentElement;d.classList.add('js');" +
+            "setTimeout(function(){d.classList.add('motion-timeout')},2500)})()"
+          }
         />
       </head>
       <body className="antialiased">

@@ -43,7 +43,12 @@
      flattens them to a single frame. */
   --animate-float: float 6s ease-in-out infinite;
   --animate-gradient-pan: gradient-pan 12s ease-in-out infinite alternate;
+  --animate-ribbon-drift: ribbon-drift 26s ease-in-out infinite alternate;
 
+  @keyframes ribbon-drift {
+    0% { transform: translate3d(0, 0, 0); }
+    100% { transform: translate3d(-4%, 18px, 0); }
+  }
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }
@@ -259,4 +264,45 @@
 @utility bg-dots {
   background-image: radial-gradient(currentColor 1px, transparent 1px);
   background-size: 22px 22px;
+}
+
+/* Product-range accents (lib/categoryTheme.js). The products page sets them
+   per range on its wrapper; everywhere else they keep these initial values,
+   the brand colours the components used before. Registered, rather than
+   plain custom properties, so they can be transitioned: switching range
+   eases every accent across instead of snapping. */
+@property --range-accent {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #393185;
+}
+@property --range-text {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #2b2565;
+}
+@property --range-soft {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #f3f2fa;
+}
+@property --range-ring {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #c0bce6;
+}
+@property --range-bar-from {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #483ea8;
+}
+@property --range-bar-to {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #e5097f;
+}
+@utility range-theme {
+  transition-property: --range-accent, --range-text, --range-soft, --range-ring, --range-bar-from, --range-bar-to;
+  transition-duration: 700ms;
+  transition-timing-function: ease-out;
 }

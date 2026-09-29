@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import { MotionConfig, useReducedMotion } from "framer-motion";
+import { createContext, useContext, useEffect, useState, useSyncExternalStore } from "react";
+import { MotionConfig } from "framer-motion";
 import { DISTANCE } from "@/lib/motion";
 
 // Tracks whether we are on a small screen, so entrances can shorten their
@@ -15,9 +15,25 @@ const MOBILE_QUERY = "(max-width: 767px)";
 // sense here: a touchscreen has no hover position to follow, and a tap would
 // leave a card stuck mid-tilt.
 const HOVER_QUERY = "(hover: hover) and (pointer: fine)";
+const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
+
+// The OS reduced-motion preference, hydration-safe. The server can't know it,
+// so it renders as "not reduced"; useSyncExternalStore makes the hydrating
+// render use that same server value and only then switches to the real one.
+// (framer-motion's useReducedMotion reports the real value on the very first
+// client render, so every component that renders differently under reduced
+// motion - SplitText, Parallax, Counter - mismatched during hydration and
+// React threw the tree away and re-rendered it on the client.)
+const subscribeReduced = (onChange) => {
+  const mq = window.matchMedia(REDUCED_QUERY);
+  mq.addEventListener("change", onChange);
+  return () => mq.removeEventListener("change", onChange);
+};
+const getReduced = () => window.matchMedia(REDUCED_QUERY).matches;
+const getServerReduced = () => false;
 
 export function MotionProvider({ children }) {
-  const reduced = useReducedMotion();
+  const reduced = useSyncExternalStore(subscribeReduced, getReduced, getServerReduced);
   // Starts false so server and first client render agree; the effect corrects
   // it before anything below the fold can animate.
   const [isMobile, setIsMobile] = useState(false);

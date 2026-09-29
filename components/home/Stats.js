@@ -39,22 +39,24 @@ export default function Stats({ section }) {
           // products and categories grids own that, and this has to read as
           // one instrument panel rather than three cards.
           <RevealGroup
-            className="panel mt-10 flex flex-col divide-y divide-brand-100 overflow-hidden sm:flex-row sm:divide-x sm:divide-y-0"
+            className="panel mt-10 grid grid-cols-2 gap-px overflow-hidden bg-brand-100 sm:flex sm:gap-0 sm:divide-x sm:divide-brand-100 sm:bg-white [&>*:last-child:nth-child(odd)]:col-span-2"
             stagger={0.14}
             delay={0.1}
           >
             {figures.map((item) => (
               // flex-1 + the row's default stretch keeps every cell the same
-              // width and height however long its caption runs.
+              // width and height however long its caption runs. Phones: a
+              // two-column grid (hairlines are the gaps showing the tinted
+              // panel), an odd last figure spanning the row.
               <RevealItem
                 key={item.label}
-                className="group flex-1 px-6 py-9 text-center transition-colors duration-300 hover:bg-mist-50/70"
+                className="group flex-1 bg-white px-4 py-7 text-center transition-colors duration-300 hover:bg-mist-50 sm:px-6 sm:py-9"
                 distance={18}
                 duration={0.6}
               >
                 {/* Brand gradient clipped to the figure; inline-block so the
                     gradient spans the number rather than the whole cell. */}
-                <p className="text-gradient inline-block font-display text-4xl font-extrabold tracking-tight transition-transform duration-300 group-hover:scale-105 sm:text-5xl">
+                <p className="text-gradient inline-block font-display text-3xl font-extrabold tracking-tight transition-transform duration-300 group-hover:scale-105 sm:text-5xl">
                   <Counter value={item.value} />
                 </p>
                 {/* The seeded captions start lower-case ("years combined

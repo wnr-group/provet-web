@@ -5,7 +5,12 @@ import { CenterReveal, Parallax } from "@/components/motion/effects";
 import { getContentSections } from "@/lib/data";
 import { contactInfo, telHref } from "@/lib/contactContent";
 
-export default async function CtaBanner() {
+// `title` / `body` come from the homepage's "cta" block in Admin > Website
+// Content > Homepage (lib/homeContent.js); other pages use these defaults.
+export default async function CtaBanner({
+  title = "Need help choosing the right product for your clinic?",
+  body = "Our veterinary specialists are ready to guide you through composition, dosage and suitability for your practice.",
+} = {}) {
   // The call button uses the first number in Admin > Website Content >
   // Contact Us > Contact details, so it always matches the contact page.
   const { phones } = contactInfo(await getContentSections("contact"));
@@ -45,15 +50,14 @@ export default async function CtaBanner() {
           <RevealGroup className="relative mx-auto max-w-xl" stagger={0.1} delay={0.15}>
             <RevealItem distance={16}>
               <h2 className="font-display text-2xl font-extrabold tracking-tight text-white sm:text-3xl lg:text-4xl">
-                Need help choosing the right product for your clinic?
+                {title}
               </h2>
             </RevealItem>
-            <RevealItem distance={14}>
-              <p className="mt-4 text-brand-100">
-                Our veterinary specialists are ready to guide you through composition, dosage and
-                suitability for your practice.
-              </p>
-            </RevealItem>
+            {body && (
+              <RevealItem distance={14}>
+                <p className="mt-4 whitespace-pre-line text-brand-100">{body}</p>
+              </RevealItem>
+            )}
             <RevealItem distance={12}>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
                 <Link

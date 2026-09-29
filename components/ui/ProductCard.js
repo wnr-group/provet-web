@@ -49,7 +49,7 @@ export default function ProductCard({ product }) {
           card height followed the copy instead of being uniform. */}
       <div className="flex flex-1 flex-col gap-2 px-5 pb-5 pt-4">
         <span className="line-clamp-1 min-h-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-accent-600">
-          {product.category?.name}
+          {product.subcategory?.name || product.category?.name}
         </span>
         <h3 className="line-clamp-1 font-display text-[17px] font-bold tracking-tight text-ink transition-colors group-hover:text-brand-700">
           {product.name}
