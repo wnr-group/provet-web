@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { MessageSquare, Save, Trash2, ChevronDown, ChevronUp, Mail, Plus, Pencil } from "lucide-react";
+import { MessageSquare, Save, Trash2, ChevronDown, ChevronUp, Plus, Pencil, Reply, AlertCircle, Eye, Mail } from "lucide-react";
 import clsx from "clsx";
 import {
   adminGetFeedbacks,
@@ -60,17 +60,52 @@ export default function FeedbackAdmin() {
 }
 
 // ---- Submissions -----------------------------------------------------------
+//
+// A table - name, email, message, when it was sent, and actions (view, reply
+// by email, delete). Clicking the sender's profile (or anywhere on the row,
+// or the view action) opens the submission in a popup: the full message and
+// the answers to the form's extra fields. On narrow screens the table scrolls
+// sideways rather than squeezing its columns.
 
 function formatAnswer(value) {
   if (Array.isArray(value)) return value.join(", ");
   return String(value);
 }
 
+const fullDate = (iso) =>
+  new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
+
+// "3 days ago", "just now" - the list is scanned by recency.
+const RELATIVE = new Intl.RelativeTimeFormat(undefined, { numeric: "auto" });
+const STEPS = [
+  ["year", 365 * 24 * 3600],
+  ["month", 30 * 24 * 3600],
+  ["week", 7 * 24 * 3600],
+  ["day", 24 * 3600],
+  ["hour", 3600],
+  ["minute", 60],
+];
+function relativeDate(iso) {
+  const seconds = (new Date(iso).getTime() - Date.now()) / 1000;
+  for (const [unit, size] of STEPS) {
+    if (Math.abs(seconds) >= size) return RELATIVE.format(Math.round(seconds / size), unit);
+  }
+  return "just now";
+}
+
+const initials = (name) =>
+  (name || "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("") || "?";
+
 function Submissions() {
   const [page, setPage] = useState(1);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(null);
+  const [viewing, setViewing] = useState(null); // the submission in the popup
   const [error, setError] = useState("");
 
   const load = useCallback(
@@ -92,6 +127,7 @@ function Submissions() {
     if (!confirm(`Delete feedback from ${who}? This can't be undone.`)) return;
     try {
       await adminDeleteFeedback(feedback.id);
+      if (viewing?.id === feedback.id) setViewing(null);
       // Stepping back a page avoids landing on an empty last page after
       // deleting its only row.
       if (result.items.length === 1 && page > 1) setPage((p) => p - 1);
@@ -101,7 +137,9 @@ function Submissions() {
     }
   };
 
-  if (!result) return error ? <p className="text-sm text-red-600">{error}</p> : <PageSpinner />;
+  if (!result) {
+    return error ? <ErrorNote>{error}</ErrorNote> : <PageSpinner />;
+  }
 
   if (result.items.length === 0) {
     return (
@@ -113,84 +151,252 @@ function Submissions() {
     );
   }
 
+  const totalPages = Math.max(1, Math.ceil(result.total / LIMIT));
+
   return (
-    <div className={clsx("transition-opacity", loading && "opacity-50")}>
-      {error && <p className="mb-3 text-sm text-red-600">{error}</p>}
-      <p className="mb-3 text-sm text-ink-soft">
-        {result.total} {result.total === 1 ? "submission" : "submissions"}
-      </p>
+    <div className={clsx("transition-opacity duration-200", loading && "opacity-50")}>
+      {error && <ErrorNote className="mb-4">{error}</ErrorNote>}
 
-      <div className="space-y-3">
-        {result.items.map((item) => {
-          const isOpen = expanded === item.id;
-          return (
-            <div key={item.id} className="card p-4">
-              <div className="flex items-start gap-3">
-                <button
-                  className="flex min-w-0 flex-1 items-center justify-between gap-3 text-left"
-                  onClick={() => setExpanded(isOpen ? null : item.id)}
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-ink">{item.name || "Anonymous"}</p>
-                    <p className="mt-0.5 truncate text-sm text-ink-soft">{item.message}</p>
-                  </div>
-                  <span className="shrink-0 text-xs text-ink-soft">
-                    {new Date(item.createdAt).toLocaleString()}
-                  </span>
-                  {isOpen ? (
-                    <ChevronUp size={18} className="shrink-0 text-ink-soft" />
-                  ) : (
-                    <ChevronDown size={18} className="shrink-0 text-ink-soft" />
-                  )}
-                </button>
-                <button
-                  onClick={() => onDelete(item)}
-                  className="shrink-0 rounded-lg p-1.5 text-ink-soft hover:bg-red-50 hover:text-red-600"
-                  aria-label="Delete feedback"
-                >
-                  <Trash2 size={15} />
-                </button>
-              </div>
-
-              {isOpen && (
-                <div className="mt-4 border-t border-brand-100 pt-4">
-                  <p className="whitespace-pre-line text-sm leading-relaxed text-ink-soft">{item.message}</p>
-
-                  {item.answers.length > 0 && (
-                    <dl className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2">
-                      {item.answers.map((answer) => (
-                        <div key={answer.key}>
-                          {/* The label is the one stored with the answer, so
-                              this still reads correctly after the field was
-                              renamed or deleted. */}
-                          <dt className="text-xs font-semibold uppercase tracking-wide text-accent-600">
-                            {answer.label || answer.key}
-                          </dt>
-                          <dd className="text-sm text-ink-soft">{formatAnswer(answer.value)}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                  )}
-
-                  <div className="mt-4 flex flex-wrap gap-4 text-sm text-ink-soft">
-                    {item.email ? (
-                      <a href={`mailto:${item.email}`} className="flex items-center gap-1.5 hover:text-brand-700">
-                        <Mail size={14} /> {item.email}
-                      </a>
-                    ) : (
-                      <span className="text-ink-soft/70">No email provided</span>
-                    )}
-                    <span>Submitted {new Date(item.createdAt).toLocaleString()}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+      <div className="mb-3 flex items-baseline justify-between gap-3 px-1">
+        <p className="text-sm font-medium text-ink">
+          {result.total} {result.total === 1 ? "submission" : "submissions"}
+        </p>
+        {totalPages > 1 && (
+          <p className="text-xs text-ink-soft">
+            Page {page} of {totalPages}
+          </p>
+        )}
       </div>
 
-      <Pagination page={page} totalPages={Math.max(1, Math.ceil(result.total / LIMIT))} onChange={setPage} />
+      {/* Phones: a list of cards - the sender, the start of the message and
+          when it came in - each opening the same popup (which carries reply
+          and delete), rather than a table scrolled sideways. */}
+      <ul className="divide-y divide-brand-100 overflow-hidden rounded-2xl border border-brand-100 bg-white sm:hidden">
+        {result.items.map((item) => (
+          <li key={item.id}>
+            <button
+              type="button"
+              onClick={() => setViewing(item)}
+              aria-label={`Open feedback from ${item.name || "Anonymous"}`}
+              className="flex w-full gap-3 p-4 text-left transition-colors active:bg-mist-50"
+            >
+              <Avatar name={item.name} />
+              <span className="min-w-0 flex-1">
+                <span className="flex items-baseline justify-between gap-2">
+                  <span className="truncate font-medium text-ink">{item.name || "Anonymous"}</span>
+                  <time dateTime={item.createdAt} className="shrink-0 text-xs text-ink-soft">
+                    {relativeDate(item.createdAt)}
+                  </time>
+                </span>
+                {item.email && <span className="block truncate text-xs text-ink-soft">{item.email}</span>}
+                <span className="mt-1.5 line-clamp-2 block text-sm text-ink-soft">{item.message}</span>
+                {item.answers.length > 0 && (
+                  <span className="mt-1 block text-xs text-ink-soft/80">
+                    + {item.answers.length} {item.answers.length === 1 ? "answer" : "answers"}
+                  </span>
+                )}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {/* The same table treatment as Admin > Products. A row opens its
+          submission in a popup. */}
+      <div className="overflow-x-auto rounded-2xl border border-brand-100 bg-white max-sm:hidden">
+        <table className="w-full min-w-[46rem] text-sm">
+          <thead className="border-b border-brand-100 bg-mist-50/60 text-left text-xs uppercase tracking-wide text-ink-soft">
+            <tr>
+              <th className="px-4 py-3 font-semibold">Name</th>
+              <th className="px-4 py-3 font-semibold">Email</th>
+              <th className="px-4 py-3 font-semibold">Message</th>
+              <th className="px-4 py-3 font-semibold">Submitted</th>
+              <th className="px-4 py-3 text-right font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-brand-100">
+            {result.items.map((item) => {
+              const open = () => setViewing(item);
+              return (
+                <tr
+                  key={item.id}
+                  onClick={open}
+                  className={clsx(
+                    "cursor-pointer align-middle transition-colors",
+                    viewing?.id === item.id ? "bg-brand-50/50" : "hover:bg-mist-50/70"
+                  )}
+                >
+                  <td className="px-4 py-3">
+                    {/* The profile: a real button, so the popup opens from the
+                        keyboard too. */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        open();
+                      }}
+                      className="group/profile -m-1 flex items-center gap-3 rounded-xl p-1 text-left focus-visible:outline-2 focus-visible:outline-brand-500"
+                      aria-label={`Open feedback from ${item.name || "Anonymous"}`}
+                    >
+                      <Avatar name={item.name} />
+                      <span className="font-medium text-ink group-hover/profile:text-brand-700 group-hover/profile:underline">
+                        {item.name || "Anonymous"}
+                      </span>
+                    </button>
+                  </td>
+                  <td className="px-4 py-3">
+                    {item.email ? (
+                      <a
+                        href={`mailto:${item.email}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-ink-soft hover:text-brand-700 hover:underline"
+                      >
+                        {item.email}
+                      </a>
+                    ) : (
+                      <span className="text-ink-soft/60">-</span>
+                    )}
+                  </td>
+                  <td className="max-w-[22rem] px-4 py-3">
+                    <p className="truncate text-ink-soft">{item.message}</p>
+                    {item.answers.length > 0 && (
+                      <p className="mt-0.5 text-xs text-ink-soft/80">
+                        + {item.answers.length} {item.answers.length === 1 ? "answer" : "answers"}
+                      </p>
+                    )}
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3 text-ink-soft">
+                    <time dateTime={item.createdAt} title={fullDate(item.createdAt)}>
+                      {relativeDate(item.createdAt)}
+                    </time>
+                  </td>
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex justify-end gap-0.5">
+                      <RowAction label="View feedback" onClick={open}>
+                        <Eye size={16} />
+                      </RowAction>
+                      {item.email && (
+                        <RowAction label="Reply by email" href={`mailto:${item.email}`}>
+                          <Reply size={16} />
+                        </RowAction>
+                      )}
+                      <RowAction label="Delete" onClick={() => onDelete(item)} danger>
+                        <Trash2 size={15} />
+                      </RowAction>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+
+      <Modal open={Boolean(viewing)} onClose={() => setViewing(null)} title="Feedback">
+        {viewing && <SubmissionDetail item={viewing} onDelete={() => onDelete(viewing)} />}
+      </Modal>
     </div>
+  );
+}
+
+// The popup: who sent it, the full message, the answers to the form's extra
+// fields, and replying or deleting without going back to the table.
+function SubmissionDetail({ item, onDelete }) {
+  return (
+    <div>
+      <div className="flex items-center gap-3">
+        <Avatar name={item.name} />
+        <div className="min-w-0">
+          <p className="truncate font-semibold text-ink">{item.name || "Anonymous"}</p>
+          {item.email && <p className="truncate text-sm text-ink-soft">{item.email}</p>}
+        </div>
+      </div>
+
+      <blockquote className="mt-5 max-h-[45vh] overflow-y-auto whitespace-pre-line rounded-xl border-l-4 border-brand-200 bg-mist-50/60 px-5 py-4 leading-relaxed text-ink">
+        {item.message}
+      </blockquote>
+
+      {item.answers.length > 0 && (
+        <dl className="mt-4 grid gap-x-6 gap-y-3 sm:grid-cols-2">
+          {item.answers.map((answer) => (
+            <div key={answer.key}>
+              {/* The label is the one stored with the answer, so this still
+                  reads correctly after the field was renamed or deleted. */}
+              <dt className="text-xs text-ink-soft">{answer.label || answer.key}</dt>
+              <dd className="mt-0.5 text-sm font-medium text-ink">{formatAnswer(answer.value)}</dd>
+            </div>
+          ))}
+        </dl>
+      )}
+
+      <p className="mt-4 text-xs text-ink-soft">
+        Submitted <time dateTime={item.createdAt}>{fullDate(item.createdAt)}</time>
+      </p>
+
+      <div className="mt-5 flex flex-wrap gap-2 border-t border-brand-100 pt-4">
+        {item.email && (
+          <a href={`mailto:${item.email}`} className="btn-primary">
+            <Mail size={16} /> Reply by email
+          </a>
+        )}
+        <button type="button" onClick={onDelete} className="btn-ghost text-red-600 hover:bg-red-50">
+          <Trash2 size={15} /> Delete
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// A quiet icon action with a small tooltip; a link when given `href`.
+function RowAction({ label, onClick, href, danger = false, children }) {
+  const className = clsx(
+    "flex h-8 w-8 items-center justify-center rounded-lg text-ink-soft transition-colors",
+    danger ? "hover:bg-red-50 hover:text-red-600" : "hover:bg-brand-50 hover:text-brand-700"
+  );
+  return (
+    <span className="group/tip relative inline-flex">
+      {href ? (
+        <a href={href} aria-label={label} className={className}>
+          {children}
+        </a>
+      ) : (
+        <button type="button" onClick={onClick} aria-label={label} className={className}>
+          {children}
+        </button>
+      )}
+      <span
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-md bg-ink px-2 py-1 text-[11px] font-medium normal-case tracking-normal text-white opacity-0 transition-opacity group-hover/tip:opacity-100 group-focus-within/tip:opacity-100"
+      >
+        {label}
+      </span>
+    </span>
+  );
+}
+
+// The sender's initials on a tinted square; "?" for anonymous feedback.
+function Avatar({ name }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={clsx(
+        "flex shrink-0 items-center justify-center rounded-xl font-display font-bold",
+        "h-9 w-9 text-xs",
+        name ? "bg-brand-50 text-brand-700" : "bg-mist-100 text-ink-soft"
+      )}
+    >
+      {initials(name)}
+    </span>
+  );
+}
+
+function ErrorNote({ children, className }) {
+  return (
+    <p role="alert" className={clsx("flex items-center gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700", className)}>
+      <AlertCircle size={16} className="shrink-0" /> {children}
+    </p>
   );
 }
 

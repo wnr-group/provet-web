@@ -44,6 +44,10 @@ export const adminCreateCategory = (payload) =>
 export const adminUpdateCategory = (id, payload) =>
   apiFetch(`/admin/categories/${id}`, { method: "PUT", body: JSON.stringify(payload) });
 export const adminDeleteCategory = (id) => apiFetch(`/admin/categories/${id}`, { method: "DELETE" });
+// One level at a time: parentId null reorders the top-level categories, an id
+// reorders that category's subcategories.
+export const adminReorderCategories = (parentId, order) =>
+  apiFetch("/admin/categories/reorder", { method: "PUT", body: JSON.stringify({ parentId, order }) });
 
 // ---- Admin: Banners ----
 export const adminGetBanners = () => apiFetch("/admin/banners");
@@ -55,8 +59,10 @@ export const adminDeleteBanner = (id) => apiFetch(`/admin/banners/${id}`, { meth
 
 // ---- Admin: Content ----
 export const adminGetContent = (page) => apiFetch(`/admin/content/${page}`);
-export const adminUpdateContent = (page, sections) =>
-  apiFetch(`/admin/content/${page}`, { method: "PUT", body: JSON.stringify({ sections }) });
+// `replaceAdded`: the list is complete, so sections the admin added and then
+// removed are deleted (built-in blocks never are - see lib/fixedPages.js).
+export const adminUpdateContent = (page, sections, { replaceAdded = false } = {}) =>
+  apiFetch(`/admin/content/${page}`, { method: "PUT", body: JSON.stringify({ sections, replaceAdded }) });
 
 // ---- Admin: Pages (menu pages built from sections) ----
 export const adminGetPage = (key) => apiFetch(`/admin/pages/${key}`);
@@ -67,6 +73,11 @@ export const adminUpdatePage = (key, payload) =>
 export const adminGetSocialLinks = () => apiFetch("/admin/social-links");
 export const adminUpdateSocialLinks = (links) =>
   apiFetch("/admin/social-links", { method: "PUT", body: JSON.stringify({ links }) });
+
+// ---- Admin: Brochure ----
+export const adminGetBrochure = () => apiFetch("/admin/brochure");
+export const adminUpdateBrochure = (settings) =>
+  apiFetch("/admin/brochure", { method: "PUT", body: JSON.stringify(settings) });
 
 // ---- Admin: Feedback ----
 export const adminGetFeedbackConfig = () => apiFetch("/admin/feedback-config");
