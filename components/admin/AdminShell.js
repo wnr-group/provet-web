@@ -12,6 +12,7 @@ import {
   Share2,
   MessageSquare,
   Mail,
+  FileDown,
   LogOut,
   ExternalLink,
 } from "lucide-react";
@@ -25,6 +26,7 @@ const links = [
   { href: "/admin/banners", label: "Banners", icon: ImageIcon },
   { href: "/admin/content", label: "Website Content", icon: FileText },
   { href: "/admin/social", label: "Social Media", icon: Share2 },
+  { href: "/admin/brochure", label: "Brochure", icon: FileDown },
   { href: "/admin/feedback", label: "Feedback", icon: MessageSquare },
   { href: "/admin/enquiries", label: "Enquiries", icon: Mail },
 ];
