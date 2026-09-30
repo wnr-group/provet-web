@@ -41,7 +41,7 @@ export default function FeaturedProducts({
           {products.slice(0, 4).map((p) => (
             <RevealItem
               key={p.id}
-              className="h-full w-[78%] shrink-0 snap-start sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]"
+              className="flex w-[78%] shrink-0 snap-start sm:w-[calc((100%-1.25rem)/2)] lg:w-[calc((100%-3.75rem)/4)]"
               direction="left"
               distance={32}
               duration={0.55}
