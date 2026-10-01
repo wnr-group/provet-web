@@ -17,7 +17,7 @@ import CtaBanner from "@/components/home/CtaBanner";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Home",
+  title: { absolute: "Provet" },
   description:
     "Browse Provet's catalogue of veterinary medicines, vaccines and animal healthcare products. Request a quote from our expert team.",
 };

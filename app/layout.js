@@ -17,8 +17,8 @@ const inter = Inter({
 
 export const metadata = {
   title: {
-    default: "Provet — Trusted Veterinary Medicine Supplier",
-    template: "%s — Provet",
+    default: "Provet",
+    template: "%s - Provet",
   },
   description:
     "Provet supplies quality veterinary medicines, vaccines and animal healthcare products backed by expert guidance.",

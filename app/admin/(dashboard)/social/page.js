@@ -148,7 +148,7 @@ export default function SocialAdmin() {
 
           <p className="mt-4 text-sm text-ink-soft">
             {enabledCount === 0
-              ? "No platforms enabled — the social icons are hidden on the public site."
+              ? "No platforms enabled. The social icons are hidden on the public site."
               : `${enabledCount} platform${enabledCount === 1 ? "" : "s"} shown on the footer and Contact page.`}
           </p>
         </>

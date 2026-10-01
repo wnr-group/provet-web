@@ -761,7 +761,7 @@ function FieldModal({ editing, types, onClose, onSaved }) {
           </select>
           {isSystem && (
             <p className="mt-1.5 text-xs text-ink-soft">
-              Built-in fields keep their type — they write to their own database column.
+              Built-in fields keep their type. They write to their own database column.
             </p>
           )}
         </div>

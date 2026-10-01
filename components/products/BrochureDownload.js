@@ -132,7 +132,7 @@ export default function BrochureDownload({ label = "Download Brochure", fileUrl:
             <CheckCircle2 size={40} className="text-accent-500" />
             <h3 className="mt-4 font-display text-lg font-semibold text-ink">Details Received</h3>
             <p className="mt-2 max-w-sm text-sm text-ink-soft">
-              Thank you. Your brochure should open automatically — if it doesn&apos;t, use the button
+              Thank you. Your brochure should open automatically. If it doesn&apos;t, use the button
               below.
             </p>
             <a
