@@ -1,5 +1,6 @@
 import Counter from "@/components/motion/Counter";
 import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
+import { ScrollTilt } from "@/components/motion/effects";
 import { parseStatItems } from "@/lib/contentFormat";
 
 // The "stats" Website Content block. One elevated panel split by hairline
@@ -38,6 +39,7 @@ export default function Stats({ section }) {
           // in sequence while its number counts up. No card stagger here - the
           // products and categories grids own that, and this has to read as
           // one instrument panel rather than three cards.
+          <ScrollTilt amount={10}>
           <RevealGroup
             className="panel mt-10 grid grid-cols-2 gap-px overflow-hidden bg-brand-100 sm:flex sm:gap-0 sm:divide-x sm:divide-brand-100 sm:bg-white [&>*:last-child:nth-child(odd)]:col-span-2"
             stagger={0.14}
@@ -68,6 +70,7 @@ export default function Stats({ section }) {
               </RevealItem>
             ))}
           </RevealGroup>
+          </ScrollTilt>
         )}
 
         {notes.length > 0 && (

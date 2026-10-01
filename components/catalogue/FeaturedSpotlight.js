@@ -8,6 +8,7 @@ import clsx from "clsx";
 import { Tilt } from "@/components/motion/effects";
 import { useMotionEnv } from "@/components/motion/MotionProvider";
 import { EASE } from "@/lib/motion";
+import SiteImage from "@/components/ui/SiteImage";
 
 // The catalogue's featured product, one at a time, in a light card - a lead
 // item presented properly instead of as the first cell of the grid.
@@ -40,11 +41,13 @@ export default function FeaturedSpotlight({ products }) {
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
-      className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-50 via-white to-accent-50 p-5 shadow-soft ring-1 ring-brand-100 sm:p-8"
+      className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-50 via-white to-accent-50 p-4 shadow-soft ring-1 ring-brand-100 sm:p-6"
     >
-      <div className="grid items-center gap-6 md:grid-cols-[0.75fr_1.25fr] md:gap-10">
+      {/* Kept compact: it introduces the catalogue rather than competing with
+          it, so the product grid stays close to the top of the page. */}
+      <div className="grid items-center gap-5 sm:grid-cols-[8.5rem_1fr] md:grid-cols-[10rem_1fr] md:gap-8">
         {/* The stage */}
-        <Tilt max={14} lift={1.05} shadow className="mx-auto w-full max-w-[16rem]">
+        <Tilt max={14} lift={1.05} shadow className="mx-auto w-full max-w-[9rem] sm:max-w-none">
           {/* Idle sway, so the stage reads as 3D before it is touched. */}
           <div className="animate-sway3d">
           {/* The label artwork fills the square, zoomed just enough
@@ -59,10 +62,14 @@ export default function FeaturedSpotlight({ products }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.5, ease: EASE }}
-                className="h-full w-full"
+                className="relative h-full w-full"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs */}
-                <img src={product.images?.[0]} alt={product.name} className="h-full w-full scale-106 object-cover" />
+                <SiteImage
+                  src={product.images?.[0]}
+                  alt={product.name}
+                  sizes="(min-width: 768px) 160px, 144px"
+                  className="h-full w-full scale-106 object-cover"
+                />
               </motion.div>
             </AnimatePresence>
           </div>
@@ -88,37 +95,37 @@ export default function FeaturedSpotlight({ products }) {
               transition={{ duration: 0.4, ease: EASE }}
             >
               {product.category?.name && (
-                <p className="mt-4 text-sm font-medium text-brand-600">
+                <p className="mt-2 text-sm font-medium text-brand-600">
                   {[product.category.name, product.subcategory?.name].filter(Boolean).join(" · ")}
                 </p>
               )}
-              <h2 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
+              <h2 className="mt-0.5 font-display text-xl font-extrabold tracking-tight text-ink sm:text-2xl">
                 {product.name}
               </h2>
               {product.shortDescription && (
-                <p className="mt-3 line-clamp-3 max-w-xl text-sm leading-relaxed text-ink-soft">
+                <p className="mt-2 line-clamp-2 max-w-2xl text-sm leading-relaxed text-ink-soft">
                   {product.shortDescription}
-                </p>
-              )}
-              {product.packSize && (
-                <p className="mt-3 inline-flex rounded-full bg-white px-3 py-1 text-xs font-medium text-ink-soft ring-1 ring-brand-100">
-                  {product.packSize}
                 </p>
               )}
             </motion.div>
           </AnimatePresence>
 
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <Link href={`/products/${product.slug}`} className="btn-primary group">
+          {/* Actions, pack size and the slide controls share one row. */}
+          <div className="mt-4 flex flex-wrap items-center gap-2.5">
+            <Link href={`/products/${product.slug}`} className="btn-primary group py-2">
               View product <ArrowRight size={16} className="transition-transform group-hover:translate-x-1" />
             </Link>
-            <Link href={`/contact?product=${encodeURIComponent(product.name)}`} className="btn-outline">
+            <Link href={`/contact?product=${encodeURIComponent(product.name)}`} className="btn-outline py-2">
               <Mail size={16} /> Enquire
             </Link>
-          </div>
+            {product.packSize && (
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-medium text-ink-soft ring-1 ring-brand-100">
+                {product.packSize}
+              </span>
+            )}
 
           {count > 1 && (
-            <div className="mt-6 flex items-center gap-2">
+            <div className="flex items-center gap-2 sm:ml-auto">
               <button
                 type="button"
                 onClick={() => go(-1)}
@@ -144,17 +151,17 @@ export default function FeaturedSpotlight({ products }) {
                     aria-label={`Show ${p.name}`}
                     aria-current={i === index}
                     className={clsx(
-                      "h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-white transition",
+                      "relative h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-white transition",
                       i === index ? "ring-2 ring-accent-500" : "opacity-60 ring-1 ring-brand-100 hover:opacity-100"
                     )}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs */}
-                    <img src={p.images?.[0]} alt="" className="h-full w-full object-contain" />
+                    <SiteImage src={p.images?.[0]} sizes="36px" className="h-full w-full object-contain" />
                   </button>
                 ))}
               </div>
             </div>
           )}
+          </div>
         </div>
       </div>
     </section>

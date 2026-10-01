@@ -12,6 +12,7 @@ import { ScrollTilt, Tilt } from "@/components/motion/effects";
 import YouTubePlayer from "@/components/sections/YouTubePlayer";
 import MagazineRack from "@/components/sections/MagazineRack";
 import BookletShelf from "@/components/sections/BookletShelf";
+import ImageAccordion from "@/components/sections/ImageAccordion";
 import { isYouTubeUrl } from "@/lib/youtube";
 
 // Renders a page's admin-configured sections. One component per type in
@@ -260,6 +261,11 @@ function ImageCards({ section }) {
   // The admin "Columns" setting: people per row, or covers visible across
   // the shelf on desktop (more than that scroll).
   const columns = section.config.columns || 3;
+
+  // Tall photo panels that open out on hover, on a light background.
+  if (section.config.imageStyle === "accordion" && items.some((it) => it.image)) {
+    return <ImageAccordion section={section} items={items} />;
+  }
 
   // Magazine issues: the latest featured, the rest on a rack.
   if (section.config.imageStyle === "magazine" && items.some((it) => it.image)) {
@@ -630,7 +636,10 @@ const RENDERERS = {
 // The section types that stand up in 3D on scroll (see below).
 const TILTED_TYPES = new Set(["cards", "imageCards", "productGrid", "categoryGrid"]);
 
-export default function PageSections({ sections }) {
+// `offset`: where these sections fall in the alternation when they are
+// rendered apart from their siblings (the homepage interleaves added sections
+// with its own, one at a time).
+export default function PageSections({ sections, offset = 0 }) {
   if (!sections?.length) return null;
 
   // Bands alternate white / tinted so neighbouring sections never merge into
@@ -642,7 +651,7 @@ export default function PageSections({ sections }) {
         const Renderer = RENDERERS[section.type];
         if (!Renderer) return null;
 
-        const tinted = index % 2 === 1;
+        const tinted = (index + offset) % 2 === 1;
 
         return (
           <section

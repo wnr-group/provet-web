@@ -67,6 +67,14 @@ model Product {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   enquiries        Enquiry[]
+
+  // The catalogue's access paths. Postgres doesn't index foreign keys on its
+  // own, so a category's listing, its counts and "related products" all
+  // scanned the table. Every public read also filters on isActive, and
+  // listings sort newest first or put featured products first.
+  @@index([categoryId, isActive])
+  @@index([isActive, createdAt])
+  @@index([isActive, isFeatured])
 }
 
 model Enquiry {

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
+import { Parallax, Tilt } from "@/components/motion/effects";
 import { categoryTheme } from "@/lib/categoryTheme";
 
 const FALLBACK_IMG =
@@ -27,7 +28,7 @@ export default function CategoryGrid({ categories, title = "Solutions by Species
       <div className="container-page">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <Reveal>
-            <SectionHeading eyebrow="Our Portfolio" title={title} description={description || undefined} />
+            <SectionHeading animated eyebrow="Our Portfolio" title={title} description={description || undefined} />
           </Reveal>
           <Link href="/products" className="btn-outline hidden sm:inline-flex">
             View Full Portfolio <ArrowRight size={16} />
@@ -53,7 +54,10 @@ export default function CategoryGrid({ categories, title = "Solutions by Species
         >
           {categories.map((category) => (
             <RevealItem key={category.id} className="h-auto w-[80%] shrink-0 snap-start sm:h-full sm:w-auto" direction="none" scale={0.96} duration={0.55}>
-              <RangePanel category={category} />
+              {/* Leans toward the cursor in 3D (flat on touch screens). */}
+              <Tilt max={6} lift={1.02} shadow className="h-full">
+                <RangePanel category={category} />
+              </Tilt>
             </RevealItem>
           ))}
         </RevealGroup>
@@ -78,21 +82,26 @@ function RangePanel({ category }) {
     <Link
       href={href}
       aria-label={`${category.name}: ${category.productCount} products`}
-      className="group relative isolate flex h-full min-h-[20rem] flex-col justify-end overflow-hidden rounded-3xl text-white shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-500 sm:min-h-[26rem]"
+      className="group relative isolate flex h-full min-h-[15rem] flex-col justify-end overflow-hidden rounded-3xl text-white shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-500 sm:min-h-[18rem]"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded/external URLs */}
-      <img
-        src={category.image || FALLBACK_IMG}
-        alt=""
-        loading="lazy"
-        className="absolute inset-0 -z-10 h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
-      />
+      {/* The photo drifts more slowly than the page as it scrolls past, so
+          it reads as a window onto the scene rather than a flat card. It is
+          taller than the card, so the drift never shows an edge. */}
+      <Parallax distance={22} className="absolute -inset-y-8 inset-x-0 -z-10">
+        {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded/external URLs */}
+        <img
+          src={category.image || FALLBACK_IMG}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
+        />
+      </Parallax>
       <span
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-gradient-to-t from-brand-900/95 via-brand-900/60 to-brand-900/5"
       />
 
-      <div className="p-6 sm:p-8">
+      <div className="p-5 sm:p-6">
         {theme.label && (
           <p className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-white/80">
             <span
@@ -103,8 +112,8 @@ function RangePanel({ category }) {
             {theme.label}
           </p>
         )}
-        <h3 className="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">{category.name}</h3>
-        <div className="mt-5 flex items-center justify-between gap-4 border-t border-white/15 pt-5">
+        <h3 className="mt-2 font-display text-2xl font-extrabold tracking-tight sm:text-3xl">{category.name}</h3>
+        <div className="mt-4 flex items-center justify-between gap-4 border-t border-white/15 pt-4">
           {/* Each count stays in one piece, so on a narrow panel the line
               breaks between them rather than mid-phrase. */}
           <p className="flex min-w-0 flex-wrap gap-x-3 gap-y-0.5 text-sm text-white/80">
@@ -117,7 +126,7 @@ function RangePanel({ category }) {
           </p>
           <span
             aria-hidden="true"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition duration-300 group-hover:translate-x-1 group-hover:bg-white group-hover:text-brand-900"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition duration-300 group-hover:translate-x-1 group-hover:bg-white group-hover:text-brand-900"
           >
             <ArrowRight size={18} />
           </span>

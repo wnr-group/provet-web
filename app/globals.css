@@ -67,6 +67,13 @@
   0% { transform: rotateY(-12deg) rotateX(6deg); }
   100% { transform: rotateY(12deg) rotateX(-3deg); }
 }
+/* The catalogue's "results updating" bar: a short segment sweeping across
+   the top of the grid (components/catalogue/CatalogueNavigation.js). */
+@keyframes catalogue-progress {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(300%); }
+}
+
 .animate-sway3d {
   animation: sway3d 7s ease-in-out infinite alternate;
   transform-style: preserve-3d;

@@ -130,6 +130,7 @@ function Layered({ crumb, title, description, image, imageAlt, secondaryImage, c
           <Reveal mode="mount" distance={10}>{crumb("dark")}</Reveal>
           <SplitText
             as="h1"
+            mode="mount"
             text={title}
             className="mt-5 block text-balance font-display text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-5xl lg:text-6xl"
           />
@@ -190,6 +191,7 @@ function Asymmetric({ crumb, title, description, image, imageAlt, secondaryImage
           <Reveal mode="mount" distance={10}>{crumb("light")}</Reveal>
           <SplitText
             as="h1"
+            mode="mount"
             text={title}
             className="mt-5 block text-balance font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-brand-900 sm:text-5xl lg:text-6xl"
           />
@@ -246,6 +248,7 @@ function Editorial({ crumb, title, description, image, imageAlt, chip, children 
         <ScrollDrift y={-24} scale={0.97} className="origin-left">
           <SplitText
             as="h1"
+            mode="mount"
             text={title}
             className="mt-8 block max-w-5xl text-balance font-display text-5xl font-extrabold leading-[0.98] tracking-[-0.04em] text-brand-900 sm:text-7xl lg:text-8xl"
           />
@@ -357,6 +360,7 @@ function Immersive({ crumb, title, description, image, imageAlt, chip, children 
         <Reveal mode="mount" distance={10}>{crumb("dark")}</Reveal>
         <SplitText
           as="h1"
+          mode="mount"
           text={title}
           className="mt-5 block max-w-4xl text-balance font-display text-5xl font-extrabold leading-[1] tracking-tight sm:text-6xl lg:text-7xl"
         />
@@ -423,6 +427,7 @@ function Product({ crumb, title, description, chip, media, tone = "#393185", chi
           <Reveal mode="mount" distance={10}>{crumb("light")}</Reveal>
           <SplitText
             as="h1"
+            mode="mount"
             text={title}
             className="mt-5 block text-balance font-display text-4xl font-extrabold leading-[1.05] tracking-tight text-brand-900 sm:text-5xl lg:text-6xl"
           />

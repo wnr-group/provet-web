@@ -26,7 +26,10 @@ import { useMotionEnv } from "@/components/motion/MotionProvider";
    is concerned, so the wrapper carries the real text as its label and the
    pieces are hidden. Screen readers read one clean string.
 --------------------------------------------------------------------------- */
-export function SplitText({ text, as: Tag = "span", className, delay = 0, stagger = STAGGER.tight }) {
+// `mode="mount"`: play straight away rather than when scrolled into view -
+// for headings at the top of a page (the page banners), which are always in
+// view and change in place on soft navigation.
+export function SplitText({ text, as: Tag = "span", className, delay = 0, stagger = STAGGER.tight, mode = "inView" }) {
   const { reduced } = useMotionEnv();
   const words = String(text).split(/\s+/).filter(Boolean);
 
@@ -38,12 +41,16 @@ export function SplitText({ text, as: Tag = "span", className, delay = 0, stagge
 
   return (
     <MotionTag
+      // Keyed on the text, so a new heading replays its reveal. Without it a
+      // soft navigation that changed the text (Products -> Avinova) mounted
+      // the new words in their hidden state under a reveal that had already
+      // run once - the heading stayed blank until a full reload.
+      key={text}
       data-motion=""
       className={className}
       aria-label={text}
       initial="hidden"
-      whileInView="show"
-      viewport={VIEWPORT}
+      {...(mode === "mount" ? { animate: "show" } : { whileInView: "show", viewport: VIEWPORT })}
       variants={{ hidden: {}, show: { transition: { staggerChildren: stagger, delayChildren: delay } } }}
     >
       {words.map((word, i) => (

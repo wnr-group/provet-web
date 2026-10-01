@@ -4,9 +4,19 @@ import PageBanner from "@/components/ui/PageBanner";
 import { MaskReveal, Tilt } from "@/components/motion/effects";
 import { Enter } from "@/components/sections/entrances";
 import { CATEGORY_THEMES, DEFAULT_THEME } from "@/lib/categoryTheme";
+import SiteImage from "@/components/ui/SiteImage";
 
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1630090374791-c9eb7bab3935?auto=format&fit=crop&w=1200&h=900&q=80";
+
+// The banner's own photo for each view - deliberately not the ranges' category
+// images, which are the homepage's range cards, so the catalogue banner never
+// repeats the homepage. A range without one here uses its category image.
+const BANNER_IMAGES = {
+  all: DEFAULT_IMAGE,
+  avinova: "https://images.unsplash.com/photo-1589922585952-b31ed31b2c92?auto=format&fit=crop&w=1200&h=900&q=80",
+  blunova: "https://images.unsplash.com/photo-1652459569826-ed99561223af?auto=format&fit=crop&w=1200&h=900&q=80",
+};
 const LAYERS = ["all", "avinova", "blunova"];
 
 // The catalogue's banner: the shared banner's product composition
@@ -37,7 +47,7 @@ export default function CatalogueHero({ title, description, crumbs, count, produ
         {LAYERS.map((key) => (
           <img
             key={key}
-            src={images[key] || DEFAULT_IMAGE}
+            src={BANNER_IMAGES[key] || images[key] || DEFAULT_IMAGE}
             alt=""
             data-banner-layer={key}
             className={clsx(
@@ -61,7 +71,9 @@ export default function CatalogueHero({ title, description, crumbs, count, produ
                   delay={0.35 + i * 0.15}
                   className="h-full w-full rounded-2xl bg-white p-2.5 shadow-[0_30px_50px_-20px_rgba(21,18,48,0.55)] ring-1 ring-brand-100"
                 >
-                  <img src={p.images[0]} alt={p.name} className="h-full w-full rounded-xl object-cover" />
+                  <div className="relative h-full w-full overflow-hidden rounded-xl">
+                    <SiteImage src={p.images[0]} alt={p.name} sizes="220px" eager className="h-full w-full object-cover" />
+                  </div>
                 </Enter>
               </div>
             ))}

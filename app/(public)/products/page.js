@@ -1,17 +1,15 @@
-import { getCategoryTree, getProducts } from "@/lib/data";
-import { resolveCategorySlug } from "@/lib/categoryTree";
+import { getCategoryTree, getProducts, getPublicBrochureSettings } from "@/lib/data";
+import { resolveCategorySlug, navCategoryTree } from "@/lib/categoryTree";
 import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 import CatalogueCard from "@/components/catalogue/CatalogueCard";
 import CatalogueHero from "@/components/catalogue/CatalogueHero";
 import FeaturedSpotlight from "@/components/catalogue/FeaturedSpotlight";
-import CategoryBrowser from "@/components/catalogue/CategoryBrowser";
-import { ScrollTilt } from "@/components/motion/effects";
 import EmptyState from "@/components/ui/EmptyState";
 import ProductsFilters from "@/components/products/ProductsFilters";
 import ProductsPagination from "@/components/products/ProductsPagination";
 import BrochureDownload from "@/components/products/BrochureDownload";
-import prisma from "@/lib/prisma";
-import { getBrochureSettings, brochureAvailable } from "@/lib/brochureSettings";
+import { brochureAvailable } from "@/lib/brochureSettings";
+import { CatalogueNavigationProvider, PendingResults } from "@/components/catalogue/CatalogueNavigation";
 import CategoryBackdrop from "@/components/catalogue/CategoryBackdrop";
 import { categoryTheme, rangeThemeVars } from "@/lib/categoryTheme";
 
@@ -34,9 +32,9 @@ export default async function Products({ searchParams }) {
 
   const [tree, result, featured, brochure] = await Promise.all([
     getCategoryTree(),
-    getProducts({ category, search, page, limit: LIMIT, sort: "newest" }),
+    getProducts({ category, search, page, limit: LIMIT, sort: "newest", prefixFirst: true }),
     showSpotlight ? getProducts({ category, featured: true, limit: 8 }) : null,
-    getBrochureSettings(prisma),
+    getPublicBrochureSettings(),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(result.total / LIMIT));
@@ -58,7 +56,7 @@ export default async function Products({ searchParams }) {
         description={
           activeNode?.description ||
           activeCategory?.description ||
-          "Explore our full range of veterinary medicines, feed additives and animal healthcare products."
+          "Explore Provet's complete catalogue across two specialist ranges: Avinova for poultry health and Blunova for aquaculture. From anticoccidials, growth promoters and probiotics to mineral mixtures, feed additives and water-quality solutions, every formulation is research-based and backed by our technical services and support."
         }
         count={result.total}
         images={Object.fromEntries(tree.map((c) => [c.slug, c.image]))}
@@ -96,24 +94,22 @@ export default async function Products({ searchParams }) {
           </div>
         )}
 
+        <CatalogueNavigationProvider>
         <div className="container-page grid gap-8 py-10 lg:grid-cols-[260px_1fr] sm:py-14">
           <ProductsFilters
-            tree={tree}
+            tree={navCategoryTree(tree)}
             activeCategoryId={activeCategory?.id}
             activeSubcategoryId={activeSubcategory?.id}
             category={category}
             search={search}
           />
 
-          <div>
-            {/* The range cards, the catalogue's first step. A search
-                spans the whole catalogue, so it goes straight to results. */}
-            {!search && (
-              <CategoryBrowser tree={tree} category={activeCategory} />
-            )}
+          <PendingResults>
             {result.items.length ? (
               <>
-                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                {/* A frosted strip under the counts: the backdrop's ribbon lines run
+                    right through this band and made the text hard to read. */}
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/85 px-4 py-2.5 shadow-soft ring-1 ring-brand-100/70 backdrop-blur-sm">
                   <p className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-ink-soft">
                     {theme.label && (
                       <span
@@ -143,28 +139,31 @@ export default async function Products({ searchParams }) {
                 {/* Keyed on the query, so the grid re-deals whenever the filter
                     or page changes - a visible answer to the click rather than
                     cards silently swapping in place. mode="mount" because the
-                    grid is above the fold. */}
-                <ScrollTilt amount={10}>
-                  <RevealGroup
-                    key={`${category}|${search}|${page}`}
-                    mode="mount"
-                    stagger={0.05}
-                    className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3"
-                  >
-                    {result.items.map((p) => (
-                      <RevealItem key={p.id} className="h-full" distance={18} duration={0.45}>
-                        <CatalogueCard product={p} />
-                      </RevealItem>
-                    ))}
-                  </RevealGroup>
-                </ScrollTilt>
+                    grid is above the fold.
+
+                    No scroll tilt here: leaning a grid this tall back in 3D
+                    pushed its top edge far below the "Showing ..." line,
+                    leaving an empty band until it was scrolled upright. */}
+                <RevealGroup
+                  key={`${category}|${search}|${page}`}
+                  mode="mount"
+                  stagger={0.05}
+                  className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3"
+                >
+                  {result.items.map((p) => (
+                    <RevealItem key={p.id} className="h-full" distance={18} duration={0.45}>
+                      <CatalogueCard product={p} />
+                    </RevealItem>
+                  ))}
+                </RevealGroup>
                 <ProductsPagination page={page} totalPages={totalPages} />
               </>
             ) : (
               <EmptyState title="No products found" description="Try adjusting your search or browsing a different category." />
             )}
-          </div>
+          </PendingResults>
         </div>
+        </CatalogueNavigationProvider>
       </div>
     </div>
   );
