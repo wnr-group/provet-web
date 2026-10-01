@@ -142,6 +142,7 @@ function ConfigFields({ section, categories, onConfig }) {
               <option value="booklet">Technical booklets (numbered volumes that open)</option>
               <option value="card">Photo cards in a grid (events, news)</option>
               <option value="avatar">Portrait cards (people)</option>
+              <option value="accordion">Expanding image panels (open on hover)</option>
             </select>
           </div>
           </>

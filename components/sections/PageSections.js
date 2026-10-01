@@ -12,6 +12,7 @@ import { ScrollTilt, Tilt } from "@/components/motion/effects";
 import YouTubePlayer from "@/components/sections/YouTubePlayer";
 import MagazineRack from "@/components/sections/MagazineRack";
 import BookletShelf from "@/components/sections/BookletShelf";
+import ImageAccordion from "@/components/sections/ImageAccordion";
 import { isYouTubeUrl } from "@/lib/youtube";
 
 // Renders a page's admin-configured sections. One component per type in
@@ -260,6 +261,11 @@ function ImageCards({ section }) {
   // The admin "Columns" setting: people per row, or covers visible across
   // the shelf on desktop (more than that scroll).
   const columns = section.config.columns || 3;
+
+  // Tall photo panels that open out on hover, on a light background.
+  if (section.config.imageStyle === "accordion" && items.some((it) => it.image)) {
+    return <ImageAccordion section={section} items={items} />;
+  }
 
   // Magazine issues: the latest featured, the rest on a rack.
   if (section.config.imageStyle === "magazine" && items.some((it) => it.image)) {
