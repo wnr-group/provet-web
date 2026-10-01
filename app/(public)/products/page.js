@@ -58,7 +58,7 @@ export default async function Products({ searchParams }) {
         description={
           activeNode?.description ||
           activeCategory?.description ||
-          "Explore our full range of veterinary medicines, feed additives and animal healthcare products."
+          "Explore Provet's complete catalogue across two specialist ranges: Avinova for poultry health and Blunova for aquaculture. From anticoccidials, growth promoters and probiotics to mineral mixtures, feed additives and water-quality solutions, every formulation is research-based and backed by our technical services and support."
         }
         count={result.total}
         images={Object.fromEntries(tree.map((c) => [c.slug, c.image]))}

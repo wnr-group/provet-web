@@ -76,7 +76,7 @@ const PARENT_CATEGORIES = [
     name: "Avinova",
     slug: "avinova",
     description:
-      "The Avinova poultry health range: anticoccidials, antibacterials, growth promoters, nutritional support and farm hygiene for commercial broiler and layer flocks.",
+      "The Avinova poultry health range: anticoccidials, antibacterials, growth promoters, nutritional support and farm hygiene for commercial broiler and layer flocks. Its product groups run from antibiotic and non-antibiotic growth promoters, enzymes and probiotics to antimycoplasmals, injectables, toxin binders, fly control and disinfectants. Every product is backed by Provet's technical services and support for farmers.",
     image: img(PHOTO.broilerPortrait, 800, 600),
     sortOrder: 0,
   },
@@ -86,7 +86,7 @@ const PARENT_CATEGORIES = [
     name: "Blunova",
     slug: "blunova",
     description:
-      "The Blunova aquaculture range: probiotics, mineral mixtures, feed additives and water-quality solutions for shrimp and fish farming.",
+      "The Blunova aquaculture range: probiotics, mineral mixtures, feed additives and water-quality solutions for shrimp and fish farming. It also covers ammonia reducers, oxygen supplements, toxin binders, sanitizers, immunostimulants and parasiticides, for hatcheries and grow-out ponds alike. Every product is backed by Provet's technical services and support for farmers.",
     image: img(PHOTO.fishSchool, 800, 600),
     sortOrder: 1,
   },
