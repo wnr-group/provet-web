@@ -47,34 +47,24 @@ export default function FeaturedSpotlight({ products }) {
         <Tilt max={14} lift={1.05} shadow className="mx-auto w-full max-w-[16rem]">
           {/* Idle sway, so the stage reads as 3D before it is touched. */}
           <div className="animate-sway3d">
-          <div className="relative aspect-square rounded-2xl bg-[radial-gradient(circle_at_50%_40%,#ffffff_0%,var(--color-mist-100)_60%,var(--color-brand-100)_100%)] ring-1 ring-white [transform-style:preserve-3d]">
-            <span aria-hidden="true" className="absolute inset-[12%] rounded-full border border-brand-200/60" />
-            <span
-              aria-hidden="true"
-              className="absolute bottom-[8%] left-1/2 h-4 w-1/2 -translate-x-1/2 rounded-full bg-brand-900/20 blur-lg"
-            />
-            {/* Depth on a static wrapper: the motion.div inside writes its own
-                transform for the change animation. */}
-            <div className="absolute inset-[16%] [transform:translateZ(80px)]">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={product.id}
-                  data-motion=""
-                  initial={{ opacity: 0, y: 18, scale: 0.94 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: -12, scale: 0.97 }}
-                  transition={{ duration: 0.5, ease: EASE }}
-                  className="flex h-full w-full items-center justify-center"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs */}
-                  <img
-                    src={product.images?.[0]}
-                    alt={product.name}
-                    className="max-h-full max-w-full rounded-xl object-contain shadow-[0_18px_30px_-14px_rgba(21,18,48,0.45)]"
-                  />
-                </motion.div>
-              </AnimatePresence>
-            </div>
+          {/* The label artwork fills the square, zoomed just enough
+              (scale-106) to trim the thin frame line at its edge - the same
+              treatment as the catalogue cards. */}
+          <div className="relative aspect-square overflow-hidden rounded-2xl bg-white shadow-card ring-1 ring-brand-100">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={product.id}
+                data-motion=""
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.5, ease: EASE }}
+                className="h-full w-full"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs */}
+                <img src={product.images?.[0]} alt={product.name} className="h-full w-full scale-106 object-cover" />
+              </motion.div>
+            </AnimatePresence>
           </div>
           </div>
         </Tilt>
@@ -98,7 +88,9 @@ export default function FeaturedSpotlight({ products }) {
               transition={{ duration: 0.4, ease: EASE }}
             >
               {product.category?.name && (
-                <p className="mt-4 text-sm font-medium text-brand-600">{product.category.name}</p>
+                <p className="mt-4 text-sm font-medium text-brand-600">
+                  {[product.category.name, product.subcategory?.name].filter(Boolean).join(" · ")}
+                </p>
               )}
               <h2 className="mt-1 font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">
                 {product.name}

@@ -44,7 +44,7 @@ const menuPages = [
   {
     key: "about/who-we-are",
     title: "Who We Are",
-    heroImage: hero("1770836037793-95bdbf190f71"),
+    heroImage: hero("1630090374791-c9eb7bab3935"),
     description: "Provet is a solution-oriented provider of animal healthcare innovations.",
     sections: [
       {
@@ -134,7 +134,7 @@ const menuPages = [
   {
     key: "about/core-values",
     title: "Core Values",
-    heroImage: hero("1498191923457-88552caeccb3"),
+    heroImage: hero("1454179083322-198bb4daae41"),
     description:
       "By living our core values, we prove ourselves as Provet's best employees and demonstrate our finest human qualities, which help us grow and maintain harmony in the workplace.",
     sections: [
@@ -172,7 +172,7 @@ const menuPages = [
   {
     key: "about/why-provet",
     title: "Why Provet",
-    heroImage: hero("1694854038360-56b29a16fb0c"),
+    heroImage: hero("1589922583749-6b8473a85048"),
     description: "Trusted, proven, and comprehensive solutions in the poultry and aquaculture space.",
     sections: [
       {
@@ -204,7 +204,7 @@ const menuPages = [
   {
     key: "resources/technical-articles",
     title: "Technical Articles",
-    heroImage: hero("1579165466949-3180a3d056d5"),
+    heroImage: hero("1598016717029-026340d417d4"),
     description: "In-depth insights, innovative solutions and good practices in poultry and aquaculture health.",
     sections: [
       {
@@ -257,7 +257,7 @@ const menuPages = [
   {
     key: "resources/booklets",
     title: "Booklets",
-    heroImage: hero("1766297247072-93fd815afef3"),
+    heroImage: hero("1504309250229-4f08315f3b5c"),
     description: "Reference booklets for clinics and field teams.",
     sections: [
       {
@@ -301,7 +301,7 @@ const menuPages = [
   {
     key: "resources/magazine",
     title: "Magazine",
-    heroImage: hero("1517419800355-7ea1a4b1f68d"),
+    heroImage: hero("1573731281021-d1cc573b3310"),
     description:
       "Propulse is Provet's monthly in-house magazine, featuring insights from thought leaders, highlights of our latest initiatives, and updates on new product launches.",
     sections: [
@@ -395,7 +395,7 @@ const menuPages = [
   {
     key: "media/news",
     title: "News",
-    heroImage: hero("1755777339174-bb10939126ce"),
+    heroImage: hero("1723134085909-19da487ac9bd"),
     description: "Announcements and updates from Provet.",
     sections: [
       {
@@ -417,7 +417,7 @@ const menuPages = [
   {
     key: "media/events",
     title: "Events",
-    heroImage: hero("1589248529232-69c286cf2cb4"),
+    heroImage: hero("1646082275982-025ccc59bd2e"),
     description: "Seminars, technical meetings and field programmes.",
     sections: [
       {
@@ -475,7 +475,9 @@ const menuPages = [
   {
     key: "careers",
     title: "Careers",
-    heroImage: hero("1622837699015-9a4cb8b7a94b"),
+    // A team of scientists at work in a lab - the people side of the
+    // company, in the same lab imagery as the rest of the site.
+    heroImage: hero("1581093450021-4a7360e9a6b5"),
     description: "Build your career with a team that puts animal health first.",
     sections: [
       {

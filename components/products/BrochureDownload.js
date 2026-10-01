@@ -15,7 +15,10 @@ const FIELDS = [
 
 const EMPTY = { name: "", email: "", phone: "", company: "", city: "" };
 
-export default function BrochureDownload() {
+// `label` and the file come from Admin > Brochure. With `fileUrl` (the admin
+// turned off "Ask for details first") the button is a plain download link;
+// without it, the details form opens and /api/brochure returns the file.
+export default function BrochureDownload({ label = "Download Brochure", fileUrl: directUrl = null }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [errors, setErrors] = useState({});
@@ -102,14 +105,21 @@ export default function BrochureDownload() {
     }
   };
 
+  // The site's pink call-to-action style, as on Enquire Now.
+  const buttonClass = "btn-accent w-full sm:w-auto";
+
+  if (directUrl) {
+    return (
+      <a href={directUrl} target="_blank" rel="noopener noreferrer" className={buttonClass}>
+        <Download size={16} /> {label}
+      </a>
+    );
+  }
+
   return (
     <>
-      <button
-        type="button"
-        onClick={openForm}
-        className="btn bg-white text-brand-700 shadow-soft hover:bg-brand-50 w-full sm:w-auto"
-      >
-        <Download size={16} /> Download Brochure
+      <button type="button" onClick={openForm} className={buttonClass}>
+        <Download size={16} /> {label}
       </button>
 
       <Modal

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 const ICON_FALLBACK =
-  "https://images.unsplash.com/photo-1766297247072-93fd815afef3?auto=format&fit=crop&w=300&h=300&q=80";
+  "https://images.unsplash.com/photo-1598016717029-026340d417d4?auto=format&fit=crop&w=300&h=300&q=80";
 
 export default function CategoryCard({ category }) {
   return (

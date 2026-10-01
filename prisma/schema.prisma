@@ -22,15 +22,29 @@ model AdminUser {
   createdAt    DateTime @default(now())
 }
 
+// A two-level tree: a top-level Category (parentId null) holds Subcategories
+// (parentId set), and products are filed under a Subcategory - a product's
+// Category is its subcategory's parent. One table rather than two so every
+// existing row, id and slug (and every /products?category=<slug> link) kept
+// working when the hierarchy was introduced. The depth limit of two is
+// enforced in lib/categoryTree.js, not by the database.
 model Category {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   name        String
-  slug        String    @unique
+  slug        String     @unique
   description String?
   image       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  parentId    String?
+  parent      Category?  @relation("CategoryTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children    Category[] @relation("CategoryTree")
+  // Position among its siblings (the top-level list, or one parent's
+  // subcategories), set from the admin reorder controls.
+  sortOrder   Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   products    Product[]
+
+  @@index([parentId, sortOrder])
 }
 
 model Product {
@@ -207,6 +221,21 @@ model FeedbackField {
 // Enquiry because Enquiry models a message staff must reply to and triage
 // (subject/message, new -> read -> resolved), and has nowhere to put
 // company/city; this is a one-shot download lead with no reply expected.
+// The catalogue brochure, set in Admin > Brochure: the PDF itself, whether the
+// Download Brochure button shows, its label, and whether visitors fill in
+// the BrochureLead form first. A singleton keyed like FeedbackSetting.
+model BrochureSetting {
+  id             String   @id @default(cuid())
+  key            String   @unique @default("default")
+  isEnabled      Boolean  @default(true)
+  fileUrl        String?
+  fileName       String?
+  buttonLabel    String   @default("Download Brochure")
+  requireDetails Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
 model BrochureLead {
   id        String   @id @default(cuid())
   name      String

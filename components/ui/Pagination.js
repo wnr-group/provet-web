@@ -33,7 +33,7 @@ export default function Pagination({ page, totalPages, onChange }) {
             onClick={() => onChange(it)}
             className={clsx(
               'flex h-9 w-9 items-center justify-center rounded-full text-sm font-medium transition',
-              it === page ? 'bg-brand-600 text-white' : 'text-ink-soft hover:bg-brand-50',
+              it === page ? 'bg-(--range-accent) text-white' : 'text-ink-soft hover:bg-(--range-soft)',
             )}
           >
             {it}

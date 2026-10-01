@@ -38,8 +38,8 @@ function flattenResults(result) {
       group: "products",
       href: `/products/${p.slug}`,
       title: p.name,
-      subtitle: p.shortDescription || p.category?.name || "",
-      meta: p.category?.name,
+      subtitle: p.shortDescription || p.subcategory?.name || p.category?.name || "",
+      meta: p.subcategory?.name || p.category?.name,
       image: p.images?.[0] || PRODUCT_FALLBACK_IMG,
     })),
     ...result.categories.items.map((c) => ({
@@ -47,7 +47,8 @@ function flattenResults(result) {
       group: "categories",
       href: `/products?category=${c.slug}`,
       title: c.name,
-      subtitle: c.description || "",
+      // A subcategory says which category it belongs to.
+      subtitle: c.parent ? `In ${c.parent.name}` : c.description || "",
       meta: typeof c.productCount === "number" ? `${c.productCount} products` : null,
     })),
     ...result.pages.items.map((p) => ({

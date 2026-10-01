@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, X, ArrowRight, ChevronDown } from "lucide-react";
+import { Menu, X, ArrowRight, ChevronDown, ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
 import { DURATION, EASE_OUT } from "@/lib/motion";
-import { MAIN_NAV } from "@/lib/navigation";
+import { MAIN_NAV, rangeMenuLabel } from "@/lib/navigation";
 import GlobalSearch from "@/components/search/GlobalSearch";
 
 function isActivePath(pathname, href) {
@@ -18,11 +18,18 @@ function isActivePath(pathname, href) {
 }
 
 // A menu item's children: either the fixed list from lib/navigation.js, or
-// the live catalogue for the entry flagged `dynamic: "categories"`. Resolving
-// it here keeps the nav tree itself declarative.
+// the live catalogue for the entry flagged `dynamic: "categories"` - the
+// product ranges ("Avinova – Poultry", "Blunova – Aqua"), each carrying its
+// subcategories as `children` for the fly-out. Resolving it here keeps the
+// nav tree itself declarative.
 function resolveChildren(item, categories) {
   if (item.dynamic === "categories") {
-    return categories.map((c) => ({ label: c.name, href: `/products?category=${c.slug}` }));
+    return categories.map((c) => ({
+      label: rangeMenuLabel(c),
+      name: c.name,
+      href: `/products?category=${c.slug}`,
+      children: (c.children || []).map((s) => ({ label: s.name, href: `/products?category=${s.slug}` })),
+    }));
   }
   return item.children || [];
 }
@@ -42,6 +49,10 @@ export default function Navbar({ categories = [] }) {
   // Which desktop dropdown is showing, and which mobile group is expanded.
   const [openMenu, setOpenMenu] = useState(null);
   const [openGroup, setOpenGroup] = useState(null);
+  // The range whose subcategory fly-out is showing (desktop), and the range
+  // expanded inside the mobile accordion.
+  const [openSub, setOpenSub] = useState(null);
+  const [openMobileSub, setOpenMobileSub] = useState(null);
   const navRef = useRef(null);
 
   useEffect(() => {
@@ -59,6 +70,8 @@ export default function Navbar({ categories = [] }) {
     setOpen(false);
     setOpenMenu(null);
     setOpenGroup(null);
+    setOpenSub(null);
+    setOpenMobileSub(null);
   };
 
   // Click-away and Escape, so a dropdown opened by keyboard or touch can
@@ -136,7 +149,10 @@ export default function Navbar({ categories = [] }) {
                 key={item.label}
                 className="relative"
                 onMouseEnter={() => setOpenMenu(item.label)}
-                onMouseLeave={() => setOpenMenu((m) => (m === item.label ? null : m))}
+                onMouseLeave={() => {
+                  setOpenMenu((m) => (m === item.label ? null : m));
+                  setOpenSub(null);
+                }}
               >
                 <button
                   type="button"
@@ -181,27 +197,94 @@ export default function Navbar({ categories = [] }) {
                         <Link
                           href={item.href}
                           onClick={closeAll}
+                          onMouseEnter={() => setOpenSub(null)}
                           className="block rounded-lg px-3 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50"
                         >
                           {item.label} overview
                         </Link>
                       )}
-                      {children.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          onClick={closeAll}
-                          className={clsx(
-                            "block rounded-lg px-3 py-2 text-sm transition",
-                            isActivePath(pathname, pathOf(child.href))
-                              ? "bg-brand-50 font-semibold text-brand-700"
-                              : "text-ink-soft hover:bg-mist-50 hover:text-brand-700"
-                          )}
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
+                      {children.map((child) =>
+                        child.children?.length ? (
+                          // A product range: its subcategories open in a
+                          // fly-out beside the menu, on hover or keyboard focus.
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            onClick={closeAll}
+                            onMouseEnter={() => setOpenSub(child.href)}
+                            onFocus={() => setOpenSub(child.href)}
+                            aria-haspopup="true"
+                            aria-expanded={openSub === child.href}
+                            className={clsx(
+                              "flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-sm transition",
+                              openSub === child.href
+                                ? "bg-brand-50 font-semibold text-brand-700"
+                                : "text-ink hover:bg-mist-50 hover:text-brand-700"
+                            )}
+                          >
+                            {child.label}
+                            <ChevronRight size={14} className="shrink-0 text-ink-soft" />
+                          </Link>
+                        ) : (
+                          <Link
+                            key={child.href}
+                            href={child.href}
+                            onClick={closeAll}
+                            onMouseEnter={() => setOpenSub(null)}
+                            onFocus={() => setOpenSub(null)}
+                            className={clsx(
+                              "block rounded-lg px-3 py-2 text-sm transition",
+                              isActivePath(pathname, pathOf(child.href))
+                                ? "bg-brand-50 font-semibold text-brand-700"
+                                : "text-ink-soft hover:bg-mist-50 hover:text-brand-700"
+                            )}
+                          >
+                            {child.label}
+                          </Link>
+                        )
+                      )}
                     </div>
+
+                    {/* Subcategory fly-out. Outside the scrolling panel above
+                        so it isn't clipped; the left gap is padding, not
+                        margin, so the pointer stays inside the hover area
+                        while it crosses over. */}
+                    <AnimatePresence>
+                      {(() => {
+                        const range = children.find((c) => c.href === openSub && c.children?.length);
+                        if (!range) return null;
+                        return (
+                          <motion.div
+                            key={range.href}
+                            className="absolute left-full top-0 z-50 w-64 pl-2 pt-2"
+                            initial={{ opacity: 0, x: -6 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -6 }}
+                            transition={{ duration: 0.16, ease: EASE_OUT }}
+                          >
+                            <div className="card max-h-[70vh] overflow-y-auto p-1.5 shadow-lift">
+                              <Link
+                                href={range.href}
+                                onClick={closeAll}
+                                className="block rounded-lg px-3 py-2 text-sm font-semibold text-brand-700 hover:bg-brand-50"
+                              >
+                                All {range.name} products
+                              </Link>
+                              {range.children.map((sub) => (
+                                <Link
+                                  key={sub.href}
+                                  href={sub.href}
+                                  onClick={closeAll}
+                                  className="block rounded-lg px-3 py-2 text-sm text-ink-soft transition hover:bg-mist-50 hover:text-brand-700"
+                                >
+                                  {sub.label}
+                                </Link>
+                              ))}
+                            </div>
+                          </motion.div>
+                        );
+                      })()}
+                    </AnimatePresence>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -220,7 +303,9 @@ export default function Navbar({ categories = [] }) {
           <Link
             href="/contact"
             onClick={closeAll}
-            className="btn-accent hidden h-10 shrink-0 whitespace-nowrap xl:inline-flex"
+            // Shown from tablets up - there is room beside the menu button
+            // there, and it is the one action worth keeping one tap away.
+            className="btn-accent hidden h-10 shrink-0 whitespace-nowrap md:inline-flex"
           >
             Enquire Now <ArrowRight size={16} className="shrink-0" />
           </Link>
@@ -251,8 +336,11 @@ export default function Navbar({ categories = [] }) {
             transition={{ duration: DURATION.fast, ease: EASE_OUT }}
             className="overflow-hidden border-t border-brand-100 bg-white xl:hidden"
           >
-        <div className="max-h-[75vh] overflow-y-auto px-4 pb-4">
-          <nav className="flex flex-col gap-1 pt-2">
+        {/* Phones: one column. Tablets: two columns, so the menu isn't a
+            single list stretched across the screen - each group's accordion
+            opens within its own column. */}
+        <div className="max-h-[75vh] overflow-y-auto px-4 pb-4 sm:px-6 sm:pb-6">
+          <nav className="flex flex-col gap-1 pt-2 sm:grid sm:grid-cols-2 sm:items-start sm:gap-x-8 sm:pt-4">
             {MAIN_NAV.map((item) => {
               const children = resolveChildren(item, categories);
               const active = isBranchActive(pathname, item, children);
@@ -264,7 +352,7 @@ export default function Navbar({ categories = [] }) {
                     href={item.href}
                     onClick={closeAll}
                     className={clsx(
-                      "rounded-lg px-3 py-2.5 text-sm font-medium",
+                      "rounded-lg px-3 py-3 text-sm font-medium sm:py-2.5",
                       active ? "bg-brand-50 text-brand-700" : "text-ink-soft"
                     )}
                   >
@@ -284,7 +372,7 @@ export default function Navbar({ categories = [] }) {
                     aria-expanded={expanded}
                     onClick={() => setOpenGroup((g) => (g === item.label ? null : item.label))}
                     className={clsx(
-                      "flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium",
+                      "flex w-full items-center justify-between rounded-lg px-3 py-3 text-sm font-medium sm:py-2.5",
                       active ? "bg-brand-50 text-brand-700" : "text-ink-soft"
                     )}
                   >
@@ -312,28 +400,80 @@ export default function Navbar({ categories = [] }) {
                           {item.label} overview
                         </Link>
                       )}
-                      {children.map((child) => (
-                        <Link
-                          key={child.href}
-                          href={child.href}
-                          onClick={closeAll}
-                          className={clsx(
-                            "block rounded-lg px-3 py-2 text-sm",
-                            isActivePath(pathname, pathOf(child.href))
-                              ? "font-semibold text-brand-700"
-                              : "text-ink-soft"
-                          )}
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
+                      {children.map((child) => {
+                        if (!child.children?.length) {
+                          return (
+                            <Link
+                              key={child.href}
+                              href={child.href}
+                              onClick={closeAll}
+                              className={clsx(
+                                "block rounded-lg px-3 py-2 text-sm",
+                                isActivePath(pathname, pathOf(child.href))
+                                  ? "font-semibold text-brand-700"
+                                  : "text-ink-soft"
+                              )}
+                            >
+                              {child.label}
+                            </Link>
+                          );
+                        }
+                        // A product range: the name opens the range, the arrow
+                        // expands its subcategories in place.
+                        const subOpen = openMobileSub === child.href;
+                        return (
+                          <div key={child.href}>
+                            <div className="flex items-center">
+                              <Link
+                                href={child.href}
+                                onClick={closeAll}
+                                className="flex-1 rounded-lg px-3 py-2 text-sm font-medium text-ink"
+                              >
+                                {child.label}
+                              </Link>
+                              <button
+                                type="button"
+                                aria-expanded={subOpen}
+                                aria-label={`${subOpen ? "Hide" : "Show"} ${child.name} subcategories`}
+                                onClick={() => setOpenMobileSub((s) => (s === child.href ? null : child.href))}
+                                className="rounded-lg p-2 text-ink-soft hover:bg-mist-50"
+                              >
+                                <ChevronDown size={16} className={clsx("transition-transform duration-200", subOpen && "rotate-180")} />
+                              </button>
+                            </div>
+                            <AnimatePresence initial={false}>
+                              {subOpen && (
+                                <motion.div
+                                  initial={{ height: 0, opacity: 0 }}
+                                  animate={{ height: "auto", opacity: 1 }}
+                                  exit={{ height: 0, opacity: 0 }}
+                                  transition={{ duration: 0.22, ease: EASE_OUT }}
+                                  className="ml-3 overflow-hidden border-l border-brand-100 pl-3"
+                                >
+                                  {child.children.map((sub) => (
+                                    <Link
+                                      key={sub.href}
+                                      href={sub.href}
+                                      onClick={closeAll}
+                                      className="block rounded-lg px-3 py-1.5 text-sm text-ink-soft"
+                                    >
+                                      {sub.label}
+                                    </Link>
+                                  ))}
+                                </motion.div>
+                              )}
+                            </AnimatePresence>
+                          </div>
+                        );
+                      })}
                     </motion.div>
                   )}
                   </AnimatePresence>
                 </div>
               );
             })}
-            <Link href="/contact" onClick={closeAll} className="btn-accent mt-2 w-full">
+            {/* In the header itself from tablets up. */}
+            <Link href="/contact" onClick={closeAll} className="btn-accent mt-2 w-full md:hidden sm:col-span-2">
               Enquire Now <ArrowRight size={16} />
             </Link>
           </nav>

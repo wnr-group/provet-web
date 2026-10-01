@@ -48,8 +48,15 @@ export function SplitText({ text, as: Tag = "span", className, delay = 0, stagge
     >
       {words.map((word, i) => (
         // The mask is inline-block so it wraps with the text; the inner span
-        // is what actually moves.
-        <span key={`${word}-${i}`} aria-hidden="true" className="inline-block overflow-hidden align-bottom">
+        // is what actually moves. It reaches a little below the line box
+        // (padding, taken back with an equal negative margin so the line
+        // spacing is unchanged): with tight display leading, a mask exactly
+        // one line tall sliced off the descenders of g, y, p, q and j.
+        <span
+          key={`${word}-${i}`}
+          aria-hidden="true"
+          className="-mb-[0.2em] inline-block overflow-hidden pb-[0.2em] align-bottom"
+        >
           {/* data-motion on the *inner* span too: this is the one nested mover
               whose hidden state makes content unreadable rather than merely
               unstyled - it sits at translateY(110%) inside an overflow-hidden
@@ -79,7 +86,7 @@ export function SplitText({ text, as: Tag = "span", className, delay = 0, stagge
    wiped into view, while the image itself drifts back from a slight overscale.
    Two properties, both compositor-friendly.
 --------------------------------------------------------------------------- */
-export function MaskReveal({ children, className, direction = "up", delay = 0 }) {
+export function MaskReveal({ children, className, wrapperClassName, direction = "up", delay = 0 }) {
   const { reduced } = useMotionEnv();
   // Visibility is watched on an unclipped wrapper, never on the masked
   // element itself. At rest that element is clipped to nothing, and browsers
@@ -98,22 +105,34 @@ export function MaskReveal({ children, className, direction = "up", delay = 0 })
   // stops the failure being invisible when it does not.
   const [settled, setSettled] = useState(false);
 
+  // `circle` opens the picture from its centre - an organic reveal for
+  // secondary photos, where a straight wipe would repeat the main one.
   const from = {
     up: "inset(100% 0 0 0)",
     down: "inset(0 0 100% 0)",
     left: "inset(0 100% 0 0)",
     right: "inset(0 0 0 100%)",
+    circle: "circle(0% at 50% 50%)",
   }[direction] || "inset(100% 0 0 0)";
+  const to = direction === "circle" ? "circle(75% at 50% 50%)" : "inset(0% 0 0 0)";
 
-  if (reduced) return <div className={className}>{children}</div>;
+  if (reduced) {
+    return (
+      <div className={wrapperClassName}>
+        <div className={className}>{children}</div>
+      </div>
+    );
+  }
 
+  // `wrapperClassName` sizes the observed wrapper - e.g. h-full when the
+  // reveal has to fill an absolutely positioned frame.
   return (
-    <div ref={ref}>
+    <div ref={ref} className={wrapperClassName}>
       <motion.div
         data-motion=""
         className={className}
         initial={{ clipPath: from }}
-        animate={inView ? { clipPath: "inset(0% 0 0 0)" } : undefined}
+        animate={inView ? { clipPath: to } : undefined}
         transition={{ duration: DURATION.slow, ease: EASE, delay }}
         onAnimationComplete={() => setSettled(true)}
         style={settled ? { clipPath: "none" } : undefined}
@@ -152,6 +171,34 @@ export function Parallax({ children, className, distance = 40, offset = ["start 
     <div ref={ref} className={className}>
       {disabled ? children : <motion.div style={{ y }} className="h-full w-full">{children}</motion.div>}
     </div>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   ScrollDrift - content that moves at its own speed as the page scrolls past.
+
+   Ties a small Y offset (and optionally a slight scale and fade) to how far
+   the element has scrolled up out of view, so text leaves a banner at a
+   different speed from the photo behind it, or a large headline eases back as
+   you move on. Only transform and opacity. The range is short on purpose:
+   `y` is the travel in px across the element's whole exit.
+
+   Disabled on mobile and under reduced motion, like Parallax - it runs on
+   every scroll frame.
+--------------------------------------------------------------------------- */
+export function ScrollDrift({ children, className, y = -60, scale = 1, fade = 1 }) {
+  const ref = useRef(null);
+  const { isMobile, reduced } = useMotionEnv();
+  const disabled = isMobile || reduced;
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
+  const ty = useTransform(scrollYProgress, [0, 1], [0, y]);
+  const s = useTransform(scrollYProgress, [0, 1], [1, scale]);
+  const o = useTransform(scrollYProgress, [0, 0.8], [1, fade]);
+
+  return (
+    <motion.div ref={ref} className={className} style={disabled ? undefined : { y: ty, scale: s, opacity: o }}>
+      {children}
+    </motion.div>
   );
 }
 
@@ -305,12 +352,15 @@ export function Tilt({
    one-off animation, so it tracks the reader's own movement. Content is
    never hidden (no opacity), so nothing depends on it running.
 
-   Off under reduced motion. Don't wrap anything position:sticky - a
+   Off under reduced motion, and on phones: there the block is usually a
+   tall single column, and a column that tall leaning back in 3D reads as
+   skewed rather than as depth. Don't wrap anything position:sticky - a
    transformed ancestor breaks sticky positioning.
 --------------------------------------------------------------------------- */
 export function ScrollTilt({ children, className, amount = 16 }) {
   const ref = useRef(null);
-  const { reduced } = useMotionEnv();
+  const { isMobile, reduced: reducedMotion } = useMotionEnv();
+  const reduced = reducedMotion || isMobile;
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "start 45%"] });
   const rotateX = useTransform(scrollYProgress, [0, 1], [amount, 0]);
   const scale = useTransform(scrollYProgress, [0, 1], [0.94, 1]);
@@ -322,5 +372,35 @@ export function ScrollTilt({ children, className, amount = 16 }) {
         {children}
       </motion.div>
     </div>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   ScrollExpand - a band that opens out to full width as it arrives.
+
+   Starts as a slightly inset, rounded panel (scale `from`, corners `radius`)
+   and grows to a full-bleed band with square corners by the time its top
+   reaches the upper part of the viewport. Tied to scroll position, so it
+   tracks the reader. Only transform and border-radius change - never layout.
+
+   Off under reduced motion: the band is simply full width.
+--------------------------------------------------------------------------- */
+export function ScrollExpand({ children, className, from = 0.94, radius = 40 }) {
+  const ref = useRef(null);
+  const { reduced } = useMotionEnv();
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "start 30%"] });
+  const scale = useTransform(scrollYProgress, [0, 1], [from, 1]);
+  const borderRadius = useTransform(scrollYProgress, [0, 1], [radius, 0]);
+
+  // Same element either way, so the preference switching on after hydration
+  // restyles the band instead of remounting it (and reloading its images).
+  return (
+    <motion.div
+      ref={ref}
+      style={reduced ? { scale: 1, borderRadius: 0 } : { scale, borderRadius }}
+      className={clsx(!reduced && "overflow-hidden", className)}
+    >
+      {children}
+    </motion.div>
   );
 }

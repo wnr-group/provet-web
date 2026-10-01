@@ -27,12 +27,24 @@ export default function ProductTabs({ fields }) {
     tabRefs.current[next]?.focus();
   };
 
+  const segmented = fields.length <= 3;
+
   return (
     <div className="overflow-hidden rounded-3xl bg-white shadow-soft ring-1 ring-brand-100">
+      {/* Tabs wrap onto a second line when they don't fit (a phone, the
+          admin preview). They used to scroll sideways with the scrollbar
+          hidden, which cut the last tab off with no sign there was more.
+          On phones, up to three tabs share the width as a segmented control
+          instead - icon over label, each label free to wrap - so none of
+          them drops onto a line of its own. */}
       <div
         role="tablist"
         aria-label="Product information"
-        className="flex gap-1 overflow-x-auto border-b border-brand-100 bg-mist-50/70 p-1.5 [scrollbar-width:none]"
+        className={clsx(
+          "gap-1 border-b border-brand-100 bg-mist-50/70 p-1.5",
+          segmented ? "grid grid-cols-[repeat(var(--tabs),minmax(0,1fr))] sm:flex sm:flex-wrap" : "flex flex-wrap"
+        )}
+        style={segmented ? { "--tabs": fields.length } : undefined}
       >
         {fields.map((field, i) => {
           const Icon = ICONS[field.key] || ListChecks;
@@ -50,7 +62,10 @@ export default function ProductTabs({ fields }) {
               onClick={() => setActive(field.key)}
               onKeyDown={(e) => onKeyDown(e, i)}
               className={clsx(
-                "relative flex shrink-0 items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-semibold transition-colors",
+                "relative flex shrink-0 items-center rounded-2xl font-semibold transition-colors",
+                segmented
+                  ? "flex-col justify-center gap-1 px-2 py-2 text-center text-xs leading-tight sm:flex-row sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
+                  : "gap-2 px-4 py-2.5 text-sm",
                 selected ? "text-brand-700" : "text-ink-soft hover:text-ink"
               )}
             >

@@ -1,15 +1,16 @@
 const prisma = require("../../../lib/prisma");
 const { brochureLeadSchema, firstFieldErrors } = require("../../../lib/brochureLeadSchema");
-
-// Placeholder brochure, served statically from public/. When the tenant
-// supplies the real PDF, either drop it in at this same path or point
-// BROCHURE_FILE_URL at wherever it lives - no other code changes.
-const BROCHURE_FILE_URL = process.env.BROCHURE_FILE_URL || "/brochure/provet-brochure.pdf";
+const { getBrochureSettings, brochureAvailable } = require("../../../lib/brochureSettings");
 
 // POST /api/brochure - records the lead, then returns the brochure location.
-// The client downloads whatever file_url comes back rather than hardcoding a
-// path, so swapping the file is a server-side change only.
+// The file is whatever Admin > Brochure holds (lib/brochureSettings.js); the
+// client downloads the file_url that comes back rather than hardcoding a path.
 export async function POST(request) {
+  const settings = await getBrochureSettings(prisma);
+  if (!brochureAvailable(settings)) {
+    return Response.json({ error: "The brochure is unavailable right now." }, { status: 404 });
+  }
+
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     // Caught before safeParse so a non-object payload reports as a plain bad
@@ -35,5 +36,5 @@ export async function POST(request) {
     data: { name, email, phone, company, city: city || null },
   });
 
-  return Response.json({ file_url: BROCHURE_FILE_URL }, { status: 201 });
+  return Response.json({ file_url: settings.fileUrl }, { status: 201 });
 }

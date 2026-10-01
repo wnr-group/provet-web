@@ -2,9 +2,12 @@ const prisma = require("../../../../lib/prisma");
 const { requireAdmin } = require("../../../../lib/requireAdmin");
 const { toSlug } = require("../../../../lib/slug");
 const { serializeProductDetail } = require("../../../../lib/serializers");
-const { productSchema, toDbData } = require("../../../../lib/productSchema");
+const { productSchema, toDbData, uniqueConflictMessage } = require("../../../../lib/productSchema");
+const { productCategoryIdWhere, productPlacementError } = require("../../../../lib/categoryTree");
 
-// GET /api/admin/products?page=&limit=&search= - all products, active + inactive
+// GET /api/admin/products?page=&limit=&search=&category= - all products, active
+// + inactive. `category` is an id at either level: a top-level category
+// lists everything in its subcategories.
 export async function GET(request) {
   const session = await requireAdmin();
   if (!session) return Response.json({ error: "Not authenticated" }, { status: 401 });
@@ -25,13 +28,18 @@ export async function GET(request) {
     ];
   }
   if (category) {
-    where.categoryId = category;
+    if (where.OR) {
+      where.AND = [{ OR: where.OR }, productCategoryIdWhere(category)];
+      delete where.OR;
+    } else {
+      Object.assign(where, productCategoryIdWhere(category));
+    }
   }
 
   const [items, total] = await Promise.all([
     prisma.product.findMany({
       where,
-      include: { category: true },
+      include: { category: { include: { parent: true } } },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * limit,
       take: limit,
@@ -54,13 +62,20 @@ export async function POST(request) {
   }
 
   const category = await prisma.category.findUnique({ where: { id: parsed.data.categoryId } });
-  if (!category) {
-    return Response.json({ error: "categoryId does not reference an existing category" }, { status: 400 });
-  }
+  const placementError = productPlacementError(category);
+  if (placementError) return Response.json({ error: placementError }, { status: 400 });
 
   const slug = parsed.data.slug ? toSlug(parsed.data.slug) : toSlug(parsed.data.name);
   const data = toDbData({ ...parsed.data, slug });
 
-  const product = await prisma.product.create({ data, include: { category: true } });
-  return Response.json(serializeProductDetail(product), { status: 201 });
+  try {
+    const product = await prisma.product.create({ data, include: { category: { include: { parent: true } } } });
+    return Response.json(serializeProductDetail(product), { status: 201 });
+  } catch (err) {
+    // A duplicate SKU or name reads as a message the admin can act on
+    // rather than a bare 500.
+    const conflict = uniqueConflictMessage(err);
+    if (conflict) return Response.json({ error: conflict }, { status: 409 });
+    throw err;
+  }
 }
