@@ -33,11 +33,13 @@ function slug(s) {
 // documentary photography. No pets, clinic dogs or backyard birds.
 const PHOTO = {
   broilerFlock: "1589922583749-6b8473a85048",
-  broilerHouse: "1630090374791-c9eb7bab3935",
+  goatHerd: "1622837699015-9a4cb8b7a94b",
+  broilerPortrait: "1619598951257-68e45c835908",
   shrimpHarvest: "1504309250229-4f08315f3b5c",
   dairyBarn: "1646082275982-025ccc59bd2e",
-  taggedCalves: "1454179083322-198bb4daae41",
+  sheepFlock: "1602027438676-ad64751bdbc1",
   fishCagesBoat: "1723134085909-19da487ac9bd",
+  fishSchool: "1660680300128-f3436f8fa072",
 };
 
 // Stock photos this file used before the imagery was narrowed to poultry,
@@ -57,6 +59,7 @@ const RETIRED_PHOTO_IDS = [
   "1755777339174-bb10939126ce",
   "1630438994394-3deff7a591bf",
   "1530281700549-e82e7bf110d6",
+  "1648141499388-34177db06fba",
 ];
 
 function img(id, w = 600, h = 400) {
@@ -74,7 +77,7 @@ const PARENT_CATEGORIES = [
     slug: "avinova",
     description:
       "The Avinova poultry health range: anticoccidials, antibacterials, growth promoters, nutritional support and farm hygiene for commercial broiler and layer flocks.",
-    image: img(PHOTO.broilerFlock, 800, 600),
+    image: img(PHOTO.broilerPortrait, 800, 600),
     sortOrder: 0,
   },
   {
@@ -84,7 +87,7 @@ const PARENT_CATEGORIES = [
     slug: "blunova",
     description:
       "The Blunova aquaculture range: probiotics, mineral mixtures, feed additives and water-quality solutions for shrimp and fish farming.",
-    image: img(PHOTO.fishCagesBoat, 800, 600),
+    image: img(PHOTO.fishSchool, 800, 600),
     sortOrder: 1,
   },
 ];
@@ -102,7 +105,7 @@ const bannersData = [
   {
     title: "From Day-Old Chicks to Full Flock Health",
     subtitle: "Brooding support, growth formulations and biosecurity products for commercial poultry operations.",
-    image: img(PHOTO.broilerHouse, 1920, 800),
+    image: img(PHOTO.goatHerd, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 1,
@@ -126,7 +129,7 @@ const bannersData = [
   {
     title: "Vaccination Programs That Work",
     subtitle: "Biologicals designed for real-world herd health and companion animal immunization schedules.",
-    image: img(PHOTO.taggedCalves, 1920, 800),
+    image: img(PHOTO.sheepFlock, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 4,
