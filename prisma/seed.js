@@ -13,6 +13,7 @@ const { PLATFORMS } = require("../lib/socialSchema");
 const { DEFAULT_FEEDBACK_CONFIG, DEFAULT_FEEDBACK_FIELDS } = require("../lib/feedbackSchema");
 // Real copy carried over from the old provet.in site - see the notes there.
 const { menuPages } = require("./menuPages");
+const { siteContent } = require("./siteContent");
 const { oldSiteCategories } = require("./oldSiteProducts");
 
 function slug(s) {
@@ -143,90 +144,6 @@ const bannersData = [
     order: 5,
   },
 ];
-
-const homeContent = [
-  {
-    key: "mission",
-    title: "Our Mission",
-    body: "We are committed to making high-quality, affordable veterinary medicines accessible to clinics, farms and animal care professionals everywhere, backed by rigorous quality control and responsive support.",
-    order: 0,
-  },
-  {
-    key: "why-us",
-    title: "Why Choose Us",
-    body: "- Rigorously tested formulations manufactured to consistent quality standards\n- A broad catalogue spanning companion animal and livestock needs\n- Responsive technical and enquiry support for veterinarians and distributors\n- Reliable supply chain and packaging designed for field conditions",
-    order: 1,
-  },
-  {
-    key: "stats",
-    title: "By the Numbers",
-    body: "20+ years combined formulation experience - 100+ SKUs across 6 therapeutic categories - Supplying clinics and distributors across the region.",
-    order: 2,
-  },
-  {
-    // Carried over from the old Provet homepage, where the testimonials are
-    // designed graphics rather than quotable text - the words are inside the
-    // image. That is why there are no quotes or attributions here: they can't
-    // be read out of a JPEG, and inventing them would put words in a real
-    // customer's mouth. Each slide's caption is the product it refers to,
-    // taken from the image's own filename, so the alt text says something.
-    key: "testimonials",
-    type: "carousel",
-    title: "What Our Customers Say",
-    order: 3,
-    config: JSON.stringify({
-      aspect: "square",
-      autoplay: true,
-      interval: 6000,
-      items: [
-        {
-          image: "/content/Fepromix_Testimonials-1024x1024.jpg",
-          title: "Fepromix",
-        },
-        {
-          image: "/content/Final_Nagronex-SNB_Testimonial-1024x1024.jpg",
-          title: "Nagronex-SNB",
-        },
-        {
-          image: "/content/Testimonial_Galpromin-XL-1024x1024.jpg",
-          title: "Galpromin-XL",
-        },
-        {
-          image: "/content/Testimonial_Immulator-1024x1024.jpg",
-          title: "Immulator",
-        },
-      ],
-    }),
-  },
-];
-
-const aboutContent = [
-  {
-    key: "story",
-    title: "Our Story",
-    body: "What began as a small veterinary formulation initiative has grown into a dedicated catalogue of medicines serving companion animal clinics and livestock farms alike. Our team combines pharmaceutical manufacturing experience with a genuine passion for animal health.",
-    order: 0,
-  },
-  {
-    key: "mission",
-    title: "Our Mission",
-    body: "To provide reliable, well-documented veterinary medicines that veterinarians can prescribe with confidence, supported by clear dosing information and responsive enquiry handling.",
-    order: 1,
-  },
-  {
-    key: "quality",
-    title: "Quality Commitment",
-    body: "Every formulation in our catalogue is developed with attention to composition accuracy, stability and ease of field use. We document dosage and storage guidance clearly so animal handlers and veterinarians can use our products safely.",
-    order: 2,
-  },
-  {
-    key: "team",
-    title: "Our Team",
-    body: "Our cross-functional team includes veterinary pharmacologists, quality assurance specialists and field support staff who work together to keep our catalogue relevant to real clinical and farm needs.",
-    order: 3,
-  },
-];
-
 
 async function main() {
   console.log("Seeding database...");
@@ -370,21 +287,23 @@ async function main() {
   console.log(`Seeded ${bannersData.length} banners`);
 
   // --- Content blocks -----------------------------------------------------
-  for (const section of homeContent) {
-    await prisma.contentBlock.upsert({
-      where: { page_key: { page: "home", key: section.key } },
-      update: {},
-      create: { page: "home", ...section },
-    });
+  // Every section of the pages laid out in code (prisma/siteContent.js):
+  // built-in and added, as the live site has them. Create-only, so a reseed
+  // never overwrites the admin's edits.
+  for (const [page, sections] of Object.entries(siteContent)) {
+    for (const { config, ...section } of sections) {
+      await prisma.contentBlock.upsert({
+        where: { page_key: { page, key: section.key } },
+        update: {},
+        create: { page, ...section, config: config ? JSON.stringify(config) : null },
+      });
+    }
   }
-  for (const section of aboutContent) {
-    await prisma.contentBlock.upsert({
-      where: { page_key: { page: "about", key: section.key } },
-      update: {},
-      create: { page: "about", ...section },
-    });
-  }
-  console.log("Seeded content blocks for pages: home, about");
+  console.log(
+    `Seeded content blocks: ${Object.entries(siteContent)
+      .map(([page, sections]) => `${page} (${sections.length})`)
+      .join(", ")}`
+  );
 
   // --- Menu pages -----------------------------------------------------------
   // One row per entry in lib/navigation.js, so every menu item resolves to a
