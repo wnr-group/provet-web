@@ -1,6 +1,7 @@
 import Carousel from "@/components/sections/Carousel";
 import { parseSectionConfig } from "@/lib/sectionTypes";
 import Reveal from "@/components/motion/Reveal";
+import { Parallax } from "@/components/motion/effects";
 
 // The homepage testimonials rail.
 //
@@ -23,10 +24,9 @@ export default function Testimonials({ section }) {
 
   return (
     <section className="relative overflow-hidden bg-mist-50/60 py-16 sm:py-20">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute left-1/2 top-0 h-72 w-[42rem] -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(57,49,133,0.07),transparent_70%)]"
-      />
+      <Parallax distance={50} className="pointer-events-none absolute left-1/2 top-0 h-72 w-[42rem] -translate-x-1/2">
+        <div aria-hidden="true" className="h-full w-full bg-[radial-gradient(ellipse_at_center,rgba(57,49,133,0.09),transparent_70%)]" />
+      </Parallax>
       <Reveal className="relative">
         <div className="mx-auto mb-10 max-w-2xl px-4 text-center">
           <span className="badge bg-accent-100 text-accent-700">In their words</span>

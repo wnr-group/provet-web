@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import SectionHeading from "@/components/ui/SectionHeading";
 import ProductCard from "@/components/ui/ProductCard";
 import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
+import { ScrollTilt } from "@/components/motion/effects";
 
 // `title` / `description` come from the "featured" block in Admin > Website
 // Content > Homepage (lib/homeContent.js).
@@ -18,7 +19,7 @@ export default function FeaturedProducts({
       <div className="container-page">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <Reveal>
-            <SectionHeading eyebrow="Popular" title={title} description={description || undefined} />
+            <SectionHeading animated eyebrow="Popular" title={title} description={description || undefined} />
           </Reveal>
           <Link href="/products" className="btn-outline hidden sm:inline-flex">
             View All <ArrowRight size={16} />
@@ -34,6 +35,9 @@ export default function FeaturedProducts({
             rather than one card sitting at the left of an empty row. */}
         {/* Phones: a swipeable row, the next card peeking in from the edge,
             instead of four full-height cards stacked down the page. */}
+        {/* The row swings up from a slight backward lean as it scrolls into
+            view (off on phones, where it is a swipe row). */}
+        <ScrollTilt amount={8}>
         <RevealGroup
           className="-mx-4 mt-8 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-4 [scrollbar-width:none] sm:mx-0 sm:mt-10 sm:flex-wrap sm:justify-center sm:gap-5 sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden"
           stagger={0.1}
@@ -50,6 +54,7 @@ export default function FeaturedProducts({
             </RevealItem>
           ))}
         </RevealGroup>
+        </ScrollTilt>
         {/* The heading's View All button sits beside the title from tablets up. */}
         <Link href="/products" className="btn-outline mt-4 w-full justify-center sm:hidden">
           View All Products <ArrowRight size={16} />

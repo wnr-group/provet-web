@@ -87,10 +87,13 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
             alt=""
             aria-hidden="true"
             fetchPriority="high"
-            initial={{ opacity: 0, scale: 1.08 }}
+            // The photo fades in, then keeps easing back from a slight zoom
+            // for the whole time the slide holds (a slow "Ken Burns" push),
+            // so the hero is never a still image.
+            initial={{ opacity: 0, scale: 1.12 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.1, ease: EASE }}
+            transition={{ opacity: { duration: 1.1, ease: EASE }, scale: { duration: 7.5, ease: "linear" } }}
             className="absolute inset-0 h-full w-full object-cover"
           />
         </AnimatePresence>

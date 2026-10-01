@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
+import { Parallax, Tilt } from "@/components/motion/effects";
 import { categoryTheme } from "@/lib/categoryTheme";
 
 const FALLBACK_IMG =
@@ -27,7 +28,7 @@ export default function CategoryGrid({ categories, title = "Solutions by Species
       <div className="container-page">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <Reveal>
-            <SectionHeading eyebrow="Our Portfolio" title={title} description={description || undefined} />
+            <SectionHeading animated eyebrow="Our Portfolio" title={title} description={description || undefined} />
           </Reveal>
           <Link href="/products" className="btn-outline hidden sm:inline-flex">
             View Full Portfolio <ArrowRight size={16} />
@@ -53,7 +54,10 @@ export default function CategoryGrid({ categories, title = "Solutions by Species
         >
           {categories.map((category) => (
             <RevealItem key={category.id} className="h-auto w-[80%] shrink-0 snap-start sm:h-full sm:w-auto" direction="none" scale={0.96} duration={0.55}>
-              <RangePanel category={category} />
+              {/* Leans toward the cursor in 3D (flat on touch screens). */}
+              <Tilt max={6} lift={1.02} shadow className="h-full">
+                <RangePanel category={category} />
+              </Tilt>
             </RevealItem>
           ))}
         </RevealGroup>
@@ -80,13 +84,18 @@ function RangePanel({ category }) {
       aria-label={`${category.name}: ${category.productCount} products`}
       className="group relative isolate flex h-full min-h-[15rem] flex-col justify-end overflow-hidden rounded-3xl text-white shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-500 sm:min-h-[18rem]"
     >
-      {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded/external URLs */}
-      <img
-        src={category.image || FALLBACK_IMG}
-        alt=""
-        loading="lazy"
-        className="absolute inset-0 -z-10 h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
-      />
+      {/* The photo drifts more slowly than the page as it scrolls past, so
+          it reads as a window onto the scene rather than a flat card. It is
+          taller than the card, so the drift never shows an edge. */}
+      <Parallax distance={22} className="absolute -inset-y-8 inset-x-0 -z-10">
+        {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded/external URLs */}
+        <img
+          src={category.image || FALLBACK_IMG}
+          alt=""
+          loading="lazy"
+          className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
+        />
+      </Parallax>
       <span
         aria-hidden="true"
         className="absolute inset-0 -z-10 bg-gradient-to-t from-brand-900/95 via-brand-900/60 to-brand-900/5"
