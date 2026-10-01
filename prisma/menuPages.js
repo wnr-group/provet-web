@@ -267,6 +267,7 @@ const menuPages = [
         config: {
           columns: 3,
           aspect: "portrait",
+          imageStyle: "booklet",
           items: [
             {
               image: "/content/Anticoccidials.jpg",
@@ -324,6 +325,7 @@ const menuPages = [
         config: {
           columns: 4,
           aspect: "portrait",
+          imageStyle: "magazine",
           items: [
             { image: "/content/Aug-2025_Thumbnail.jpg", title: "Propulse August 2025" },
             { image: "/content/Juny-2025_Thumbnail.jpg", title: "Propulse July 2025" },
