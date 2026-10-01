@@ -5,7 +5,7 @@ import PageSections from "@/components/sections/PageSections";
 import PageBanner from "@/components/ui/PageBanner";
 
 export const DEFAULT_HERO =
-  "https://images.unsplash.com/photo-1619598951257-68e45c835908?auto=format&fit=crop&w=900&h=700&q=80";
+  "https://images.unsplash.com/photo-1594987057733-1fb3fe5707c9?auto=format&fit=crop&w=900&h=700&q=80";
 
 const unsplash = (id, w = 1200, h = 900) =>
   `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
@@ -24,6 +24,15 @@ const BANNERS_BY_SECTION = {
   resources: { variant: "oversized" },
   media: { variant: "editorial" },
 };
+// Banner photos are stored wide (1920x600) for the wide compositions. The
+// asymmetric one shows its photo in a tall frame, where a wide strip was
+// zoomed and cropped into a blurry slice - so for it, ask Unsplash for a shape
+// that fits the frame. Other URLs (uploads) are left as they are.
+function framedImage(url, variant) {
+  if (variant !== "asymmetric" || !/^https:\/\/images\.unsplash\.com\//.test(url || "")) return url;
+  return url.replace(/([?&])w=\d+/, "$1w=1200").replace(/([?&])h=\d+/, "$1h=1000");
+}
+
 export function bannerFor(pageKey) {
   return BANNERS[pageKey] || BANNERS_BY_SECTION[pageKey.split("/")[0]] || { variant: "asymmetric" };
 }
@@ -72,7 +81,7 @@ export default async function ContentPage({ pageKey }) {
         crumbs={pageCrumbs(pageKey, page.title)}
         title={page.title}
         description={page.description}
-        image={page.heroImage || DEFAULT_HERO}
+        image={framedImage(page.heroImage || DEFAULT_HERO, bannerFor(pageKey).variant)}
       />
 
       <PageSections sections={sections} />

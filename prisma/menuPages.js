@@ -44,7 +44,7 @@ const menuPages = [
   {
     key: "about/who-we-are",
     title: "Who We Are",
-    heroImage: hero("1630090374791-c9eb7bab3935"),
+    heroImage: hero("1764857078450-5c2763876309"),
     description: "Provet is a solution-oriented provider of animal healthcare innovations.",
     sections: [
       {
@@ -172,7 +172,7 @@ const menuPages = [
   {
     key: "about/why-provet",
     title: "Why Provet",
-    heroImage: hero("1589922583749-6b8473a85048"),
+    heroImage: hero("1673200219645-72f5f55d248e"),
     description: "Trusted, proven, and comprehensive solutions in the poultry and aquaculture space.",
     sections: [
       {
@@ -204,7 +204,7 @@ const menuPages = [
   {
     key: "resources/technical-articles",
     title: "Technical Articles",
-    heroImage: hero("1598016717029-026340d417d4"),
+    heroImage: hero("1660302437822-bd6cbf774f1b"),
     description: "In-depth insights, innovative solutions and good practices in poultry and aquaculture health.",
     sections: [
       {
@@ -257,7 +257,7 @@ const menuPages = [
   {
     key: "resources/booklets",
     title: "Booklets",
-    heroImage: hero("1504309250229-4f08315f3b5c"),
+    heroImage: hero("1623408997823-e80db672ce79"),
     description: "Reference booklets for clinics and field teams.",
     sections: [
       {
@@ -397,7 +397,7 @@ const menuPages = [
   {
     key: "media/news",
     title: "News",
-    heroImage: hero("1723134085909-19da487ac9bd"),
+    heroImage: hero("1558152761-aee570eb5cb0"),
     description: "Announcements and updates from Provet.",
     sections: [
       {
@@ -419,7 +419,7 @@ const menuPages = [
   {
     key: "media/events",
     title: "Events",
-    heroImage: hero("1646082275982-025ccc59bd2e"),
+    heroImage: hero("1567879656049-f2265f23d8f8"),
     description: "Seminars, technical meetings and field programmes.",
     sections: [
       {

@@ -60,16 +60,17 @@ export default async function About() {
 
   return (
     <div>
-      {/* Layered: the two ranges - a broiler flock in front, fish-farm cages
-          set back - with the years figure floating nearest. */}
+      {/* Layered: two farm scenes - cattle at pasture in front, goats set
+          back - with the years figure floating nearest. Deliberately not the
+          homepage's hero photos, so the About page has its own look. */}
       <PageBanner
         variant="layered"
         eyebrow="About Us"
         title={banner?.title || "About Us"}
         description={banner?.body || undefined}
-        image={banner?.image || "https://images.unsplash.com/photo-1589922583749-6b8473a85048?auto=format&fit=crop&w=1000&h=800&q=80"}
-        imageAlt="A broiler flock on a commercial poultry farm"
-        secondaryImage="https://images.unsplash.com/photo-1723134085909-19da487ac9bd?auto=format&fit=crop&w=900&h=700&q=80"
+        image={banner?.image || "https://images.unsplash.com/photo-1549488235-42996ae3b650?auto=format&fit=crop&w=1000&h=800&q=80"}
+        imageAlt="Cattle grazing on a farm pasture"
+        secondaryImage="https://images.unsplash.com/photo-1593750187970-84858a2aaf5e?auto=format&fit=crop&w=900&h=700&q=80"
         chip={{ value: "15+", label: "Years in animal health" }}
       />
 
