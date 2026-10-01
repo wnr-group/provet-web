@@ -1,16 +1,15 @@
-import { getCategoryTree, getProducts } from "@/lib/data";
-import { resolveCategorySlug } from "@/lib/categoryTree";
+import { getCategoryTree, getProducts, getPublicBrochureSettings } from "@/lib/data";
+import { resolveCategorySlug, navCategoryTree } from "@/lib/categoryTree";
 import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 import CatalogueCard from "@/components/catalogue/CatalogueCard";
 import CatalogueHero from "@/components/catalogue/CatalogueHero";
 import FeaturedSpotlight from "@/components/catalogue/FeaturedSpotlight";
-import CategoryBrowser from "@/components/catalogue/CategoryBrowser";
 import EmptyState from "@/components/ui/EmptyState";
 import ProductsFilters from "@/components/products/ProductsFilters";
 import ProductsPagination from "@/components/products/ProductsPagination";
 import BrochureDownload from "@/components/products/BrochureDownload";
-import prisma from "@/lib/prisma";
-import { getBrochureSettings, brochureAvailable } from "@/lib/brochureSettings";
+import { brochureAvailable } from "@/lib/brochureSettings";
+import { CatalogueNavigationProvider, PendingResults } from "@/components/catalogue/CatalogueNavigation";
 import CategoryBackdrop from "@/components/catalogue/CategoryBackdrop";
 import { categoryTheme, rangeThemeVars } from "@/lib/categoryTheme";
 
@@ -35,7 +34,7 @@ export default async function Products({ searchParams }) {
     getCategoryTree(),
     getProducts({ category, search, page, limit: LIMIT, sort: "newest", prefixFirst: true }),
     showSpotlight ? getProducts({ category, featured: true, limit: 8 }) : null,
-    getBrochureSettings(prisma),
+    getPublicBrochureSettings(),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(result.total / LIMIT));
@@ -95,24 +94,22 @@ export default async function Products({ searchParams }) {
           </div>
         )}
 
+        <CatalogueNavigationProvider>
         <div className="container-page grid gap-8 py-10 lg:grid-cols-[260px_1fr] sm:py-14">
           <ProductsFilters
-            tree={tree}
+            tree={navCategoryTree(tree)}
             activeCategoryId={activeCategory?.id}
             activeSubcategoryId={activeSubcategory?.id}
             category={category}
             search={search}
           />
 
-          <div>
-            {/* The range cards, the catalogue's first step. A search
-                spans the whole catalogue, so it goes straight to results. */}
-            {!search && (
-              <CategoryBrowser tree={tree} category={activeCategory} />
-            )}
+          <PendingResults>
             {result.items.length ? (
               <>
-                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                {/* A frosted strip under the counts: the backdrop's ribbon lines run
+                    right through this band and made the text hard to read. */}
+                <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/85 px-4 py-2.5 shadow-soft ring-1 ring-brand-100/70 backdrop-blur-sm">
                   <p className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-ink-soft">
                     {theme.label && (
                       <span
@@ -164,8 +161,9 @@ export default async function Products({ searchParams }) {
             ) : (
               <EmptyState title="No products found" description="Try adjusting your search or browsing a different category." />
             )}
-          </div>
+          </PendingResults>
         </div>
+        </CatalogueNavigationProvider>
       </div>
     </div>
   );

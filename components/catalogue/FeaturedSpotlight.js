@@ -8,6 +8,7 @@ import clsx from "clsx";
 import { Tilt } from "@/components/motion/effects";
 import { useMotionEnv } from "@/components/motion/MotionProvider";
 import { EASE } from "@/lib/motion";
+import SiteImage from "@/components/ui/SiteImage";
 
 // The catalogue's featured product, one at a time, in a light card - a lead
 // item presented properly instead of as the first cell of the grid.
@@ -61,10 +62,14 @@ export default function FeaturedSpotlight({ products }) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.5, ease: EASE }}
-                className="h-full w-full"
+                className="relative h-full w-full"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs */}
-                <img src={product.images?.[0]} alt={product.name} className="h-full w-full scale-106 object-cover" />
+                <SiteImage
+                  src={product.images?.[0]}
+                  alt={product.name}
+                  sizes="(min-width: 768px) 160px, 144px"
+                  className="h-full w-full scale-106 object-cover"
+                />
               </motion.div>
             </AnimatePresence>
           </div>
@@ -146,12 +151,11 @@ export default function FeaturedSpotlight({ products }) {
                     aria-label={`Show ${p.name}`}
                     aria-current={i === index}
                     className={clsx(
-                      "h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-white transition",
+                      "relative h-9 w-9 shrink-0 overflow-hidden rounded-lg bg-white transition",
                       i === index ? "ring-2 ring-accent-500" : "opacity-60 ring-1 ring-brand-100 hover:opacity-100"
                     )}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs */}
-                    <img src={p.images?.[0]} alt="" className="h-full w-full object-contain" />
+                    <SiteImage src={p.images?.[0]} sizes="36px" className="h-full w-full object-contain" />
                   </button>
                 ))}
               </div>
