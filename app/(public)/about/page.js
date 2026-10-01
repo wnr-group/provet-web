@@ -1,7 +1,7 @@
 import { Award, Microscope, Users, Target } from "lucide-react";
 import { getContentSections, getAddedSections } from "@/lib/data";
-import { findHeadedText } from "@/lib/contentFormat";
-import { isBuiltInSection } from "@/lib/fixedPages";
+import { findHeadedText, parseStatItems } from "@/lib/contentFormat";
+import { withAboutDefaults } from "@/lib/aboutContent";
 import PageSections from "@/components/sections/PageSections";
 import CtaBanner from "@/components/home/CtaBanner";
 import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
@@ -31,27 +31,32 @@ export const metadata = {
     "Learn about Provet's mission to deliver quality, research-backed veterinary medicine to clinics and animal owners.",
 };
 
+// Everything on this page is a block in Admin > Website Content > About Us
+// (lib/aboutContent.js) - the banner, story, values, Why Provet and the
+// closing call to action - apart from Vision and Mission (see above).
 export default async function About() {
-  const [sections, whoWeAre, added, home] = await Promise.all([
+  const [sections, whoWeAre, added] = await Promise.all([
     getContentSections("about"),
     getContentSections(VISION_MISSION_PAGE),
     getAddedSections("about"),
-    getContentSections("home"),
   ]);
-  // Why Provet is still edited as a Homepage block (Admin > Website Content >
-  // Homepage), but is shown here.
-  const homeBlock = (key) => home.find((s) => s.key === key && s.isVisible !== false);
-  const visible = sections.filter((s) => s.isVisible !== false);
-  const story = visible.find((s) => s.key === "story");
-  const ownMission = visible.find((s) => s.key === "mission");
+  const blocks = withAboutDefaults(sections);
+  const shown = (key) => blocks.find((s) => s.key === key && s.isVisible !== false) || null;
+  const banner = shown("banner");
+  const story = shown("story");
+  const ownMission = shown("mission");
+  const whyUs = shown("why-us");
+  const figureBlock = shown("why-us-figure");
+  const figure = figureBlock ? parseStatItems(figureBlock.body).find((f) => f.value) || null : null;
+  const cta = shown("cta");
 
   const statements = whoWeAre.find((s) => s.key === VISION_MISSION_KEY)?.body;
   const vision = findHeadedText(statements, "Vision");
   const mission = findHeadedText(statements, "Mission") || ownMission?.body || null;
 
-  // The other built-in blocks: Quality Commitment and Our Team. Sections the
-  // admin adds render further down, through PageSections.
-  const values = visible.filter((s) => isBuiltInSection("about", s.key) && s.key !== "story" && s.key !== "mission");
+  // The "What We Stand For" cards: Quality Commitment and Our Team. Sections
+  // the admin adds render further down, through PageSections.
+  const values = ["quality", "team"].map(shown).filter(Boolean);
 
   return (
     <div>
@@ -60,9 +65,9 @@ export default async function About() {
       <PageBanner
         variant="layered"
         eyebrow="About Us"
-        title="Dedicated to Better Animal Health"
-        description="For over 15 years, Provet has partnered with veterinarians and clinics to deliver reliable, research-backed animal healthcare products."
-        image="https://images.unsplash.com/photo-1589922583749-6b8473a85048?auto=format&fit=crop&w=1000&h=800&q=80"
+        title={banner?.title || "About Us"}
+        description={banner?.body || undefined}
+        image={banner?.image || "https://images.unsplash.com/photo-1589922583749-6b8473a85048?auto=format&fit=crop&w=1000&h=800&q=80"}
         imageAlt="A broiler flock on a commercial poultry farm"
         secondaryImage="https://images.unsplash.com/photo-1723134085909-19da487ac9bd?auto=format&fit=crop&w=900&h=700&q=80"
         chip={{ value: "15+", label: "Years in animal health" }}
@@ -103,12 +108,12 @@ export default async function About() {
         </section>
       )}
 
-      <WhyUs section={homeBlock("why-us")} />
+      {whyUs && <WhyUs section={whyUs} figure={figure} />}
 
       {/* Sections added in Admin > Website Content > About Us. */}
       <PageSections sections={added} />
 
-      <CtaBanner />
+      {cta && <CtaBanner title={cta.title || undefined} body={cta.body} />}
     </div>
   );
 }

@@ -10,7 +10,9 @@ const DEFAULT_POINTS = [
   "Dedicated technical support for clinics and distributors",
 ];
 
-export default function WhyUs({ section }) {
+// `figure` ({ value, label }) is the card on the photo, from the About page's
+// "Highlight figure" block; null leaves the card out.
+export default function WhyUs({ section, figure = null }) {
   // The admin copy is written as a "- " / "• " list; the markers are stripped
   // because each point already gets its own check icon.
   const points = section?.body
@@ -61,6 +63,7 @@ export default function WhyUs({ section }) {
               smaller and tucked inside the right edge (the photo is full width
               there, so overhanging sideways would run off the screen); from
               `sm` up it overhangs both edges. */}
+          {figure && (
           <Reveal
             direction="up"
             delay={0.5}
@@ -71,11 +74,12 @@ export default function WhyUs({ section }) {
                 card, so it never fights the entrance transform on Reveal. */}
             <div className="animate-float rounded-2xl bg-accent-400 p-4 text-brand-900 shadow-lift ring-4 ring-brand-800 sm:p-5">
               <p className="font-display text-2xl font-extrabold sm:text-3xl">
-                <Counter value="98%" />
+                <Counter value={figure.value} />
               </p>
-              <p className="text-xs font-medium sm:text-sm">Client satisfaction across partner clinics</p>
+              <p className="text-xs font-medium sm:text-sm">{figure.label}</p>
             </div>
           </Reveal>
+          )}
         </div>
 
         <div>
