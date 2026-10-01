@@ -1,21 +1,20 @@
 "use client";
 
-import { ChevronUp, ChevronDown, ChevronRight, Trash2, Eye, EyeOff, Plus, CheckCircle2, AlertCircle, PlayCircle } from "lucide-react";
+import { useState } from "react";
+import { ChevronUp, ChevronDown, Trash2, Plus, CheckCircle2, AlertCircle, PlayCircle } from "lucide-react";
 import clsx from "clsx";
 import { ImagePicker } from "@/components/admin/ImagePicker";
+import RowsTable from "@/components/admin/RowsTable";
+import { bodyToRows, rowsToBody } from "@/lib/contentFormat";
 import { SECTION_TYPES, SECTION_TYPE_KEYS } from "@/lib/sectionTypes";
 import { buildCategoryTree } from "@/lib/categoryTree";
 import { parseYouTubeUrl, youTubeThumbnailUrl } from "@/lib/youtube";
 
-// Editor for one configurable section. Which inputs appear is driven by the
-// type's `fields` in lib/sectionTypes.js, so adding a type there is enough -
-// this component needs no change.
+// The fields for one configurable section, shown in the Website Content
+// admin's edit dialog (see SectionFields below).
 
 const BODY_HINT = {
   richText: "Leave a blank line between paragraphs.",
-  list: "One item per line.",
-  cards: 'One card per line, written as "Heading: text".',
-  numberedRows: 'One row per line, written as "Heading: text".',
   imageCards: "Optional intro shown under the heading.",
   carousel: "Optional intro shown above the slider.",
   locations: "Optional intro shown above the address cards.",
@@ -167,87 +166,22 @@ function ConfigFields({ section, categories, onConfig }) {
         )}
 
         <div>
-          <div className="flex items-center justify-between">
-            <label className="label mb-0">{type === "carousel" ? "Slides" : "Cards"}</label>
-            {items.length < 12 && (
-              <button
-                type="button"
-                className="btn-ghost text-xs"
-                onClick={() => onConfig({ items: [...items, { image: "", title: "", text: "", href: "" }] })}
-              >
-                <Plus size={14} /> {type === "carousel" ? "Add slide" : "Add card"}
-              </button>
-            )}
-          </div>
-          <div className="mt-2 space-y-3">
-            {items.map((item, i) => (
-              <div key={i} className="rounded-xl border border-brand-100 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
-                    {type === "carousel" ? "Slide" : "Card"} {i + 1}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      aria-label="Move card up"
-                      disabled={i === 0}
-                      onClick={() => {
-                        const next = [...items];
-                        [next[i - 1], next[i]] = [next[i], next[i - 1]];
-                        onConfig({ items: next });
-                      }}
-                      className="rounded-lg p-1.5 text-ink-soft hover:bg-brand-50 disabled:opacity-30"
-                    >
-                      <ChevronUp size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Move card down"
-                      disabled={i === items.length - 1}
-                      onClick={() => {
-                        const next = [...items];
-                        [next[i], next[i + 1]] = [next[i + 1], next[i]];
-                        onConfig({ items: next });
-                      }}
-                      className="rounded-lg p-1.5 text-ink-soft hover:bg-brand-50 disabled:opacity-30"
-                    >
-                      <ChevronDown size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Remove card"
-                      onClick={() => onConfig({ items: items.filter((_, idx) => idx !== i) })}
-                      className="rounded-lg p-1.5 text-ink-soft hover:bg-red-50 hover:text-red-600"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <ImagePicker value={item.image || ""} onChange={(image) => setItem(i, { image })} />
-                  <input
-                    className="input"
-                    placeholder="Heading"
-                    value={item.title || ""}
-                    onChange={(e) => setItem(i, { title: e.target.value })}
-                  />
-                  <textarea
-                    rows={2}
-                    className="input resize-none"
-                    placeholder="Text (optional)"
-                    value={item.text || ""}
-                    onChange={(e) => setItem(i, { text: e.target.value })}
-                  />
-                  <input
-                    className="input"
-                    placeholder="Link (optional) - /products or https://..."
-                    value={item.href || ""}
-                    onChange={(e) => setItem(i, { href: e.target.value })}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+          <label className="label">{type === "carousel" ? "Slides" : "Cards"}</label>
+          <RowsTable
+            columns={[
+              { key: "image", label: "Image", type: "image", width: "5.5rem" },
+              { key: "title", label: "Heading", placeholder: "Heading", width: "24%" },
+              { key: "text", label: "Text", type: "textarea", placeholder: "Text (optional)" },
+              { key: "href", label: "Link", placeholder: "/products or https://...", width: "22%" },
+            ]}
+            rows={items}
+            onChange={(next) => onConfig({ items: next })}
+            newRow={{ image: "", title: "", text: "", href: "" }}
+            addLabel={type === "carousel" ? "Add slide" : "Add card"}
+            itemLabel={type === "carousel" ? "slide" : "card"}
+            max={12}
+            emptyText={type === "carousel" ? "No slides yet." : "No cards yet."}
+          />
         </div>
       </div>
     );
@@ -281,92 +215,23 @@ function ConfigFields({ section, categories, onConfig }) {
         </div>
 
         <div>
-          <div className="flex items-center justify-between">
-            <label className="label mb-0">Locations</label>
-            {items.length < 24 && (
-              <button
-                type="button"
-                className="btn-ghost text-xs"
-                onClick={() =>
-                  onConfig({ items: [...items, { title: "", subtitle: "", address: "", contact: "", phone: "" }] })
-                }
-              >
-                <Plus size={14} /> Add location
-              </button>
-            )}
-          </div>
-          <div className="mt-2 space-y-3">
-            {items.map((item, i) => (
-              <div key={i} className="rounded-xl border border-brand-100 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-ink-soft">
-                    {item.title || `Location ${i + 1}`}
-                  </span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      type="button"
-                      aria-label="Move location up"
-                      disabled={i === 0}
-                      onClick={() => move(i, -1)}
-                      className="rounded-lg p-1.5 text-ink-soft hover:bg-brand-50 disabled:opacity-30"
-                    >
-                      <ChevronUp size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Move location down"
-                      disabled={i === items.length - 1}
-                      onClick={() => move(i, 1)}
-                      className="rounded-lg p-1.5 text-ink-soft hover:bg-brand-50 disabled:opacity-30"
-                    >
-                      <ChevronDown size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      aria-label="Remove location"
-                      onClick={() => onConfig({ items: items.filter((_, idx) => idx !== i) })}
-                      className="rounded-lg p-1.5 text-ink-soft hover:bg-red-50 hover:text-red-600"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <input
-                    className="input"
-                    placeholder="Name - e.g. Kolkata (Branch)"
-                    value={item.title || ""}
-                    onChange={(e) => setItem(i, { title: e.target.value })}
-                  />
-                  <input
-                    className="input"
-                    placeholder="Company (optional)"
-                    value={item.subtitle || ""}
-                    onChange={(e) => setItem(i, { subtitle: e.target.value })}
-                  />
-                  <textarea
-                    rows={3}
-                    className="input resize-none sm:col-span-2"
-                    placeholder="Address - one line per row"
-                    value={item.address || ""}
-                    onChange={(e) => setItem(i, { address: e.target.value })}
-                  />
-                  <input
-                    className="input"
-                    placeholder="Contact person (optional)"
-                    value={item.contact || ""}
-                    onChange={(e) => setItem(i, { contact: e.target.value })}
-                  />
-                  <input
-                    className="input"
-                    placeholder="Phone (optional)"
-                    value={item.phone || ""}
-                    onChange={(e) => setItem(i, { phone: e.target.value })}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
+          <label className="label">Locations</label>
+          <RowsTable
+            columns={[
+              { key: "title", label: "Name", placeholder: "Kolkata (Branch)", width: "18%" },
+              { key: "subtitle", label: "Company", placeholder: "Optional", width: "16%" },
+              { key: "address", label: "Address", type: "textarea", placeholder: "One line per row" },
+              { key: "contact", label: "Contact person", placeholder: "Optional", width: "15%" },
+              { key: "phone", label: "Phone", placeholder: "Optional", width: "14%" },
+            ]}
+            rows={items}
+            onChange={(next) => onConfig({ items: next })}
+            newRow={{ title: "", subtitle: "", address: "", contact: "", phone: "" }}
+            addLabel="Add location"
+            itemLabel="location"
+            max={24}
+            emptyText="No locations yet."
+          />
         </div>
       </div>
     );
@@ -440,67 +305,34 @@ function ConfigFields({ section, categories, onConfig }) {
   }
 
   if (type === "cta") {
-    const buttons = config.buttons || [];
-    const setButton = (i, patch) =>
-      onConfig({ buttons: buttons.map((b, idx) => (idx === i ? { ...b, ...patch } : b)) });
-
     return (
       <div>
-        <div className="flex items-center justify-between">
-          <label className="label mb-0">Buttons</label>
-          {buttons.length < 3 && (
-            <button
-              type="button"
-              className="btn-ghost text-xs"
-              onClick={() => onConfig({ buttons: [...buttons, { label: "", href: "", style: "accent", newTab: false }] })}
-            >
-              <Plus size={14} /> Add button
-            </button>
-          )}
-        </div>
-        <div className="mt-2 space-y-2">
-          {buttons.map((button, i) => (
-            <div key={i} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto_auto] sm:items-center">
-              <input
-                className="input"
-                placeholder="Label"
-                value={button.label || ""}
-                onChange={(e) => setButton(i, { label: e.target.value })}
-              />
-              <input
-                className="input"
-                placeholder="/products or https://..."
-                value={button.href || ""}
-                onChange={(e) => setButton(i, { href: e.target.value })}
-              />
-              <select
-                className="input sm:w-28"
-                value={button.style || "accent"}
-                onChange={(e) => setButton(i, { style: e.target.value })}
-              >
-                <option value="accent">Accent</option>
-                <option value="primary">Primary</option>
-                <option value="outline">Outline</option>
-              </select>
-              <label className="flex items-center gap-1.5 whitespace-nowrap text-xs text-ink-soft">
-                <input
-                  type="checkbox"
-                  checked={Boolean(button.newTab)}
-                  onChange={(e) => setButton(i, { newTab: e.target.checked })}
-                />
-                New tab
-              </label>
-              <button
-                type="button"
-                aria-label="Remove button"
-                onClick={() => onConfig({ buttons: buttons.filter((_, idx) => idx !== i) })}
-                className="rounded-lg p-2 text-ink-soft hover:bg-red-50 hover:text-red-600"
-              >
-                <Trash2 size={15} />
-              </button>
-            </div>
-          ))}
-        </div>
+        <label className="label">Buttons</label>
+        <RowsTable
+          columns={[
+            { key: "label", label: "Label", placeholder: "Contact Us", width: "26%" },
+            { key: "href", label: "Link", placeholder: "/contact or https://..." },
+            {
+              key: "style",
+              label: "Style",
+              type: "select",
+              width: "8.5rem",
+              options: [
+                { value: "accent", label: "Accent" },
+                { value: "primary", label: "Primary" },
+                { value: "outline", label: "Outline" },
+              ],
+            },
+            { key: "newTab", label: "New tab", type: "checkbox", width: "5rem" },
+          ]}
+          rows={config.buttons || []}
+          onChange={(next) => onConfig({ buttons: next })}
+          newRow={{ label: "", href: "", style: "accent", newTab: false }}
+          addLabel="Add button"
+          itemLabel="button"
+          max={3}
+          emptyText="No buttons."
+        />
       </div>
     );
   }
@@ -508,90 +340,69 @@ function ConfigFields({ section, categories, onConfig }) {
   return null;
 }
 
-export default function SectionEditor({
-  section,
-  index,
-  total,
-  categories,
-  editable,
-  // Optional per-block overrides from a fixed page (see FIXED_PAGE_DEFAULTS
-  // in the content admin): a hint saying what this block does on its page,
-  // and hiding type settings the page's layout ignores.
-  hint,
-  hideConfig = false,
-  open,
-  onToggleOpen,
-  onChange,
-  onMove,
-  onRemove,
-}) {
+// List-shaped bodies are edited as a table (components/admin/RowsTable),
+// one row per item. A fixed block can name its own format (the homepage's
+// figures are "stats"); otherwise the section type decides.
+const BODY_FORMAT_BY_TYPE = { list: "lines", cards: "headed", numberedRows: "headed" };
+
+const BODY_COLUMNS = {
+  lines: [{ key: "text", label: "Item", placeholder: "One point" }],
+  headed: [
+    { key: "heading", label: "Heading", placeholder: "Heading", width: "32%" },
+    { key: "text", label: "Text", type: "textarea", placeholder: "Text" },
+  ],
+  stats: [
+    { key: "value", label: "Figure", placeholder: "250+", width: "8rem" },
+    { key: "label", label: "Caption", placeholder: "Products - or a note, with the figure left empty" },
+  ],
+};
+
+const NEW_ROW = { lines: { text: "" }, headed: { heading: "", text: "" }, stats: { value: "", label: "" } };
+
+// The rows live in their own state while the dialog is open, and the body
+// text is written from them on every change. Deriving the rows back from the
+// body on each keystroke would trim a space typed at the end of a cell and
+// drop a just-added empty row, since the saved text keeps neither.
+function BodyRows({ format, body, onBody }) {
+  const [rows, setRows] = useState(() => bodyToRows(format, body));
+  return (
+    <RowsTable
+      columns={BODY_COLUMNS[format]}
+      rows={rows}
+      onChange={(next) => {
+        setRows(next);
+        onBody(rowsToBody(format, next));
+      }}
+      newRow={NEW_ROW[format]}
+      addLabel={format === "stats" ? "Add figure" : "Add row"}
+      itemLabel={format === "stats" ? "figure" : "row"}
+      emptyText="No rows yet - add the first one."
+    />
+  );
+}
+
+export function bodyFormatFor(section, override) {
+  return override || BODY_FORMAT_BY_TYPE[section.type] || null;
+}
+
+// The fields of one section, laid out for the edit dialog: type, title, body,
+// image and the type's own settings. Which appear is driven by the type's
+// `fields` in lib/sectionTypes.js, so adding a type there is enough.
+//
+// `hint` / `hideConfig` / `bodyFormat` are per-block overrides from a fixed
+// page (FIXED_PAGE_DEFAULTS in the content admin): what the block does on its
+// page, type settings its layout ignores, and how its body is structured.
+export function SectionFields({ section, categories, editable, hint, hideConfig = false, bodyFormat, onChange }) {
   const definition = SECTION_TYPES[section.type] || SECTION_TYPES.richText;
   const fields = definition.fields;
   const set = (patch) => onChange({ ...section, ...patch });
   const onConfig = (patch) => set({ config: { ...section.config, ...patch } });
+  const format = bodyFormatFor(section, bodyFormat);
 
   return (
-    <div className={clsx("card space-y-4 p-5", !section.isVisible && "opacity-60")}>
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        {/* Headed by what the section says and what it is, not by its
-            database key - "management-team" told an editor nothing about
-            which block on the page they were about to change. */}
-        <button
-          type="button"
-          onClick={onToggleOpen}
-          className="flex min-w-0 flex-1 items-center gap-2 text-left"
-        >
-          <ChevronRight size={15} className={clsx("shrink-0 text-ink-soft transition-transform", open && "rotate-90")} />
-          <span className="truncate font-display font-semibold text-ink">
-            {section.title || definition.label}
-          </span>
-          <span className="shrink-0 badge bg-brand-50 text-ink-soft">{definition.label}</span>
-          {!section.isVisible && <span className="shrink-0 badge bg-brand-50 text-ink-soft">Hidden</span>}
-        </button>
-        <div className="flex items-center gap-1">
-          <button
-            type="button"
-            aria-label="Move up"
-            disabled={index === 0}
-            onClick={() => onMove(index, -1)}
-            className="rounded-lg p-1.5 text-ink-soft hover:bg-brand-50 disabled:opacity-30"
-          >
-            <ChevronUp size={15} />
-          </button>
-          <button
-            type="button"
-            aria-label="Move down"
-            disabled={index === total - 1}
-            onClick={() => onMove(index, 1)}
-            className="rounded-lg p-1.5 text-ink-soft hover:bg-brand-50 disabled:opacity-30"
-          >
-            <ChevronDown size={15} />
-          </button>
-          <button
-            type="button"
-            aria-label={section.isVisible ? "Hide section" : "Show section"}
-            onClick={() => set({ isVisible: !section.isVisible })}
-            className="rounded-lg p-1.5 text-ink-soft hover:bg-brand-50"
-          >
-            {section.isVisible ? <Eye size={15} /> : <EyeOff size={15} />}
-          </button>
-          {/* Sections on the bespoke home/about layouts can't be deleted -
-              their keys are what those pages render by. */}
-          {editable && (
-            <button
-              type="button"
-              aria-label="Delete section"
-              onClick={() => onRemove(index)}
-              className="rounded-lg p-1.5 text-ink-soft hover:bg-red-50 hover:text-red-600"
-            >
-              <Trash2 size={15} />
-            </button>
-          )}
-        </div>
-      </div>
+    <div className="space-y-5">
+      {hint && <p className="rounded-xl bg-brand-50/70 px-4 py-3 text-sm leading-relaxed text-brand-800">{hint}</p>}
 
-      {!open ? null : (
-        <>
       {editable && (
         <div>
           <label className="label">Section type</label>
@@ -613,18 +424,24 @@ export default function SectionEditor({
         </div>
       )}
 
-      {fields.includes("body") && (
-        <div>
-          <label className="label">Body</label>
-          <textarea
-            rows={4}
-            className="input resize-none"
-            value={section.body || ""}
-            onChange={(e) => set({ body: e.target.value })}
-          />
-          <p className="mt-1 text-xs text-ink-soft">{hint || BODY_HINT[section.type]}</p>
-        </div>
-      )}
+      {fields.includes("body") &&
+        (format ? (
+          <div>
+            <label className="label">{format === "stats" ? "Figures" : format === "lines" ? "Items" : "Rows"}</label>
+            <BodyRows key={`${section.key}-${format}`} format={format} body={section.body} onBody={(body) => set({ body })} />
+          </div>
+        ) : (
+          <div>
+            <label className="label">Body</label>
+            <textarea
+              rows={5}
+              className="input resize-y"
+              value={section.body || ""}
+              onChange={(e) => set({ body: e.target.value })}
+            />
+            {!hint && BODY_HINT[section.type] && <p className="mt-1 text-xs text-ink-soft">{BODY_HINT[section.type]}</p>}
+          </div>
+        ))}
 
       {fields.includes("image") && (
         <div>
@@ -634,8 +451,6 @@ export default function SectionEditor({
       )}
 
       {!hideConfig && <ConfigFields section={section} categories={categories} onConfig={onConfig} />}
-        </>
-      )}
     </div>
   );
 }

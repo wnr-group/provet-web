@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Save, FileText, Plus, ExternalLink, AlertCircle } from "lucide-react";
+import { Save, ExternalLink, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import clsx from "clsx";
 import {
@@ -12,13 +12,21 @@ import {
   adminGetCategories,
 } from "@/components/admin/adminApi";
 import { PageSpinner } from "@/components/ui/Spinner";
-import SectionEditor from "@/components/admin/SectionEditor";
-import { ImagePicker } from "@/components/admin/ImagePicker";
+import { SectionFields } from "@/components/admin/SectionEditor";
+import SectionsTable from "@/components/admin/SectionsTable";
+import PageSettingsTable, { summarizePageSettings } from "@/components/admin/PageSettingsTable";
+
+// The edit dialog's key for the page settings row (section keys are slugs,
+// so this can't collide with one).
+const SETTINGS_KEY = "__page-settings__";
+import Modal from "@/components/admin/Modal";
+import { SECTION_TYPES } from "@/lib/sectionTypes";
 import { contentPages } from "@/lib/navigation";
 import { DEFAULT_SECTION_TYPE, parseSectionConfig } from "@/lib/sectionTypes";
 import { toSlug } from "@/lib/slug";
 import { CONTACT_SECTIONS, withContactDefaults } from "@/lib/contactContent";
 import { HOME_SECTIONS, withHomeDefaults } from "@/lib/homeContent";
+import { ABOUT_SECTIONS, withAboutDefaults } from "@/lib/aboutContent";
 import { isBuiltInSection, addedSections } from "@/lib/fixedPages";
 
 const PAGES = contentPages();
@@ -34,11 +42,21 @@ const PAGES = contentPages();
 const FIXED_PAGE_DEFAULTS = {
   contact: {
     merge: withContactDefaults,
-    meta: Object.fromEntries(CONTACT_SECTIONS.map((s) => [s.key, { hint: s.hint, hideConfig: s.hideConfig }])),
+    meta: Object.fromEntries(
+      CONTACT_SECTIONS.map((s) => [s.key, { hint: s.hint, hideConfig: s.hideConfig, bodyFormat: s.bodyFormat }])
+    ),
+  },
+  about: {
+    merge: withAboutDefaults,
+    meta: Object.fromEntries(
+      ABOUT_SECTIONS.map((s) => [s.key, { hint: s.hint, hideConfig: s.hideConfig, bodyFormat: s.bodyFormat }])
+    ),
   },
   home: {
     merge: withHomeDefaults,
-    meta: Object.fromEntries(HOME_SECTIONS.map((s) => [s.key, { hint: s.hint, hideConfig: s.hideConfig }])),
+    meta: Object.fromEntries(
+      HOME_SECTIONS.map((s) => [s.key, { hint: s.hint, hideConfig: s.hideConfig, bodyFormat: s.bodyFormat }])
+    ),
     reorderable: true,
   },
 };
@@ -73,9 +91,11 @@ export default function ContentAdmin() {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
   const errorRef = useRef(null);
-  // Which section card is expanded. One at a time keeps the page scannable;
-  // a freshly added section opens itself, since you added it to fill it in.
-  const [openKey, setOpenKey] = useState(null);
+  // The section open in the edit dialog, by key. A freshly added section
+  // opens itself, since you added it to fill it in.
+  const [editingKey, setEditingKey] = useState(null);
+  // Edits are held here until Save Changes; this marks that there are some.
+  const [dirty, setDirty] = useState(false);
 
   const current = PAGES.find((p) => p.key === pageKey);
   // The bespoke home/about/contact layouts render a fixed set of built-in
@@ -86,6 +106,9 @@ export default function ContentAdmin() {
   const isFixedPage = Boolean(current.fixed);
   const isLocked = (section) => isFixedPage && isBuiltInSection(pageKey, section.key);
   const loading = loadedKey !== pageKey;
+  const editingIndex = sections ? sections.findIndex((s) => s.key === editingKey) : -1;
+  const editingSection = editingIndex >= 0 ? sections[editingIndex] : null;
+  const pageMeta = FIXED_PAGE_DEFAULTS[pageKey]?.meta;
 
   useEffect(() => {
     adminGetCategories().then(setCategories).catch(() => setCategories([]));
@@ -124,6 +147,7 @@ export default function ContentAdmin() {
         setSections(data.sections);
         setSettings(data.settings);
         setError("");
+        setDirty(false);
         setLoadedKey(pageKey);
       })
       .catch((err) => {
@@ -140,6 +164,7 @@ export default function ContentAdmin() {
   const updateSection = (index, next) => {
     setSections((secs) => secs.map((s, i) => (i === index ? next : s)));
     setSaved(false);
+    setDirty(true);
   };
 
   const moveSection = (index, delta) => {
@@ -155,11 +180,19 @@ export default function ContentAdmin() {
       return next;
     });
     setSaved(false);
+    setDirty(true);
+  };
+
+  const markSettings = (updater) => {
+    setSettings(updater);
+    setSaved(false);
+    setDirty(true);
   };
 
   const removeSection = (index) => {
     setSections((secs) => secs.filter((_, i) => i !== index));
     setSaved(false);
+    setDirty(true);
   };
 
   const addSection = () => {
@@ -173,11 +206,13 @@ export default function ContentAdmin() {
     while (used.has(key)) key = `section-${++n}`;
 
     setSections((secs) => [...secs, normalizeSection({ key, type: DEFAULT_SECTION_TYPE, isVisible: true })]);
-    setOpenKey(key);
+    setEditingKey(key);
     setSaved(false);
+    setDirty(true);
   };
 
   const onSave = async () => {
+    let ok = false;
     setSaving(true);
     setError("");
     try {
@@ -197,7 +232,9 @@ export default function ContentAdmin() {
           sections: sections.map((s, i) => ({ ...s, key: toSlug(s.key), order: i })),
         });
       }
+      ok = true;
       setSaved(true);
+      setDirty(false);
       const refreshed = await fetchPage();
       setSections(refreshed.sections);
       setSettings(refreshed.settings);
@@ -206,6 +243,7 @@ export default function ContentAdmin() {
     } finally {
       setSaving(false);
     }
+    return ok;
   };
 
   // A failed save is usually noticed from far down the page (the section
@@ -224,6 +262,7 @@ export default function ContentAdmin() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          {dirty && <span className="badge bg-amber-50 text-amber-700 ring-1 ring-amber-200">Unsaved changes</span>}
           <Link href={current.href} target="_blank" className="btn-outline text-sm">
             <ExternalLink size={15} /> View
           </Link>
@@ -240,6 +279,7 @@ export default function ContentAdmin() {
             onClick={() => {
               setPageKey(p.key);
               setSaved(false);
+              setEditingKey(null);
             }}
             className={clsx(
               "rounded-full px-4 py-1.5 text-sm font-medium transition",
@@ -266,109 +306,119 @@ export default function ContentAdmin() {
         <PageSpinner />
       ) : (
         <div className="mt-5 space-y-4">
-          {editable && (
-            <div className="card space-y-4 p-5">
-              <h2 className="font-display font-semibold text-ink">Page settings</h2>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="label">Page title</label>
-                  <input
-                    className="input"
-                    value={settings.title}
-                    onChange={(e) => setSettings((s) => ({ ...s, title: e.target.value }))}
-                  />
-                </div>
-                <div>
-                  <label className="label">SEO title</label>
-                  <input
-                    className="input"
-                    placeholder="Defaults to the page title"
-                    value={settings.seoTitle}
-                    onChange={(e) => setSettings((s) => ({ ...s, seoTitle: e.target.value }))}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="label">Intro (shown under the heading in the banner)</label>
-                <textarea
-                  rows={2}
-                  className="input resize-none"
-                  value={settings.description}
-                  onChange={(e) => setSettings((s) => ({ ...s, description: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label className="label">SEO description</label>
-                <textarea
-                  rows={2}
-                  className="input resize-none"
-                  placeholder="Defaults to the intro above"
-                  value={settings.seoDescription}
-                  onChange={(e) => setSettings((s) => ({ ...s, seoDescription: e.target.value }))}
-                />
-              </div>
-              <div>
-                <label className="label">Banner image (shown on the right of the banner)</label>
-                <ImagePicker
-                  value={settings.heroImage}
-                  onChange={(heroImage) => setSettings((s) => ({ ...s, heroImage }))}
-                />
-              </div>
-            </div>
-          )}
 
-          {sections.length === 0 ? (
-            <div className="card p-8 text-center text-ink-soft">
-              <FileText size={28} className="mx-auto text-brand-300" />
-              <p className="mt-3 text-sm">
-                {editable ? "No sections yet - add one to start building this page." : "No content sections found."}
-              </p>
-            </div>
-          ) : (
-            sections.map((section, i) => {
-              // On a fixed page, arrows and indices work within a group: the
-              // built-in blocks, or the added sections.
-              const locked = isLocked(section);
-              const group = isFixedPage ? sections.filter((s) => isLocked(s) === locked) : sections;
-              const offset = sections.indexOf(group[0]);
-              const firstAdded = isFixedPage && !locked && i === offset;
-              return (
-                <div key={section.key}>
-                  {firstAdded && (
-                    <div className="mb-3 mt-8 flex items-center gap-3">
-                      <span className="h-px flex-1 bg-brand-100" />
-                      <span className="text-xs font-semibold uppercase tracking-wider text-ink-soft">
-                        Added sections · shown after the page&apos;s main content
-                      </span>
-                      <span className="h-px flex-1 bg-brand-100" />
-                    </div>
-                  )}
-                  <SectionEditor
-                    section={section}
-                    index={i - offset}
-                    total={group.length}
-                    categories={categories}
-                    editable={editable || !locked}
-                    hint={FIXED_PAGE_DEFAULTS[pageKey]?.meta[section.key]?.hint}
-                    hideConfig={FIXED_PAGE_DEFAULTS[pageKey]?.meta[section.key]?.hideConfig}
-                    open={openKey === section.key}
-                    onToggleOpen={() => setOpenKey((k) => (k === section.key ? null : section.key))}
-                    onChange={(next) => updateSection(i, next)}
-                    onMove={(_, delta) => moveSection(i, delta)}
-                    onRemove={() => removeSection(i)}
-                  />
-                </div>
-              );
-            })
-          )}
-
-          <button onClick={addSection} className="btn-outline w-full justify-center">
-            <Plus size={16} /> Add section
-          </button>
+          <SectionsTable
+            sections={sections}
+            editable={editable}
+            isFixedPage={isFixedPage}
+            isLocked={isLocked}
+            reorderable={!isFixedPage || Boolean(FIXED_PAGE_DEFAULTS[pageKey]?.reorderable)}
+            meta={pageMeta}
+            onEdit={setEditingKey}
+            onMove={moveSection}
+            onToggle={(i) => updateSection(i, { ...sections[i], isVisible: !sections[i].isVisible })}
+            onRemove={removeSection}
+            onAdd={addSection}
+            pageSettings={
+              editable ? { summary: summarizePageSettings(settings), onEdit: () => setEditingKey(SETTINGS_KEY) } : null
+            }
+          />
           {current.fixed && (
             <p className="text-center text-xs text-ink-soft">
               New sections - videos, cards, product grids and more - appear on the page after its built-in content.
             </p>
+          )}
+
+          {editable && editingKey === SETTINGS_KEY && (
+            <Modal
+              open
+              size="xl"
+              onClose={() => setEditingKey(null)}
+              title="Page settings"
+              subtitle={`${current.label} page · banner and search engines`}
+              footer={
+                <>
+                  <p className="mr-auto text-xs text-ink-soft">Changes go live on the website when you save.</p>
+                  <button type="button" onClick={() => setEditingKey(null)} className="btn-outline">
+                    Done
+                  </button>
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={async () => {
+                      if (await onSave()) setEditingKey(null);
+                    }}
+                    className="btn-primary"
+                  >
+                    <Save size={16} /> {saving ? "Saving..." : "Save changes"}
+                  </button>
+                </>
+              }
+            >
+              {error && (
+                <p
+                  role="alert"
+                  className="mb-4 flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 ring-1 ring-red-200"
+                >
+                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                  <span>{error}</span>
+                </p>
+              )}
+              <PageSettingsTable bare settings={settings} onChange={markSettings} />
+            </Modal>
+          )}
+
+          {editingSection && (
+            <Modal
+              open
+              size="xl"
+              onClose={() => setEditingKey(null)}
+              title={editingSection.title || SECTION_TYPES[editingSection.type]?.label || "Section"}
+              subtitle={[
+                SECTION_TYPES[editingSection.type]?.label,
+                `${current.label} page`,
+                isLocked(editingSection) ? "built-in section" : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+              footer={
+                <>
+                  <p className="mr-auto text-xs text-ink-soft">Changes go live on the website when you save.</p>
+                  <button type="button" onClick={() => setEditingKey(null)} className="btn-outline">
+                    Done
+                  </button>
+                  <button
+                    type="button"
+                    disabled={saving}
+                    onClick={async () => {
+                      if (await onSave()) setEditingKey(null);
+                    }}
+                    className="btn-primary"
+                  >
+                    <Save size={16} /> {saving ? "Saving..." : "Save changes"}
+                  </button>
+                </>
+              }
+            >
+              {error && (
+                <p
+                  role="alert"
+                  className="mb-4 flex items-start gap-2 rounded-xl bg-red-50 px-4 py-3 text-sm font-medium text-red-700 ring-1 ring-red-200"
+                >
+                  <AlertCircle size={16} className="mt-0.5 shrink-0" />
+                  <span>{error}</span>
+                </p>
+              )}
+              <SectionFields
+                section={editingSection}
+                categories={categories}
+                editable={editable || !isLocked(editingSection)}
+                hint={pageMeta?.[editingSection.key]?.hint}
+                hideConfig={pageMeta?.[editingSection.key]?.hideConfig}
+                bodyFormat={pageMeta?.[editingSection.key]?.bodyFormat}
+                onChange={(next) => updateSection(editingIndex, next)}
+              />
+            </Modal>
           )}
         </div>
       )}
