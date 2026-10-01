@@ -122,7 +122,16 @@ export default function ContentAdmin() {
       const merge = FIXED_PAGE_DEFAULTS[pageKey]?.merge;
       const builtIn = (merge ? merge(res.sections) : res.sections).filter((s) => isBuiltInSection(pageKey, s.key));
       const added = addedSections(pageKey, res.sections);
-      return { sections: [...builtIn, ...added].map(normalizeSection), settings: emptySettings };
+      // A page whose layout follows the admin's order (the homepage) lists
+      // built-in and added sections together, as they appear on the page;
+      // elsewhere added sections always follow the page's own content.
+      const listed = FIXED_PAGE_DEFAULTS[pageKey]?.reorderable
+        ? [...builtIn, ...added]
+            .map((s, seq) => ({ s, seq }))
+            .sort((a, b) => (a.s.order ?? Number.MAX_SAFE_INTEGER) - (b.s.order ?? Number.MAX_SAFE_INTEGER) || a.seq - b.seq)
+            .map(({ s }) => s)
+        : [...builtIn, ...added];
+      return { sections: listed.map(normalizeSection), settings: emptySettings };
     }
     const res = await adminGetPage(pageKey);
     return {
@@ -172,10 +181,13 @@ export default function ContentAdmin() {
       const next = [...secs];
       const target = index + delta;
       if (target < 0 || target >= next.length) return secs;
-      // Built-in blocks move only among themselves, and only on a page whose
-      // layout follows their order; added sections move among themselves.
-      if (isLocked(next[index]) !== isLocked(next[target])) return secs;
-      if (isLocked(next[index]) && !FIXED_PAGE_DEFAULTS[pageKey]?.reorderable) return secs;
+      // On a page whose layout follows the admin's order (the homepage) any
+      // section moves past any other. Elsewhere the layout fixes where the
+      // built-in blocks go, so they don't move and added sections move only
+      // among themselves.
+      if (!FIXED_PAGE_DEFAULTS[pageKey]?.reorderable) {
+        if (isLocked(next[index]) || isLocked(next[target])) return secs;
+      }
       [next[index], next[target]] = [next[target], next[index]];
       return next;
     });

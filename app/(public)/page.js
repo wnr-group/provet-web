@@ -1,6 +1,6 @@
 import { getActiveBanners, getCategoryTree, getProducts, getContentSections, getAddedSections } from "@/lib/data";
 import { parseHeadedItems, parseStatItems } from "@/lib/contentFormat";
-import { withHomeDefaults, homeSectionOrder } from "@/lib/homeContent";
+import { withHomeDefaults, homeSectionOrder, homeLayout } from "@/lib/homeContent";
 import PageSections from "@/components/sections/PageSections";
 import Hero from "@/components/home/Hero";
 import FeatureStrip from "@/components/home/FeatureStrip";
@@ -77,9 +77,16 @@ export default async function Home() {
         badge={heroStats ? heroStats.title || null : null}
         stats={heroStats ? parseStatItems(heroStats.body).filter((s) => s.value) : []}
       />
-      {homeSectionOrder(content).map(renderSection)}
-      {/* Sections added in Admin > Website Content > Homepage. */}
-      <PageSections sections={added} />
+      {/* The homepage's own sections and those added in Admin > Website
+          Content > Homepage, in the order set there - an added section can sit
+          anywhere among the built-in ones. */}
+      {homeLayout(homeSectionOrder(content), added).map((entry) =>
+        entry.added ? (
+          <PageSections key={entry.key} sections={[entry.added]} offset={entry.addedIndex} />
+        ) : (
+          renderSection(entry.block)
+        )
+      )}
       {cta && <CtaBanner title={cta.title || undefined} body={cta.body} />}
     </>
   );

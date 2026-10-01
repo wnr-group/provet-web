@@ -127,9 +127,13 @@ export default function SectionsTable({
                 // On a fixed page, order and arrows work within a group: the
                 // built-in blocks, or the added sections.
                 const locked = isLocked(section);
-                const group = isFixedPage ? sections.filter((s) => isLocked(s) === locked) : sections;
+                // On a fixed page whose layout follows the admin's order (the
+                // homepage) every section is one list; elsewhere the built-in
+                // blocks and the added sections are separate groups.
+                const grouped = isFixedPage && !reorderable;
+                const group = grouped ? sections.filter((s) => isLocked(s) === locked) : sections;
                 const position = group.indexOf(section);
-                const firstAdded = isFixedPage && !locked && position === 0;
+                const firstAdded = grouped && !locked && position === 0;
                 const canMove = !locked || reorderable;
                 const definition = SECTION_TYPES[section.type] || SECTION_TYPES.richText;
                 const format = bodyFormatFor(section, meta?.[section.key]?.bodyFormat);

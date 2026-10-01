@@ -636,7 +636,10 @@ const RENDERERS = {
 // The section types that stand up in 3D on scroll (see below).
 const TILTED_TYPES = new Set(["cards", "imageCards", "productGrid", "categoryGrid"]);
 
-export default function PageSections({ sections }) {
+// `offset`: where these sections fall in the alternation when they are
+// rendered apart from their siblings (the homepage interleaves added sections
+// with its own, one at a time).
+export default function PageSections({ sections, offset = 0 }) {
   if (!sections?.length) return null;
 
   // Bands alternate white / tinted so neighbouring sections never merge into
@@ -648,7 +651,7 @@ export default function PageSections({ sections }) {
         const Renderer = RENDERERS[section.type];
         if (!Renderer) return null;
 
-        const tinted = index % 2 === 1;
+        const tinted = (index + offset) % 2 === 1;
 
         return (
           <section
