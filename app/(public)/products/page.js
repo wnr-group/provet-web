@@ -5,7 +5,6 @@ import CatalogueCard from "@/components/catalogue/CatalogueCard";
 import CatalogueHero from "@/components/catalogue/CatalogueHero";
 import FeaturedSpotlight from "@/components/catalogue/FeaturedSpotlight";
 import CategoryBrowser from "@/components/catalogue/CategoryBrowser";
-import { ScrollTilt } from "@/components/motion/effects";
 import EmptyState from "@/components/ui/EmptyState";
 import ProductsFilters from "@/components/products/ProductsFilters";
 import ProductsPagination from "@/components/products/ProductsPagination";
@@ -143,21 +142,23 @@ export default async function Products({ searchParams }) {
                 {/* Keyed on the query, so the grid re-deals whenever the filter
                     or page changes - a visible answer to the click rather than
                     cards silently swapping in place. mode="mount" because the
-                    grid is above the fold. */}
-                <ScrollTilt amount={10}>
-                  <RevealGroup
-                    key={`${category}|${search}|${page}`}
-                    mode="mount"
-                    stagger={0.05}
-                    className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3"
-                  >
-                    {result.items.map((p) => (
-                      <RevealItem key={p.id} className="h-full" distance={18} duration={0.45}>
-                        <CatalogueCard product={p} />
-                      </RevealItem>
-                    ))}
-                  </RevealGroup>
-                </ScrollTilt>
+                    grid is above the fold.
+
+                    No scroll tilt here: leaning a grid this tall back in 3D
+                    pushed its top edge far below the "Showing ..." line,
+                    leaving an empty band until it was scrolled upright. */}
+                <RevealGroup
+                  key={`${category}|${search}|${page}`}
+                  mode="mount"
+                  stagger={0.05}
+                  className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3"
+                >
+                  {result.items.map((p) => (
+                    <RevealItem key={p.id} className="h-full" distance={18} duration={0.45}>
+                      <CatalogueCard product={p} />
+                    </RevealItem>
+                  ))}
+                </RevealGroup>
                 <ProductsPagination page={page} totalPages={totalPages} />
               </>
             ) : (
