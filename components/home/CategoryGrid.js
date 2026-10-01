@@ -78,7 +78,7 @@ function RangePanel({ category }) {
     <Link
       href={href}
       aria-label={`${category.name}: ${category.productCount} products`}
-      className="group relative isolate flex h-full min-h-[20rem] flex-col justify-end overflow-hidden rounded-3xl text-white shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-500 sm:min-h-[26rem]"
+      className="group relative isolate flex h-full min-h-[15rem] flex-col justify-end overflow-hidden rounded-3xl text-white shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-500 sm:min-h-[18rem]"
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded/external URLs */}
       <img
@@ -92,7 +92,7 @@ function RangePanel({ category }) {
         className="absolute inset-0 -z-10 bg-gradient-to-t from-brand-900/95 via-brand-900/60 to-brand-900/5"
       />
 
-      <div className="p-6 sm:p-8">
+      <div className="p-5 sm:p-6">
         {theme.label && (
           <p className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-white/80">
             <span
@@ -103,8 +103,8 @@ function RangePanel({ category }) {
             {theme.label}
           </p>
         )}
-        <h3 className="mt-3 font-display text-3xl font-extrabold tracking-tight sm:text-4xl">{category.name}</h3>
-        <div className="mt-5 flex items-center justify-between gap-4 border-t border-white/15 pt-5">
+        <h3 className="mt-2 font-display text-2xl font-extrabold tracking-tight sm:text-3xl">{category.name}</h3>
+        <div className="mt-4 flex items-center justify-between gap-4 border-t border-white/15 pt-4">
           {/* Each count stays in one piece, so on a narrow panel the line
               breaks between them rather than mid-phrase. */}
           <p className="flex min-w-0 flex-wrap gap-x-3 gap-y-0.5 text-sm text-white/80">
@@ -117,7 +117,7 @@ function RangePanel({ category }) {
           </p>
           <span
             aria-hidden="true"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition duration-300 group-hover:translate-x-1 group-hover:bg-white group-hover:text-brand-900"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition duration-300 group-hover:translate-x-1 group-hover:bg-white group-hover:text-brand-900"
           >
             <ArrowRight size={18} />
           </span>
