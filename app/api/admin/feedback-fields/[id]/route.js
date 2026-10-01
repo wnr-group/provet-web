@@ -87,7 +87,7 @@ export async function DELETE(request, { params }) {
 
   if (existing.isSystem) {
     return Response.json(
-      { error: "Built-in fields can't be deleted — disable it instead" },
+      { error: "Built-in fields can't be deleted. Disable it instead" },
       { status: 409 }
     );
   }

@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/requireAdmin";
 import AdminShell from "@/components/admin/AdminShell";
 
 export const metadata = {
-  title: { default: "Admin", template: "%s — Provet Admin" },
+  title: { default: "Admin", template: "%s - Provet Admin" },
   robots: { index: false, follow: false },
 };
 

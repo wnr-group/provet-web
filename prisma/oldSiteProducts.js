@@ -21,7 +21,7 @@ const oldSiteCategories = [
   {
     "name": "AGPs",
     "brand": "Avinova",
-    "description": "AGPs from the Avinova poultry health range.",
+    "description": "Antibiotic growth promoters for commercial poultry feed. The group includes Avilomax 100 (avilamycin), Bactomax 150 (chlortetracycline), Bambercin 80 and the tribiotic Bambercin Plus (bambermycin), Enramix 80, Ermisol-FS20, FRZ 20 and Nositide-10 (nosiheptide). They help control harmful gut bacteria such as Clostridium, the cause of necrotic enteritis, so birds gain weight better and convert feed more efficiently.",
     "products": [
       {
         "name": "AVILOMAX 100",
@@ -176,7 +176,7 @@ const oldSiteCategories = [
   {
     "name": "Antibacterial Injectables",
     "brand": "Avinova",
-    "description": "Antibacterial Injectables from the Avinova poultry health range.",
+    "description": "Injectable antibacterials for fast, reliable treatment of bacterial infections in poultry. The group covers broad-spectrum aminoglycosides (Amicaject, Gentaject), the wide-spectrum Ceftiject, the long-acting Bactoject LA for sustained protection, and Tyloject and Lincovet for Mycoplasma control. Pathoject CT and Synerject AT are synergistic combinations for mixed infections, and Proviject DS is a multivitamin injectable that supports liveability and performance.",
     "products": [
       {
         "name": "AMICAJECT",
@@ -351,7 +351,7 @@ const oldSiteCategories = [
   {
     "name": "Antibacterial Liquids",
     "brand": "Avinova",
-    "description": "Antibacterial Liquids from the Avinova poultry health range.",
+    "description": "Water-soluble antibacterials for poultry, dosed through the drinking water to reach the whole flock quickly. Lebrocin-BH combines levofloxacin with bromhexine and Proveflox combines enrofloxacin with bromhexine, pairing antibacterial action with mucolytic support for respiratory complications. Quinacip-10 is a ciprofloxacin oral solution that dissolves completely in water for easy administration.",
     "products": [
       {
         "name": "LEBROCIN-BH",
@@ -415,7 +415,7 @@ const oldSiteCategories = [
   {
     "name": "Antibacterial Powders",
     "brand": "Avinova",
-    "description": "Antibacterial Powders from the Avinova poultry health range.",
+    "description": "Soluble antibacterial powders for poultry, given through feed or drinking water. Azmivet offers broad-spectrum activity by inhibiting bacterial protein synthesis, Nedobac combines neomycin and doxycycline for dual action, and Sultrivet is a bactericidal drug effective against most bacterial infections of poultry. Bactiphage-EC takes a next-generation approach: a water-soluble cocktail of four bacteriophages that targets E. coli.",
     "products": [
       {
         "name": "AZMIVET",
@@ -497,7 +497,7 @@ const oldSiteCategories = [
   {
     "name": "Anticoccidials",
     "brand": "Avinova",
-    "description": "Anticoccidials from the Avinova poultry health range.",
+    "description": "Anticoccidials to prevent clinical and sub-clinical coccidiosis in broilers. The group covers ionophores (Monencox, Maduracox 10, Salcomax 120), synthetic compounds (Clopicox, Dizucox 10, Robecox 100) and synergistic combinations of an ionophore with nicarbazin (Monencox NCB, Synercox). Together they give the flexibility needed for shuttle and rotation programmes, and for a thorough clean-up between flocks.",
     "products": [
       {
         "name": "CLOPICOX",
@@ -654,7 +654,7 @@ const oldSiteCategories = [
   {
     "name": "Antimycoplasmals",
     "brand": "Avinova",
-    "description": "Antimycoplasmals from the Avinova poultry health range.",
+    "description": "Antibiotics for the control of Mycoplasma and the respiratory disease it causes in poultry. The group includes tiamulin as a granulated premix and as microgranules (Tiatec 10, Tiatec 80), the semi-synthetic macrolide Tilcovet 250, tylosin as a soluble powder and as a premix (Tylorate-SP50, Tylotec 10) and tylvalosin (Tylvatec Soluble). With options for both feed and drinking water, they suit prevention as well as treatment.",
     "products": [
       {
         "name": "TIATEC 10",
@@ -772,7 +772,7 @@ const oldSiteCategories = [
   {
     "name": "Antiparasitics",
     "brand": "Avinova",
-    "description": "Antiparasitics from the Avinova poultry health range.",
+    "description": "Antiparasitics that protect poultry from the parasites that hold back health and productivity. Ectocyp is a non-systemic ectoparasiticide with a broad spectrum of activity against ticks, mites, flies, fleas and lice. Mectimax is a broad-spectrum endectoparasiticide based on ivermectin, from the avermectin family of antiparasitic agents.",
     "products": [
       {
         "name": "ECTOCYP",
@@ -817,7 +817,7 @@ const oldSiteCategories = [
   {
     "name": "Poultry Disinfectants",
     "brand": "Avinova",
-    "description": "Poultry Disinfectants from the Avinova poultry health range.",
+    "description": "Farm hygiene solutions that support biosecurity in poultry houses. Profect-N is a blend of powerful, compatible biocides with broad-spectrum action that stays effective even in the presence of organic matter. Sanipro is an effervescent water sanitizer that disinfects quickly, helping keep the flock's drinking water clean and safe.",
     "products": [
       {
         "name": "PROFECT-N",
@@ -861,7 +861,7 @@ const oldSiteCategories = [
   {
     "name": "Enzymes",
     "brand": "Avinova",
-    "description": "Enzymes from the Avinova poultry health range.",
+    "description": "Feed enzymes that help birds get more from every diet. Ultiphyte is a new-generation phytase of bacterial origin, Zymomax Pro a thermostable protease potentiated with probiotic spores, Zymomax Forte a blend of 11 microbial enzymes, and Zymomax-Xap a high-performance combination that targets soluble and insoluble fibre. Together they improve nutrient digestibility and help modern diets deliver better performance.",
     "products": [
       {
         "name": "ULTIPHYTE",
@@ -941,7 +941,7 @@ const oldSiteCategories = [
   {
     "name": "Fly Control",
     "brand": "Avinova",
-    "description": "Fly Control from the Avinova poultry health range.",
+    "description": "Feed-through fly control for poultry farms, tackling flies at their source in the manure. Larvistat 100 is an insect growth regulator that stops fly larvae from developing, and Larvistat Gold and Larvistat Super add a non-antibiotic antimicrobial that supports growth and nutrient utilisation. Larvistat Natura keeps litter dry to prevent fly breeding, and also works as a natural toxin binder and pellet binder.",
     "products": [
       {
         "name": "LARVISTAT 100",
@@ -1021,7 +1021,7 @@ const oldSiteCategories = [
   {
     "name": "Immunomodulators",
     "brand": "Avinova",
-    "description": "Immunomodulators from the Avinova poultry health range.",
+    "description": "Immune support for poultry, for flocks that grow better and stay healthier. Immulator feeds and strengthens the immune system and improves gut health by reducing inflammation. Stronger immunity helps birds respond well to vaccination and supports performance across the flock.",
     "products": [
       {
         "name": "IMMULATOR",
@@ -1047,7 +1047,7 @@ const oldSiteCategories = [
   {
     "name": "NAGPs",
     "brand": "Avinova",
-    "description": "NAGPs from the Avinova poultry health range.",
+    "description": "Non-antibiotic growth promoters that support performance without antibiotics. Nagronex ESF is a phytobiotic that increases the intestine's absorptive surface, Nagronex SNB a synbiotic that combines a probiotic with a prebiotic, and Nagromune and Nagrowall are yeast-derived sources of nucleotides, MOS and beta-glucans. Together they support gut health, immunity and efficient growth.",
     "products": [
       {
         "name": "NAGROMUNE",
@@ -1127,7 +1127,7 @@ const oldSiteCategories = [
   {
     "name": "Poultry Nutritional Supplements",
     "brand": "Avinova",
-    "description": "Poultry Nutritional Supplements from the Avinova poultry health range.",
+    "description": "Nutritional supplements for breeders, layers and broilers. Avigra enhances fertility and hatchability, Avigra DM improves semen quality, vigour and vitality, and Egance supports overall health and vitality in layers. Galpromin XL provides minerals and amino acids for performance and productivity, Peptonic Gold is a natural growth promoter, and Yeaselpro supplies selenium from yeast.",
     "products": [
       {
         "name": "AVIGRA",
@@ -1243,7 +1243,7 @@ const oldSiteCategories = [
   {
     "name": "Other Poultry Products",
     "brand": "Avinova",
-    "description": "Other Poultry Products from the Avinova poultry health range.",
+    "description": "Specialist poultry solutions beyond the core product groups. Resprosol is a phytobiotic that supports antibacterials in the control and effective management of respiratory conditions such as CRD and infectious coryza. It is a natural partner to an antibacterial programme when respiratory challenges arise.",
     "products": [
       {
         "name": "RESPROSOL",
@@ -1269,7 +1269,7 @@ const oldSiteCategories = [
   {
     "name": "Poultry Probiotics",
     "brand": "Avinova",
-    "description": "Poultry Probiotics from the Avinova poultry health range.",
+    "description": "Probiotics that help poultry build and keep a healthy gut. Pronexin is a highly potent, water-soluble supplement that blends pure, non-pathogenic cultures of several probiotic strains in a stable, compatible form. A balanced gut flora supports better digestion, immunity and overall performance.",
     "products": [
       {
         "name": "PRONEXIN",
@@ -1295,7 +1295,7 @@ const oldSiteCategories = [
   {
     "name": "Poultry Toxin Binders",
     "brand": "Avinova",
-    "description": "Poultry Toxin Binders from the Avinova poultry health range.",
+    "description": "Protection against mycotoxins in poultry feed. Syntobind is a broad-spectrum mycotoxin binder that adsorbs multiple mycotoxins even at low concentrations, inhibits mould and acts as a hepatoprotector to support liver health. The result is better overall performance and productivity from the flock.",
     "products": [
       {
         "name": "SYNTOBIND",
@@ -1321,7 +1321,7 @@ const oldSiteCategories = [
   {
     "name": "Ammonia Reducers",
     "brand": "Blunova",
-    "description": "Ammonia Reducers from the Blunova aquaculture range.",
+    "description": "Solutions for the toxic gases that build up in aquaculture ponds. Dynablend provides beneficial bacteria and essential enzymes that break down sludge and reduce ammonia, Envipro Gold is a phytobiotic ammonia binder and urease inhibitor, and Nitrisol HP controls nitrite levels in the pond. Cleaner water supports healthier shrimp and fish.",
     "products": [
       {
         "name": "DYNABLEND",
@@ -1383,7 +1383,7 @@ const oldSiteCategories = [
   {
     "name": "Aqua Disinfectants & Sanitizers",
     "brand": "Blunova",
-    "description": "Aqua Disinfectants & Sanitizers from the Blunova aquaculture range.",
+    "description": "Pond and hatchery sanitation that supports biosecurity in shrimp and fish culture. Profect Plus is a fast-acting, non-corrosive broad-spectrum sanitizer effective against pathogenic viruses, bacteria and fungi. Benzatec BR20 is a proven cationic biocide and deodorant that acts on bacterial and fungal cells.",
     "products": [
       {
         "name": "BENZATEC BR20",
@@ -1427,7 +1427,7 @@ const oldSiteCategories = [
   {
     "name": "Aqua Feed Additives",
     "brand": "Blunova",
-    "description": "Aqua Feed Additives from the Blunova aquaculture range.",
+    "description": "Feed additives that support immunity, digestion and steady growth in shrimp and fish. Blucee and Ceemax provide stable, bioavailable vitamin C, Orbigel-HP binds additives to feed and stimulates the hepatopancreas, and Syngromix protects the hepatopancreas while enhancing growth. Pathostat Blu and Vibrocid are phytobiotics that help fight harmful bacteria such as Vibrio, and Yeaforte Plus is a direct-fed microbial for balanced growth.",
     "products": [
       {
         "name": "BLUCEE",
@@ -1561,7 +1561,7 @@ const oldSiteCategories = [
   {
     "name": "Immunostimulants",
     "brand": "Blunova",
-    "description": "Immunostimulants from the Blunova aquaculture range.",
+    "description": "Immunity support for shrimp and fish. NagroWall is a natural, GMO-free additive and a source of free nucleotides and nucleosides, obtained from the fermentation of selected strains. It enhances growth and immunity without antibiotics, helping stock build resistance through the culture period.",
     "products": [
       {
         "name": "NAGROWALL",
@@ -1587,7 +1587,7 @@ const oldSiteCategories = [
   {
     "name": "Mineral Mixtures",
     "brand": "Blunova",
-    "description": "Mineral Mixtures from the Blunova aquaculture range.",
+    "description": "Mineral mixtures for shrimp ponds and hatcheries. Maxigro-XL, Mintroplex Gold and Mintroplex Ultra combine highly bioavailable and chelated minerals with amino acids, vitamins, immunostimulants and antioxidants, Minblend balances the pond's macro minerals, and Mipramax adds probiotics. Solumin-L and Solumin-S are soluble blends made for shrimp hatchery management.",
     "products": [
       {
         "name": "MAXIGRO-XL",
@@ -1721,7 +1721,7 @@ const oldSiteCategories = [
   {
     "name": "Other Aqua Products",
     "brand": "Blunova",
-    "description": "Other Aqua Products from the Blunova aquaculture range.",
+    "description": "Specialist aquaculture solutions beyond the core product groups. Raprosoft is a water hardness controller that stabilises alkalinity, balances pH fluctuations and improves water quality in aquaculture ponds. Steady water conditions are the foundation of healthy shrimp and fish.",
     "products": [
       {
         "name": "RAPROSOFT",
@@ -1747,7 +1747,7 @@ const oldSiteCategories = [
   {
     "name": "Oxygen Supplements",
     "brand": "Blunova",
-    "description": "Oxygen Supplements from the Blunova aquaculture range.",
+    "description": "Dissolved oxygen support for aquaculture ponds. Dissox FLA is an eco-friendly formulation that generates and stabilises dissolved oxygen levels. It helps maintain optimal pond conditions for shrimp and fish through the culture period.",
     "products": [
       {
         "name": "DISSOX FLA",
@@ -1773,7 +1773,7 @@ const oldSiteCategories = [
   {
     "name": "Parasiticides",
     "brand": "Blunova",
-    "description": "Parasiticides from the Blunova aquaculture range.",
+    "description": "Ectoparasiticides for aquaculture. Argucide eliminates both mature and immature external parasites from fish, promoting healthier growth. Ectocyp is a highly effective ectoparasiticide with a broad spectrum of action against external parasites.",
     "products": [
       {
         "name": "ARGUCIDE",
@@ -1817,7 +1817,7 @@ const oldSiteCategories = [
   {
     "name": "Aqua Probiotics",
     "brand": "Blunova",
-    "description": "Aqua Probiotics from the Blunova aquaculture range.",
+    "description": "Probiotics for ponds and hatcheries. Aquabac and Rhodobac stabilise pond ecology and improve water quality, Bacitox Plus is a soil and water conditioner that converts harmful H2S, ammonia and nitrite into simpler forms, and Hatchpro conditions water in shrimp hatcheries. Fepromix is a gut probiotic that promotes a healthy intestinal flora in fish and shrimp.",
     "products": [
       {
         "name": "AQUABAC",
@@ -1915,7 +1915,7 @@ const oldSiteCategories = [
   {
     "name": "Aqua Toxin Binders",
     "brand": "Blunova",
-    "description": "Aqua Toxin Binders from the Blunova aquaculture range.",
+    "description": "Mineral zeolites for clean, healthy ponds. Zeomin is a unique blend of mineral zeolites whose porous structure gives optimum adsorption, catalysis and cation exchange, helping remove toxic gases and improve water and soil quality. Zeomin Forte adds probiotics to the same triple action for even better pond hygiene.",
     "products": [
       {
         "name": "ZEOMIN",

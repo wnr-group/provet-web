@@ -10,7 +10,7 @@ import { adminUploadFile } from "./adminApi";
 const UPLOAD_HINT = "JPG, PNG or WebP · up to 5 MB each";
 
 // Single-image picker (banners, category thumbnail)
-export function ImagePicker({ value, onChange }) {
+export function ImagePicker({ value, onChange, compact = false, label = "Image" }) {
   const inputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -28,6 +28,46 @@ export function ImagePicker({ value, onChange }) {
       setUploading(false);
     }
   };
+
+  // Table-cell size: the thumbnail is itself the upload button, with a small
+  // remove control - room for one picture per row without a separate button.
+  if (compact) {
+    return (
+      <div className="w-16">
+        <div className="group relative h-14 w-16">
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+            aria-label={value ? `Replace ${label.toLowerCase()}` : `Upload ${label.toLowerCase()}`}
+            title={value ? "Click to replace" : "Click to upload"}
+            className="flex h-full w-full items-center justify-center overflow-hidden rounded-lg border border-dashed border-brand-200 bg-mist-50 text-brand-400 transition hover:border-brand-400 hover:text-brand-600"
+          >
+            {uploading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : value ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={value} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <Upload size={16} />
+            )}
+          </button>
+          {value && !uploading && (
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              className="absolute -right-1.5 -top-1.5 rounded-full bg-black/70 p-0.5 text-white opacity-0 transition group-hover:opacity-100 focus:opacity-100"
+              aria-label={`Remove ${label.toLowerCase()}`}
+            >
+              <X size={11} />
+            </button>
+          )}
+          <input ref={inputRef} type="file" accept="image/*" hidden onChange={(e) => handleFile(e.target.files?.[0])} />
+        </div>
+        {error && <p className="mt-1 text-[0.7rem] leading-tight text-red-600">{error}</p>}
+      </div>
+    );
+  }
 
   return (
     <div>

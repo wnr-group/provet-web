@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { CATEGORY_THEMES, DEFAULT_THEME } from "@/lib/categoryTheme";
+import { ribbonSrc } from "@/lib/catalogueArt";
 
 // The catalogue's per-range backdrop, behind the spotlight, filters and
 // product grid (colours in lib/categoryTheme.js). No clip-art: each range is
@@ -20,50 +21,19 @@ import { CATEGORY_THEMES, DEFAULT_THEME } from "@/lib/categoryTheme";
 // cross-fade with a plain CSS transition. The ribbons drift very slowly
 // (flattened by the reduced-motion rule in globals.css).
 
-const W = 1600;
-const H = 900;
-
-// A ribbon of `lines` contour lines, each a sum of two sine waves whose phase
-// shifts line by line, so the ribbon twists as it crosses the page.
-function ribbon({ lines, top, spread, amp, freq, tilt, twist, seed }) {
-  return Array.from({ length: lines }, (_, i) => {
-    const t = i / (lines - 1);
-    let d = "";
-    for (let x = -40; x <= W + 40; x += 20) {
-      const y =
-        top +
-        i * spread +
-        tilt * x +
-        amp * (1 - 0.35 * t) * Math.sin(x * freq + t * twist + seed) +
-        amp * 0.4 * Math.sin(x * freq * 2.3 - t * twist * 1.4 + seed * 1.7);
-      d += `${d ? "L" : "M"}${x} ${y.toFixed(1)}`;
-    }
-    return d;
-  });
-}
-
 const THEMES = [
   {
     ...DEFAULT_THEME,
-    from: "#483ea8",
-    to: "#e5097f",
-    ribbon: { lines: 26, top: 300, spread: 10, amp: 70, freq: 0.0032, tilt: -0.1, twist: 1.6, seed: 0.6 },
     texture: "lattice",
     textureOpacity: 0.1,
   },
   {
     ...CATEGORY_THEMES.avinova,
-    from: "#e39a2d",
-    to: "#e5097f",
-    ribbon: { lines: 34, top: 120, spread: 8, amp: 46, freq: 0.0026, tilt: 0.06, twist: 1.2, seed: 2.1 },
     texture: "speckle",
     textureOpacity: 0.3,
   },
   {
     ...CATEGORY_THEMES.blunova,
-    from: "#3aa0d8",
-    to: "#483ea8",
-    ribbon: { lines: 26, top: 170, spread: 10, amp: 30, freq: 0.0085, tilt: 0, twist: 3.2, seed: 1.3 },
     texture: "bubbles",
     textureOpacity: 0.3,
   },
@@ -111,35 +81,24 @@ function Texture({ kind, id }) {
   );
 }
 
-function Ribbon({ theme, gradientId, className, opacity }) {
-  const paths = ribbon(theme.ribbon);
+// One ribbon: the range's line art (public/catalogue, see lib/catalogueArt.js)
+// as an image - fetched once and cached by the browser, instead of ~25 KB of
+// path data inlined into every page. Decorative, so it never competes with
+// the content for bandwidth: decoded off the main thread and fetched at low
+// priority.
+function Ribbon({ theme, className, opacity }) {
   return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="xMidYMid slice"
-      className={clsx("absolute left-[-4%] w-[112%] motion-safe:animate-ribbon-drift", className)}
+    // eslint-disable-next-line @next/next/no-img-element -- a static SVG; nothing for next/image to optimise
+    <img
+      src={ribbonSrc(theme.key)}
+      alt=""
+      aria-hidden="true"
+      decoding="async"
+      fetchPriority="low"
+      draggable={false}
+      className={clsx("absolute left-[-4%] w-[112%] max-w-none select-none motion-safe:animate-ribbon-drift", className)}
       style={{ opacity }}
-    >
-      <defs>
-        <linearGradient id={gradientId} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor={theme.from} stopOpacity="0" />
-          <stop offset="22%" stopColor={theme.from} />
-          <stop offset="70%" stopColor={theme.to} />
-          <stop offset="100%" stopColor={theme.to} stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <g fill="none" stroke={`url(#${gradientId})`} vectorEffect="non-scaling-stroke">
-        {paths.map((d, i) => (
-          <path
-            key={i}
-            d={d}
-            strokeWidth={i % 7 === 3 ? 2 : 1.1}
-            strokeOpacity={0.45 + 0.55 * Math.sin((Math.PI * i) / (paths.length - 1))}
-            vectorEffect="non-scaling-stroke"
-          />
-        ))}
-      </g>
-    </svg>
+    />
   );
 }
 
@@ -186,13 +145,11 @@ export default function CategoryBackdrop({ themeKey = DEFAULT_THEME.key }) {
                 behind the lower rows of the grid. */}
             <Ribbon
               theme={theme}
-              gradientId={`catalogue-ribbon-${theme.key}`}
               className="top-0 h-[56rem] [mask-image:linear-gradient(to_bottom,black_55%,transparent)]"
               opacity={0.85}
             />
             <Ribbon
               theme={theme}
-              gradientId={`catalogue-ribbon-low-${theme.key}`}
               className="top-[62rem] h-[52rem] -scale-x-100 [mask-image:linear-gradient(to_bottom,transparent,black_30%,black_60%,transparent)]"
               opacity={0.6}
             />

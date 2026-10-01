@@ -9,6 +9,12 @@ import { getActiveSocialLinks, getContentSections, getFeedbackForm, getAddedSect
 import PageSections from "@/components/sections/PageSections";
 import { withContactDefaults, parseDetailLines } from "@/lib/contactContent";
 
+// Rendered per request, like the other content pages: everything here comes
+// from Admin > Website Content > Contact Us, and nothing on the page (no
+// searchParams/cookies) would otherwise make it dynamic - a build would
+// prerender it once and admin edits would not show until the next deploy.
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Contact Us",
   description: "Get in touch with Provet for product enquiries, bulk orders or veterinary support.",

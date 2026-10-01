@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import { Tilt } from "@/components/motion/effects";
+import SiteImage from "@/components/ui/SiteImage";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1664216294580-079bc527ae49?auto=format&fit=crop&w=600&h=450&q=80";
@@ -27,11 +28,10 @@ export default function CatalogueCard({ product }) {
       >
         {/* The image, filling its square. */}
         <div className="relative aspect-square overflow-hidden rounded-xl bg-white ring-1 ring-brand-100">
-          {/* eslint-disable-next-line @next/next/no-img-element -- arbitrary external/uploaded URLs, not a fixed set of remote hosts */}
-          <img
+          <SiteImage
             src={image}
             alt={product.name}
-            loading="lazy"
+            sizes="(min-width: 1280px) 300px, (min-width: 768px) 30vw, 50vw"
             className="h-full w-full scale-106 object-cover transition-transform duration-500 ease-out group-hover:scale-112"
           />
           {product.isFeatured && (

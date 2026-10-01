@@ -6,6 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import clsx from "clsx";
 import { EASE } from "@/lib/motion";
+import SiteImage from "@/components/ui/SiteImage";
 
 // A slide carousel for image-led content - testimonials on the old Provet
 // site are designed graphics rather than quotable text, so the slide is the
@@ -174,15 +175,14 @@ export default function Carousel({ items = [], aspect = "square", autoplay = tru
           {slides.map((item, i) => {
             const figure = (
               <figure className="overflow-hidden rounded-2xl border border-brand-100/70 bg-white shadow-soft">
-                <div className={clsx("overflow-hidden bg-mist-100", frame)}>
-                  {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs, not a fixed set of remote hosts */}
-                  <img
+                <div className={clsx("relative overflow-hidden bg-mist-100", frame)}>
+                  <SiteImage
                     src={item.image}
+                    sizes="(min-width: 1280px) 25vw, (min-width: 768px) 40vw, 85vw"
                     // These graphics carry their text inside the image, so the
                     // alt is the only thing a screen reader gets. It is the
                     // admin's caption where there is one.
                     alt={item.title || "Customer testimonial"}
-                    loading="lazy"
                     // The browser's native image drag would otherwise fight
                     // the track's drag gesture and leave a ghost image.
                     draggable={false}

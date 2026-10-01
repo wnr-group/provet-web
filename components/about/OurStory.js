@@ -6,7 +6,7 @@ import Counter from "@/components/motion/Counter";
 const MAIN_IMAGE =
   "https://images.unsplash.com/photo-1630090374791-c9eb7bab3935?auto=format&fit=crop&w=1100&h=900&q=80";
 const INSET_IMAGE =
-  "https://images.unsplash.com/photo-1723134085909-19da487ac9bd?auto=format&fit=crop&w=520&h=520&q=80";
+  "https://images.unsplash.com/photo-1766744489655-328ec3d4f417?auto=format&fit=crop&w=520&h=520&q=80";
 
 // The About page's "Our Story": an editorial split, a layered picture on one
 // side and the story set as a lead paragraph on the other.
@@ -83,7 +83,7 @@ export default function OurStory({ story }) {
                     {/* eslint-disable-next-line @next/next/no-img-element -- fixed decorative photo */}
                     <img
                       src={INSET_IMAGE}
-                      alt="Fish-farm sea cages with a service boat"
+                      alt="Circular fish-farm pens seen from above"
                       loading="lazy"
                       className="h-full w-full object-cover motion-safe:transition-transform motion-safe:duration-[1400ms] motion-safe:ease-out motion-safe:group-hover:scale-110"
                     />

@@ -40,14 +40,17 @@ export default function FeatureStrip({ items = DEFAULT_ITEMS }) {
           style={{ "--cols": features.length }}
           stagger={0.08}
         >
-          {features.map(({ icon: Icon, title, desc }) => (
+          {features.map(({ icon: Icon, title, desc }, i) => (
             <RevealItem key={title} className="group sm:px-6 lg:px-8" distance={14} duration={0.5}>
               {/* The mark: a soft magenta-to-lavender disc set up and to the
                   left, the icon over it. The disc grows a touch on hover. */}
               <span aria-hidden="true" className="relative block h-12 w-14">
                 <span
-                  className="absolute left-0 top-1.5 h-10 w-10 rounded-full transition-transform duration-500 ease-out group-hover:scale-110"
-                  style={{ background: "radial-gradient(circle at 35% 35%, var(--color-accent-50), var(--color-brand-100) 75%)" }}
+                  className="absolute left-0 top-1.5 h-10 w-10 rounded-full transition-transform duration-500 ease-out group-hover:scale-110 motion-safe:animate-float"
+                  style={{
+                    background: "radial-gradient(circle at 35% 35%, var(--color-accent-50), var(--color-brand-100) 75%)",
+                    animationDelay: `${i * 0.7}s`,
+                  }}
                 />
                 <Icon size={34} strokeWidth={1.5} absoluteStrokeWidth className="absolute left-3 top-0 text-brand-700" />
               </span>
