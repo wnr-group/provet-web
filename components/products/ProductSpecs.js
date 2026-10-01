@@ -1,3 +1,5 @@
+import { RevealGroup, RevealItem } from "@/components/motion/Reveal";
+
 // "Key details" table for the product detail page.
 //
 // Two things this exists to get right, both of which the previous inline pill
@@ -65,21 +67,26 @@ export function buildSpecRows(product) {
 // cramped lines beside an empty neighbour.
 const WIDE_VALUE_CHARS = 28;
 
+// The tiles deal in one after another from the right as the card scrolls
+// into view, so the specifications read as a list being filled in.
 export default function ProductSpecs({ product, className = "" }) {
   const rows = buildSpecRows(product);
   if (!rows.length) return null;
 
   return (
-    <dl className={`grid grid-cols-1 gap-2.5 sm:grid-cols-2 ${className}`}>
+    <RevealGroup as="dl" className={`grid grid-cols-1 gap-2.5 sm:grid-cols-2 ${className}`} stagger={0.07} delay={0.2}>
       {rows.map((row) => (
-        <div
+        <RevealItem
           key={row.key}
+          direction="left"
+          distance={14}
+          duration={0.45}
           className={`stat-tile hover:bg-mist-100 ${row.value.length > WIDE_VALUE_CHARS ? "sm:col-span-2" : ""}`}
         >
           <dt className="text-[11px] font-semibold uppercase tracking-wider text-ink-soft/70">{row.label}</dt>
           <dd className="mt-1 font-display text-sm font-semibold text-ink">{row.value}</dd>
-        </div>
+        </RevealItem>
       ))}
-    </dl>
+    </RevealGroup>
   );
 }

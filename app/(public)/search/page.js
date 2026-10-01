@@ -45,6 +45,7 @@ export default async function SearchPage({ searchParams }) {
   return (
     <div className="bg-white">
       <PageBanner
+        variant="editorial"
         eyebrow="Search"
         title={query ? `Results for "${query}"` : "Search"}
         description={
@@ -111,6 +112,7 @@ export default async function SearchPage({ searchParams }) {
                         href={`/products?category=${category.slug}`}
                         className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-white px-4 py-2 text-sm font-medium text-ink transition hover:border-brand-300 hover:text-brand-700"
                       >
+                        {category.parent && <span className="text-ink-soft">{category.parent.name} ›</span>}
                         <Highlight text={category.name} query={query} />
                         {typeof category.productCount === "number" && (
                           <span className="text-xs text-ink-soft">{category.productCount}</span>
@@ -129,7 +131,9 @@ export default async function SearchPage({ searchParams }) {
               <section>
                 <SectionTitle icon={SearchIcon} label="Products" count={result.products.total} />
                 {result.products.items.length ? (
-                  <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 xl:grid-cols-4">
+                    {/* Two across on phones too, like the catalogue - one
+                        full-width card per row made each result a screen tall. */}
                     {result.products.items.map((product) => (
                       <CatalogueCard key={product.id} product={product} />
                     ))}

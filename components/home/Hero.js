@@ -12,7 +12,7 @@ import { EASE } from "@/lib/motion";
 // Requested at full-bleed width now that the image spans the viewport rather
 // than sitting in a ~450px card.
 const HERO_FALLBACK =
-  "https://images.unsplash.com/photo-1579165466949-3180a3d056d5?auto=format&fit=crop&w=1920&h=1080&q=80";
+  "https://images.unsplash.com/photo-1589922583749-6b8473a85048?auto=format&fit=crop&w=1920&h=1080&q=80";
 
 // The banner is admin-uploaded, so it can be any photo - light, busy, or
 // low-contrast. These two layers guarantee the white text stays readable over
@@ -25,13 +25,16 @@ const OVERLAY_GRADIENT =
   "bg-[linear-gradient(to_bottom,rgba(21,18,48,0.88),rgba(21,18,48,0.72)_55%,rgba(21,18,48,0.82))] " +
   "sm:bg-[linear-gradient(to_right,rgba(21,18,48,0.94),rgba(21,18,48,0.78)_45%,rgba(21,18,48,0.30))]";
 
+// The badge and figures come from the "hero-stats" block in Admin > Website
+// Content > Homepage (lib/homeContent.js), passed in by the page; these are
+// the fallbacks. `badge` null or `stats` empty leaves that part out.
 const STATS = [
-  ["250+", "Products"],
-  ["15+", "Years Experience"],
-  ["1,200+", "Clinics Served"],
+  { value: "250+", label: "Products" },
+  { value: "15+", label: "Years Experience" },
+  { value: "1,200+", label: "Clinics Served" },
 ];
 
-export default function Hero({ banners = [] }) {
+export default function Hero({ banners = [], badge = "Trusted by veterinarians nationwide", stats = STATS }) {
   const slides = banners.length
     ? banners
     : [
@@ -105,14 +108,16 @@ export default function Hero({ banners = [] }) {
             section leaves - the parallax reads as depth rather than the text
             sliding off on its own. */}
         <motion.div className="max-w-2xl" style={flat ? undefined : { opacity: copyFade }}>
-          <motion.span
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: EASE }}
-            className="badge bg-white/10 text-accent-200 backdrop-blur-sm"
-          >
-            <ShieldCheck size={14} /> Trusted by veterinarians nationwide
-          </motion.span>
+          {badge && (
+            <motion.span
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: EASE }}
+              className="badge bg-white/10 text-accent-200 backdrop-blur-sm"
+            >
+              <ShieldCheck size={14} /> {badge}
+            </motion.span>
+          )}
 
           <AnimatePresence mode="wait">
             <motion.h1
@@ -154,21 +159,25 @@ export default function Hero({ banners = [] }) {
             </Link>
           </motion.div>
 
-          <motion.dl
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.28 }}
-            className="mt-10 grid max-w-md grid-cols-3 gap-4 border-t border-white/10 pt-6"
-          >
-            {STATS.map(([value, label]) => (
-              <div key={label}>
-                <dt className="font-display text-2xl font-extrabold text-white">
-                  <Counter value={value} />
-                </dt>
-                <dd className="text-xs text-brand-200">{label}</dd>
-              </div>
-            ))}
-          </motion.dl>
+          {stats.length > 0 && (
+            <motion.dl
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.28 }}
+              // A wrapping row, so two, three or four admin figures all sit
+              // evenly rather than into a fixed three-column grid.
+              className="mt-10 flex max-w-lg flex-wrap gap-x-10 gap-y-4 border-t border-white/10 pt-6"
+            >
+              {stats.map(({ value, label }) => (
+                <div key={`${value}-${label}`}>
+                  <dt className="font-display text-2xl font-extrabold text-white">
+                    {value ? <Counter value={value} /> : null}
+                  </dt>
+                  <dd className="text-xs text-brand-200">{label}</dd>
+                </div>
+              ))}
+            </motion.dl>
+          )}
         </motion.div>
 
       </div>

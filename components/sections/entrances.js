@@ -46,16 +46,37 @@ export const ENTRANCES = {
     show: { opacity: 1, scale: 1, transition: { duration: 0.75, ease: EASE } },
   },
 
-  // Overshoots and settles - the only bouncy entrance on the page.
+  // Rises on a spring that settles without bouncing - weight rather than
+  // wobble. (Well damped on purpose: an overshoot on every card read as a toy.)
   spring: {
-    hidden: { opacity: 0, y: 70 },
-    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 110, damping: 13 } },
+    hidden: { opacity: 0, y: 56 },
+    show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 120, damping: 22 } },
   },
 
-  // Snaps in from almost nothing, with a harder bounce than `spring`.
+  // Grows in from small, eased on a firm spring with only a hint of give.
   pop: {
-    hidden: { opacity: 0, scale: 0.4 },
-    show: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 16 } },
+    hidden: { opacity: 0, scale: 0.7 },
+    show: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 220, damping: 26 } },
+  },
+
+  // Arrives from further back: smaller, lower and out of focus, settling
+  // forward into place. For layered pictures, where each plane should seem to
+  // come from its own depth.
+  depth: {
+    hidden: { opacity: 0, scale: 0.9, y: 28, filter: "blur(6px)" },
+    show: { opacity: 1, scale: 1, y: 0, filter: "blur(0px)", transition: { duration: 0.9, ease: EASE } },
+  },
+
+  // An organic reveal: the picture opens from its centre as a growing circle.
+  circle: {
+    hidden: { clipPath: "circle(0% at 50% 50%)" },
+    show: { clipPath: "circle(75% at 50% 50%)", transition: { duration: 1, ease: EASE } },
+  },
+
+  // Split: uncovers from the middle outward to both sides at once.
+  split: {
+    hidden: { opacity: 0, clipPath: "inset(-24px 50% -24px 50%)" },
+    show: { opacity: 1, clipPath: "inset(-24px -24px -24px -24px)", transition: { duration: 0.8, ease: EASE } },
   },
 
   // Travels in from the side, far enough to read as travel.

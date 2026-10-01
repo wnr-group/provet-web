@@ -5,7 +5,8 @@ import SocialLinks from "@/components/ui/SocialLinks";
 import FeedbackForm from "@/components/feedback/FeedbackForm";
 import LocationCards from "@/components/sections/LocationCards";
 import PageBanner from "@/components/ui/PageBanner";
-import { getActiveSocialLinks, getContentSections, getFeedbackForm } from "@/lib/data";
+import { getActiveSocialLinks, getContentSections, getFeedbackForm, getAddedSections } from "@/lib/data";
+import PageSections from "@/components/sections/PageSections";
 import { withContactDefaults, parseDetailLines } from "@/lib/contactContent";
 
 export const metadata = {
@@ -53,10 +54,11 @@ export default async function Contact({ searchParams }) {
   const params = await searchParams;
   const productName = params.product || "";
   // Social links: same admin config the footer reads - no separate Contact-page setting.
-  const [socialLinks, feedback, content] = await Promise.all([
+  const [socialLinks, feedback, content, added] = await Promise.all([
     getActiveSocialLinks(),
     getFeedbackForm(),
     getContentSections("contact"),
+    getAddedSections("contact"),
   ]);
 
   // Admin > Website Content > Contact Us. Blocks never saved fall back to the
@@ -71,11 +73,12 @@ export default async function Contact({ searchParams }) {
   return (
     <div className="bg-mist-50/40">
       <PageBanner
+        variant="panel"
         eyebrow="Contact"
         title={hero?.title || "Contact Us"}
         description={hero?.body}
-        image="https://images.unsplash.com/photo-1770836037289-e00e5f351d11?auto=format&fit=crop&w=900&h=700&q=80"
-        imageAlt="A veterinarian examining a dog in a clinic"
+        image="https://images.unsplash.com/photo-1657856198189-fbfaa6f798bb?auto=format&fit=crop&w=900&h=700&q=80"
+        imageAlt="Inspecting farmed shrimp at an aquaculture pond"
         chip={
           branches?.config.items?.length
             ? { value: branches.config.items.length, label: "branches & partners" }
@@ -153,6 +156,9 @@ export default async function Contact({ searchParams }) {
           </div>
         </div>
       )}
+
+      {/* Sections added in Admin > Website Content > Contact Us. */}
+      <PageSections sections={added} />
     </div>
   );
 }

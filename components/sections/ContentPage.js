@@ -4,8 +4,40 @@ import { MANAGED_PAGES } from "@/lib/navigation";
 import PageSections from "@/components/sections/PageSections";
 import PageBanner from "@/components/ui/PageBanner";
 
-const DEFAULT_HERO =
-  "https://images.unsplash.com/photo-1579165466949-3180a3d056d5?auto=format&fit=crop&w=900&h=700&q=80";
+export const DEFAULT_HERO =
+  "https://images.unsplash.com/photo-1619598951257-68e45c835908?auto=format&fit=crop&w=900&h=700&q=80";
+
+const unsplash = (id, w = 1200, h = 900) =>
+  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
+
+// Each menu page's banner composition (components/ui/PageBanner.js), by page
+// key or by section; anything unlisted gets the asymmetric composition. The
+// banner's title, intro and main photo stay the admin's (page settings); a
+// composition that pairs two photos takes its second from here.
+const BANNERS = {
+  "about/who-we-are": { variant: "asymmetric", secondaryImage: unsplash("1582719471384-894fbb16e074", 800, 600) },
+  "about/core-values": { variant: "editorial" },
+  "about/why-provet": { variant: "oversized" },
+  careers: { variant: "immersive" },
+};
+const BANNERS_BY_SECTION = {
+  resources: { variant: "oversized" },
+  media: { variant: "editorial" },
+};
+export function bannerFor(pageKey) {
+  return BANNERS[pageKey] || BANNERS_BY_SECTION[pageKey.split("/")[0]] || { variant: "asymmetric" };
+}
+
+// Home / the menu the page hangs off / the page. Only About Us has a page of
+// its own to link back to.
+export function pageCrumbs(pageKey, title) {
+  const group = MANAGED_PAGES.find((p) => p.key === pageKey)?.group;
+  return [
+    { label: "Home", href: "/" },
+    ...(group && group !== title ? [{ label: group, href: group === "About Us" ? "/about" : undefined }] : []),
+    { label: title },
+  ];
+}
 
 // Builds the <head> for a managed page. Exported so each route can hand it
 // its own key - the fallbacks (SEO title -> page title) already live in the
@@ -29,7 +61,6 @@ export default async function ContentPage({ pageKey }) {
   if (!data) notFound();
 
   const { page, sections } = data;
-  const group = MANAGED_PAGES.find((p) => p.key === pageKey)?.group;
 
   return (
     <div className="bg-white">
@@ -37,7 +68,8 @@ export default async function ContentPage({ pageKey }) {
           settings (title, intro, hero image); the breadcrumb names the menu
           the page hangs off. */}
       <PageBanner
-        eyebrow={group}
+        {...bannerFor(pageKey)}
+        crumbs={pageCrumbs(pageKey, page.title)}
         title={page.title}
         description={page.description}
         image={page.heroImage || DEFAULT_HERO}

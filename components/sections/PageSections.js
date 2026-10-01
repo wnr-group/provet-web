@@ -9,6 +9,10 @@ import LocationCards from "@/components/sections/LocationCards";
 import CatalogueCard from "@/components/catalogue/CatalogueCard";
 import ProductRail from "@/components/catalogue/ProductRail";
 import { ScrollTilt, Tilt } from "@/components/motion/effects";
+import YouTubePlayer from "@/components/sections/YouTubePlayer";
+import MagazineRack from "@/components/sections/MagazineRack";
+import BookletShelf from "@/components/sections/BookletShelf";
+import { isYouTubeUrl } from "@/lib/youtube";
 
 // Renders a page's admin-configured sections. One component per type in
 // lib/sectionTypes.js; anything unknown is skipped rather than crashing the
@@ -257,6 +261,16 @@ function ImageCards({ section }) {
   // the shelf on desktop (more than that scroll).
   const columns = section.config.columns || 3;
 
+  // Magazine issues: the latest featured, the rest on a rack.
+  if (section.config.imageStyle === "magazine" && items.some((it) => it.image)) {
+    return <MagazineRack section={section} items={items.filter((it) => it.image)} columns={columns} />;
+  }
+
+  // Technical booklets: numbered, stapled reference volumes.
+  if (section.config.imageStyle === "booklet" && items.some((it) => it.image)) {
+    return <BookletShelf section={section} items={items.filter((it) => it.image)} columns={columns} />;
+  }
+
   if (isCardGrid) {
     return (
       <div>
@@ -276,7 +290,9 @@ function ImageCards({ section }) {
               <Tilt max={8} shadow className="h-full">
                 <div className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-soft ring-1 ring-brand-100/70 transition hover:shadow-card">
                   {item.image && (
-                    <div className={clsx("overflow-hidden bg-mist-100", aspect)}>
+                    // Phones take a wider crop: a full-width portrait or
+                    // square photo made every card most of a screen tall.
+                    <div className={clsx("overflow-hidden bg-mist-100 max-sm:aspect-[4/3]", aspect)}>
                       {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs, not a fixed set of remote hosts */}
                       <img
                         src={item.image}
@@ -432,6 +448,66 @@ function CarouselSection({ section }) {
   );
 }
 
+// YouTube videos. Each zooms in (the picture itself settles, rather than the
+// box travelling), and the layout follows the count: one video plays wide and
+// centred, two sit side by side, more make a grid. "Featured" gives the first
+// video the full width and lines the rest up beneath it.
+function Videos({ section }) {
+  // Links are validated on save; this also drops anything that slipped past
+  // (an older row, a hand-edited database) instead of rendering a dead player.
+  const items = (section.config.items || []).filter((item) => item && isYouTubeUrl(item.url));
+  if (!items.length) return null;
+
+  const featured = section.config.layout === "featured" && items.length > 1;
+  const [lead, ...rest] = items;
+  const grid = featured ? rest : items;
+
+  const gridClass = clsx(
+    "grid gap-6",
+    grid.length === 1 && "mx-auto max-w-4xl",
+    grid.length === 2 && "sm:grid-cols-2",
+    grid.length >= 3 && "sm:grid-cols-2 lg:grid-cols-3"
+  );
+
+  return (
+    <div>
+      <Enter preset="drop">
+        <Heading title={section.title} description={section.body} align="center" />
+      </Enter>
+      {featured && (
+        <Enter preset="zoom" className="mx-auto mb-8 max-w-5xl">
+          <VideoItem item={lead} large />
+        </Enter>
+      )}
+      <EnterGroup className={gridClass} stagger={0.1}>
+        {grid.map((item, i) => (
+          <EnterItem key={`${item.url}-${i}`} preset="zoom">
+            <VideoItem item={item} large={grid.length === 1} />
+          </EnterItem>
+        ))}
+      </EnterGroup>
+    </div>
+  );
+}
+
+function VideoItem({ item, large = false }) {
+  return (
+    <figure>
+      <YouTubePlayer url={item.url} title={item.title} />
+      {(item.title || item.text) && (
+        <figcaption className={clsx("mt-3", large && "text-center")}>
+          {item.title && (
+            <span className={clsx("block font-display font-semibold text-ink", large ? "text-lg" : "text-base")}>
+              {item.title}
+            </span>
+          )}
+          {item.text && <span className="mt-1 block text-sm leading-relaxed text-ink-soft">{item.text}</span>}
+        </figcaption>
+      )}
+    </figure>
+  );
+}
+
 function ProductGrid({ section }) {
   if (!section.products?.length) return null;
   return (
@@ -462,9 +538,12 @@ function CategoryGrid({ section }) {
       <Enter preset="drop">
         <Heading title={section.title} description={section.body} align="center" />
       </Enter>
-      <EnterGroup className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6" stagger={0.06}>
+      {/* A centred row sized to the cards, not a fixed six-column grid: with
+          only two ranges the grid left two small cards at the far left of an
+          empty band. Any count now sits centred and wraps evenly. */}
+      <EnterGroup className="flex flex-wrap justify-center gap-4 sm:gap-5" stagger={0.06}>
         {section.categories.map((category) => (
-          <EnterItem key={category.id} preset="pop" className="h-full">
+          <EnterItem key={category.id} preset="pop" className="w-[calc(50%-0.5rem)] sm:w-56 lg:w-64">
             <Tilt max={12} shadow className="h-full">
               <CategoryCard category={category} />
             </Tilt>
@@ -544,8 +623,12 @@ const RENDERERS = {
   locations: Locations,
   productGrid: ProductGrid,
   categoryGrid: CategoryGrid,
+  videos: Videos,
   cta: Cta,
 };
+
+// The section types that stand up in 3D on scroll (see below).
+const TILTED_TYPES = new Set(["cards", "imageCards", "productGrid", "categoryGrid"]);
 
 export default function PageSections({ sections }) {
   if (!sections?.length) return null;
@@ -578,10 +661,17 @@ export default function PageSections({ sections }) {
               />
             )}
             <div className="container-page relative">
-              {/* Every section stands up in 3D as it scrolls into view. */}
-              <ScrollTilt amount={12}>
+              {/* Sets of cards and pictures stand up in 3D as they scroll into
+                  view - the lift gives a grid depth. Text, lists, videos,
+                  maps and the CTA hold still: with every band swinging, the
+                  whole page moved and nothing stood out. */}
+              {TILTED_TYPES.has(section.type) ? (
+                <ScrollTilt amount={12}>
+                  <Renderer section={section} />
+                </ScrollTilt>
+              ) : (
                 <Renderer section={section} />
-              </ScrollTilt>
+              )}
             </div>
           </section>
         );

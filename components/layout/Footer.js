@@ -27,20 +27,31 @@ export default async function Footer() {
       />
       {/* Footer motion is deliberately the quietest on the site: the four
           columns drift up a few pixels in sequence, and everything else is
-          hover feedback. A footer that performs on arrival reads as a demo. */}
+          hover feedback. A footer that performs on arrival reads as a demo.
+
+          Per device: phones put the two link columns side by side under the
+          brand, with the contact details full width below; tablets give the
+          brand its own row (tagline left, social links right) over three
+          columns; desktops lay out all four in one row. */}
       <RevealGroup
-        className="container-page grid gap-10 py-14 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]"
+        className="container-page grid grid-cols-2 gap-x-6 gap-y-10 py-14 md:grid-cols-3 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]"
         stagger={0.07}
       >
-        <RevealItem distance={12} duration={0.45}>
-          <Link href="/" className="flex items-center gap-2.5">
-            <Image src="/logo-mark.png" alt="" width={36} height={36} className="h-9 w-9" />
-            <span className="font-display text-xl font-extrabold text-white">Provet</span>
-          </Link>
-          {info.tagline && (
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-brand-200">{info.tagline}</p>
-          )}
-          <SocialLinks links={socialLinks} variant="dark" className="mt-5" />
+        <RevealItem
+          distance={12}
+          duration={0.45}
+          className="col-span-2 md:col-span-3 md:flex md:items-end md:justify-between md:gap-8 lg:col-span-1 lg:block"
+        >
+          <div>
+            <Link href="/" className="flex items-center gap-2.5">
+              <Image src="/logo-mark.png" alt="" width={36} height={36} className="h-9 w-9" />
+              <span className="font-display text-xl font-extrabold text-white">Provet</span>
+            </Link>
+            {info.tagline && (
+              <p className="mt-4 max-w-xs text-sm leading-relaxed text-brand-200 md:max-w-md lg:max-w-xs">{info.tagline}</p>
+            )}
+          </div>
+          <SocialLinks links={socialLinks} variant="dark" className="mt-5 md:mt-0 md:shrink-0 lg:mt-5" />
         </RevealItem>
 
         {/* Both columns come from lib/navigation.js, the same tree the header
@@ -67,7 +78,7 @@ export default async function Footer() {
           </RevealItem>
         ))}
 
-        <RevealItem distance={12} duration={0.45}>
+        <RevealItem distance={12} duration={0.45} className="col-span-2 md:col-span-1">
           <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-white">Get in Touch</h4>
           <ul className="space-y-3 text-sm">
             {info.address && (

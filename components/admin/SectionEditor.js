@@ -1,9 +1,11 @@
 "use client";
 
-import { ChevronUp, ChevronDown, ChevronRight, Trash2, Eye, EyeOff, Plus } from "lucide-react";
+import { ChevronUp, ChevronDown, ChevronRight, Trash2, Eye, EyeOff, Plus, CheckCircle2, AlertCircle, PlayCircle } from "lucide-react";
 import clsx from "clsx";
 import { ImagePicker } from "@/components/admin/ImagePicker";
 import { SECTION_TYPES, SECTION_TYPE_KEYS } from "@/lib/sectionTypes";
+import { buildCategoryTree } from "@/lib/categoryTree";
+import { parseYouTubeUrl, youTubeThumbnailUrl } from "@/lib/youtube";
 
 // Editor for one configurable section. Which inputs appear is driven by the
 // type's `fields` in lib/sectionTypes.js, so adding a type there is enough -
@@ -20,6 +22,7 @@ const BODY_HINT = {
   imageText: "Leave a blank line between paragraphs.",
   productGrid: "Optional intro shown above the grid.",
   categoryGrid: "Optional intro shown above the grid.",
+  videos: "Optional intro shown above the videos.",
   cta: "Optional supporting line under the heading.",
 };
 
@@ -108,7 +111,13 @@ function ConfigFields({ section, categories, onConfig }) {
             {/* What "Columns" means depends on the style: cards per row for
                 photo and portrait cards, covers visible across the shelf. */}
             <label className="label">
-              {(config.imageStyle || "cover") === "cover" ? "Covers visible across the shelf" : "Cards per row"}
+              {(config.imageStyle || "cover") === "cover"
+                ? "Covers visible across the shelf"
+                : config.imageStyle === "magazine"
+                  ? "Back issues per row on the rack"
+                  : config.imageStyle === "booklet"
+                    ? "Booklets per row"
+                    : "Cards per row"}
             </label>
             <select
               className="input"
@@ -130,6 +139,8 @@ function ConfigFields({ section, categories, onConfig }) {
               onChange={(e) => onConfig({ imageStyle: e.target.value })}
             >
               <option value="cover">Covers on a 3D shelf (booklets, magazines)</option>
+              <option value="magazine">Magazine issues (latest featured, rest on a rack)</option>
+              <option value="booklet">Technical booklets (numbered volumes that open)</option>
               <option value="card">Photo cards in a grid (events, news)</option>
               <option value="avatar">Portrait cards (people)</option>
             </select>
@@ -361,6 +372,10 @@ function ConfigFields({ section, categories, onConfig }) {
     );
   }
 
+  if (type === "videos") {
+    return <VideoItemsEditor config={config} onConfig={onConfig} />;
+  }
+
   if (type === "productGrid") {
     return (
       <div className="grid gap-4 sm:grid-cols-3">
@@ -372,10 +387,16 @@ function ConfigFields({ section, categories, onConfig }) {
             onChange={(e) => onConfig({ categorySlug: e.target.value || null })}
           >
             <option value="">All categories</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.slug}>
-                {c.name}
-              </option>
+            {/* A category shows its subcategories' products too. */}
+            {buildCategoryTree(categories).map((c) => (
+              <optgroup key={c.id} label={c.name}>
+                <option value={c.slug}>All {c.name}</option>
+                {c.children.map((sub) => (
+                  <option key={sub.id} value={sub.slug}>
+                    {sub.name}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </div>
@@ -617,4 +638,165 @@ export default function SectionEditor({
       )}
     </div>
   );
+}
+
+const MAX_VIDEOS = 12;
+
+// The Videos section's list. Each link is checked as it is typed with the same
+// parser the server validates with (lib/youtube.js), so a bad link is flagged
+// here - with the reason - before Save refuses it.
+function VideoItemsEditor({ config, onConfig }) {
+  const items = config.items || [];
+  const setItem = (i, patch) => onConfig({ items: items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)) });
+  const move = (from, to) => {
+    const next = [...items];
+    [next[from], next[to]] = [next[to], next[from]];
+    onConfig({ items: next });
+  };
+  const addVideo = () => onConfig({ items: [...items, { url: "", title: "", text: "" }] });
+
+  return (
+    <div className="space-y-4">
+      <div className="sm:w-64">
+        <label className="label">Layout</label>
+        <select className="input" value={config.layout || "grid"} onChange={(e) => onConfig({ layout: e.target.value })}>
+          <option value="grid">Grid of equal videos</option>
+          <option value="featured">First video large, the rest below</option>
+        </select>
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between">
+          <label className="label mb-0">
+            Videos <span className="font-normal text-ink-soft">({items.length}/{MAX_VIDEOS})</span>
+          </label>
+          {items.length > 0 && items.length < MAX_VIDEOS && (
+            <button type="button" className="btn-ghost text-xs" onClick={addVideo}>
+              <Plus size={14} /> Add video
+            </button>
+          )}
+        </div>
+        <p className="mt-1 text-xs text-ink-soft">
+          Paste the link from YouTube&apos;s Share button or the address bar. Videos play from YouTube; nothing is uploaded here.
+        </p>
+
+        {items.length === 0 && (
+          <button
+            type="button"
+            onClick={addVideo}
+            className="mt-3 flex w-full flex-col items-center gap-1.5 rounded-xl border-2 border-dashed border-brand-200 px-4 py-6 text-sm text-ink-soft transition hover:border-brand-300 hover:bg-brand-50/50"
+          >
+            <PlayCircle size={22} className="text-brand-400" />
+            Add the first video
+          </button>
+        )}
+
+        <div className="mt-3 space-y-3">
+          {items.map((item, i) => {
+            const video = parseYouTubeUrl(item.url);
+            const typed = Boolean(item.url?.trim());
+            return (
+              <div key={i} className="rounded-xl border border-brand-100 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-ink-soft">Video {i + 1}</span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      type="button"
+                      aria-label={`Move video ${i + 1} up`}
+                      disabled={i === 0}
+                      onClick={() => move(i, i - 1)}
+                      className="rounded-lg p-1.5 text-ink-soft hover:bg-brand-50 disabled:opacity-30"
+                    >
+                      <ChevronUp size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Move video ${i + 1} down`}
+                      disabled={i === items.length - 1}
+                      onClick={() => move(i, i + 1)}
+                      className="rounded-lg p-1.5 text-ink-soft hover:bg-brand-50 disabled:opacity-30"
+                    >
+                      <ChevronDown size={14} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Remove video ${i + 1}`}
+                      onClick={() => onConfig({ items: items.filter((_, idx) => idx !== i) })}
+                      className="rounded-lg p-1.5 text-ink-soft hover:bg-red-50 hover:text-red-600"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-[160px_minmax(0,1fr)]">
+                  {/* The thumbnail confirms it is the right video. */}
+                  <div className="relative aspect-video overflow-hidden rounded-lg bg-mist-100">
+                    {video ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- YouTube's thumbnail CDN
+                      <img src={youTubeThumbnailUrl(video.id)} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="flex h-full w-full items-center justify-center text-brand-300">
+                        <PlayCircle size={24} />
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-2.5">
+                    <div>
+                      <input
+                        className={clsx(
+                          "input",
+                          typed && !video && "border-red-300 ring-2 ring-red-100",
+                          video && "border-accent-300"
+                        )}
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        value={item.url || ""}
+                        onChange={(e) => setItem(i, { url: e.target.value })}
+                        aria-label={`Video ${i + 1} YouTube link`}
+                        aria-invalid={typed && !video}
+                        inputMode="url"
+                      />
+                      {typed &&
+                        (video ? (
+                          <p className="mt-1 flex items-center gap-1 text-xs font-medium text-accent-700">
+                            <CheckCircle2 size={12} /> YouTube video found
+                            {video.start ? `, starts at ${formatStart(video.start)}` : ""}
+                          </p>
+                        ) : (
+                          <p className="mt-1 flex items-center gap-1 text-xs font-medium text-red-600">
+                            <AlertCircle size={12} className="shrink-0" /> This isn&apos;t a link to one video. Open the
+                            video on YouTube and copy its link (Share → Copy), e.g. youtube.com/watch?v=… or youtu.be/….
+                          </p>
+                        ))}
+                    </div>
+                    <input
+                      className="input"
+                      placeholder="Title (optional)"
+                      value={item.title || ""}
+                      onChange={(e) => setItem(i, { title: e.target.value })}
+                      aria-label={`Video ${i + 1} title`}
+                    />
+                    <textarea
+                      rows={2}
+                      className="input resize-none"
+                      placeholder="Caption (optional)"
+                      value={item.text || ""}
+                      onChange={(e) => setItem(i, { text: e.target.value })}
+                      aria-label={`Video ${i + 1} caption`}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function formatStart(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = String(seconds % 60).padStart(2, "0");
+  return `${m}:${s}`;
 }

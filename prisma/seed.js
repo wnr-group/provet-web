@@ -27,51 +27,74 @@ function slug(s) {
 // Curated, verified Unsplash photo IDs (free license, no attribution
 // required for CDN hotlinking) - grouped by what they depict so the mapping
 // below stays legible. See img() for how a width/height gets applied.
+//
+// Imagery is limited to Provet's own markets - commercial poultry (mature
+// broilers, never chicks), dairy/livestock and aquaculture - shot as farm
+// documentary photography. No pets, clinic dogs or backyard birds.
 const PHOTO = {
-  labScientist: "1579165466949-3180a3d056d5",
-  cattleField: "1589248529232-69c286cf2cb4",
-  vetInjectingDog: "1770836037275-38b44e4b101f",
-  vetExaminingDog: "1770836037289-e00e5f351d11",
-  tabletsSpilled: "1758345680670-20a895a2dba3",
-  dogAtVet: "1630438994394-3deff7a591bf",
-  vialsAndIvBottle: "1576671081837-49000212a370",
-  // Blank white pharma bottle, no readable label (not the earlier
-  // "Afteravo Essentials AfterCoweed Gummy" bottle, a real branded human
-  // supplement with its full product name printed on it).
-  supplementBottle: "1664216294580-079bc527ae49",
-  dogRunningBeach: "1530281700549-e82e7bf110d6",
-  // Clear, unlabeled spray bottle (not the earlier bottle branded "ESSENTIAL"
-  // with a visible logo).
-  antisepticSpray: "1550572017-4b7a301b9d81",
-  vetWithDachshund: "1770836037793-95bdbf190f71",
-  labShelves: "1766297247072-93fd815afef3",
-  poultryBarn: "1694854038360-56b29a16fb0c",
-  hen: "1517419800355-7ea1a4b1f68d",
-  roosterCloseUp: "1755777339174-bb10939126ce",
-  fishFarmAerial: "1766744489655-328ec3d4f417",
-  cattleGrazing: "1498191923457-88552caeccb3",
-  goatsGrazing: "1622837699015-9a4cb8b7a94b",
-  // Clean oral/liquid dose bottle, background bottles' labels illegible (not
-  // the earlier photo, a real branded "blendarchive" product with its
-  // tagline printed on it).
-  oralMedicineBottle: "1635166304271-04931640a450",
-  blisterPack: "1630094539386-280edfb5d46a",
-  // Blank/unbranded label (not the earlier "Ela De Pure Gel Facial Cleanser"
-  // tube, which had a competing brand's real, readable product name on it).
-  gelTube: "1595387644458-363fe11c900e",
-  clearSprayBottle: "1550572017-4b7a301b9d81",
+  broilerFlock: "1589922583749-6b8473a85048",
+  broilerHouse: "1630090374791-c9eb7bab3935",
+  shrimpHarvest: "1504309250229-4f08315f3b5c",
+  dairyBarn: "1646082275982-025ccc59bd2e",
+  taggedCalves: "1454179083322-198bb4daae41",
+  fishCagesBoat: "1723134085909-19da487ac9bd",
 };
+
+// Stock photos this file used before the imagery was narrowed to poultry,
+// livestock and aquaculture (dogs at the vet, a lab, backyard hens, a shed of
+// chicks). A row still holding one of these was never customised by an admin,
+// so a reseed may swap it for the current photo - see isPlaceholder() below.
+const RETIRED_PHOTO_IDS = [
+  "1517419800355-7ea1a4b1f68d",
+  "1694854038360-56b29a16fb0c",
+  "1579165466949-3180a3d056d5",
+  "1589248529232-69c286cf2cb4",
+  "1770836037275-38b44e4b101f",
+  "1770836037289-e00e5f351d11",
+  "1770836037793-95bdbf190f71",
+  "1498191923457-88552caeccb3",
+  "1766297247072-93fd815afef3",
+  "1755777339174-bb10939126ce",
+  "1630438994394-3deff7a591bf",
+  "1530281700549-e82e7bf110d6",
+];
 
 function img(id, w = 600, h = 400) {
   return `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&h=${h}&q=80`;
 }
+
+// The catalogue's top level: one category per range, holding the imported
+// categories (from oldSiteProducts.js) as subcategories, matched on `brand`.
+// Mirrors the old provet.in site, which split its catalogue the same way.
+const PARENT_CATEGORIES = [
+  {
+    id: "cat_poultry",
+    brand: "Avinova",
+    name: "Avinova",
+    slug: "avinova",
+    description:
+      "The Avinova poultry health range: anticoccidials, antibacterials, growth promoters, nutritional support and farm hygiene for commercial broiler and layer flocks.",
+    image: img(PHOTO.broilerFlock, 800, 600),
+    sortOrder: 0,
+  },
+  {
+    id: "cat_aquaculture",
+    brand: "Blunova",
+    name: "Blunova",
+    slug: "blunova",
+    description:
+      "The Blunova aquaculture range: probiotics, mineral mixtures, feed additives and water-quality solutions for shrimp and fish farming.",
+    image: img(PHOTO.fishCagesBoat, 800, 600),
+    sortOrder: 1,
+  },
+];
 
 
 const bannersData = [
   {
     title: "Complete Poultry Health Solutions",
     subtitle: "Antibiotics, vaccines and growth-support formulations trusted by poultry farms nationwide.",
-    image: img(PHOTO.hen, 1920, 800),
+    image: img(PHOTO.broilerFlock, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 0,
@@ -79,7 +102,7 @@ const bannersData = [
   {
     title: "From Day-Old Chicks to Full Flock Health",
     subtitle: "Brooding support, growth formulations and biosecurity products for commercial poultry operations.",
-    image: img(PHOTO.poultryBarn, 1920, 800),
+    image: img(PHOTO.broilerHouse, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 1,
@@ -87,7 +110,7 @@ const bannersData = [
   {
     title: "Trusted Veterinary Medicines, Backed by Science",
     subtitle: "Quality formulations for companion animals and livestock, from a partner you can rely on.",
-    image: img(PHOTO.labScientist, 1920, 800),
+    image: img(PHOTO.shrimpHarvest, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 2,
@@ -95,7 +118,7 @@ const bannersData = [
   {
     title: "Comprehensive Anti-parasitic Range",
     subtitle: "Protecting herds and companion animals from ticks, worms and mites, season after season.",
-    image: img(PHOTO.cattleField, 1920, 800),
+    image: img(PHOTO.dairyBarn, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 3,
@@ -103,7 +126,7 @@ const bannersData = [
   {
     title: "Vaccination Programs That Work",
     subtitle: "Biologicals designed for real-world herd health and companion animal immunization schedules.",
-    image: img(PHOTO.vetInjectingDog, 1920, 800),
+    image: img(PHOTO.taggedCalves, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 4,
@@ -111,7 +134,7 @@ const bannersData = [
   {
     title: "Partnering with Veterinarians Nationwide",
     subtitle: "A growing catalogue built with input from practicing veterinarians and animal health experts.",
-    image: img(PHOTO.vetExaminingDog, 1920, 800),
+    image: img(PHOTO.fishCagesBoat, 1920, 800),
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 5,
@@ -204,7 +227,7 @@ const aboutContent = [
 
 async function main() {
   console.log("Seeding database...");
-  const refreshed = { categories: 0, products: 0, banners: 0 };
+  const refreshed = { categories: 0, products: 0, banners: 0, pages: 0 };
 
   // --- Admin user -----------------------------------------------------
   const passwordHash = await bcrypt.hash("Admin@123", 10);
@@ -228,13 +251,41 @@ async function main() {
   // new URLs were skipped and the old picsum.photos placeholders stayed put.
   //
   // refreshImage() closes that gap without reintroducing the clobbering: it
-  // replaces an image only while it is still one of those placeholders. An
-  // admin-uploaded picture, or one already matching this file, is left alone.
-  const isPlaceholder = (value) => typeof value === "string" && value.includes("picsum.photos");
+  // replaces an image only while it is still one of those placeholders (or a
+  // retired stock photo). An admin-uploaded picture, or one already matching
+  // this file, is left alone.
+  const isPlaceholder = (value) =>
+    typeof value === "string" &&
+    (value.includes("picsum.photos") || RETIRED_PHOTO_IDS.some((id) => value.includes(`photo-${id}`)));
   const featuredSlugs = [];
 
-  for (const catData of oldSiteCategories) {
+  // Top-level categories first: every imported category is a subcategory of
+  // the range its brand belongs to. Same ids and slugs as the
+  // category_hierarchy migration, so a migrated database and a freshly
+  // seeded one end up with identical trees.
+  const parentIdByBrand = {};
+  for (const parent of PARENT_CATEGORIES) {
+    // Matched on the fixed id, not the slug: the range may have been renamed
+    // (Poultry -> Avinova changed its slug), and `update: {}` keeps whatever
+    // name an admin has given it.
+    const row = await prisma.category.upsert({
+      where: { id: parent.id },
+      update: {},
+      create: {
+        id: parent.id,
+        name: parent.name,
+        slug: parent.slug,
+        description: parent.description,
+        image: parent.image,
+        sortOrder: parent.sortOrder,
+      },
+    });
+    parentIdByBrand[parent.brand] = row.id;
+  }
+
+  for (const [index, catData] of oldSiteCategories.entries()) {
     const catSlug = slug(catData.name);
+    const parentId = parentIdByBrand[catData.brand] ?? null;
     const category = await prisma.category.upsert({
       where: { slug: catSlug },
       update: {},
@@ -243,8 +294,17 @@ async function main() {
         slug: catSlug,
         description: catData.description,
         image: catData.image,
+        parentId,
+        sortOrder: index,
       },
     });
+
+    // A row created before the hierarchy existed is still top-level; file it
+    // under its range. One that already has a parent (perhaps moved by an
+    // admin) is left where it is.
+    if (!category.parentId && parentId) {
+      await prisma.category.update({ where: { id: category.id }, data: { parentId } });
+    }
 
     if (isPlaceholder(category.image)) {
       await prisma.category.update({
@@ -331,7 +391,7 @@ async function main() {
   // actual editorial content, and `update: {}` means a reseed never
   // overwrites what an admin has since written.
   for (const page of menuPages) {
-    await prisma.page.upsert({
+    const pageRow = await prisma.page.upsert({
       where: { key: page.key },
       update: {},
       create: {
@@ -341,6 +401,10 @@ async function main() {
         heroImage: page.heroImage ?? null,
       },
     });
+    if (page.heroImage && isPlaceholder(pageRow.heroImage)) {
+      await prisma.page.update({ where: { id: pageRow.id }, data: { heroImage: page.heroImage } });
+      refreshed.pages += 1;
+    }
     // Section ordering. Blocks sort on `order` alone, so a section added to
     // this file after a database was seeded would otherwise take a number an
     // existing block already holds (e.g. land level with the page's CTA) and
@@ -448,11 +512,11 @@ async function main() {
     console.log("Seeded 3 sample enquiries");
   }
 
-  const totalRefreshed = refreshed.categories + refreshed.products + refreshed.banners;
+  const totalRefreshed = refreshed.categories + refreshed.products + refreshed.banners + refreshed.pages;
   if (totalRefreshed) {
     console.log(
       `Refreshed placeholder images on ${refreshed.categories} categories, ` +
-        `${refreshed.products} products, ${refreshed.banners} banners`
+        `${refreshed.products} products, ${refreshed.banners} banners, ${refreshed.pages} page heroes`
     );
   }
 

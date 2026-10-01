@@ -1,47 +1,61 @@
-import { Truck, BadgeCheck, FlaskConical, HeartPulse } from "lucide-react";
+import { Truck, ShieldCheck, FlaskConical, HeartPulse } from "lucide-react";
 import { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 
-const features = [
-  { icon: Truck, title: "Reliable Supply", desc: "Consistent stock & timely delivery" },
-  { icon: BadgeCheck, title: "Certified Quality", desc: "GMP-compliant manufacturing" },
-  { icon: FlaskConical, title: "Research Backed", desc: "Formulated with veterinary experts" },
-  { icon: HeartPulse, title: "Animal Wellness", desc: "Focused on better health outcomes" },
+// The icons, by position - the points themselves are the admin's.
+const ICONS = [Truck, ShieldCheck, FlaskConical, HeartPulse];
+
+const DEFAULT_ITEMS = [
+  { heading: "Reliable Supply", text: "Consistent stock & timely delivery" },
+  { heading: "Certified Quality", text: "GMP-compliant manufacturing" },
+  { heading: "Research Backed", text: "Formulated with veterinary experts" },
+  { heading: "Animal Wellness", text: "Focused on better health outcomes" },
 ];
 
-export default function FeatureStrip() {
+// The trust strip under the hero: the points laid flat on a pale band, not
+// boxed in cards - a line icon over a soft disc, the point, a short magenta
+// rule and a line of description, with hairline dividers between the
+// columns. In the theme's own colours (brand navy, accent magenta).
+//
+// `items` ([{ heading, text }]) come from the "feature-strip" block in Admin >
+// Website Content > Homepage (lib/homeContent.js); up to four show, one
+// column each on large screens.
+export default function FeatureStrip({ items = DEFAULT_ITEMS }) {
+  const features = items.slice(0, 4).map((item, i) => ({ icon: ICONS[i % ICONS.length], title: item.heading, desc: item.text }));
+  if (!features.length) return null;
   return (
-    // The strip is a floating panel that overlaps the foot of the hero, which
-    // ties the dark banner to the light page below it instead of the two
-    // meeting at a hard edge. The section's own background is transparent over
-    // the overlap and mist-50 underneath, matching the category band that
-    // follows, so the panel sits across the seam.
-    <section className="relative z-10 -mt-10 bg-[linear-gradient(to_bottom,transparent_2.5rem,var(--color-mist-50)_2.5rem)] sm:-mt-12 sm:bg-[linear-gradient(to_bottom,transparent_3rem,var(--color-mist-50)_3rem)]">
-      <div className="container-page">
-        {/* A thin trust strip, so its motion is the shortest on the page: a
-            short horizontal deal-in, no vertical travel. It sits directly
-            under the hero and must not compete with it. */}
-        <RevealGroup className="panel overflow-hidden" stagger={0.06}>
-          {/* gap-px over a tinted fill draws hairline dividers between cells
-              that work in both the 2x2 and the 1x4 layout. */}
-          <div className="grid grid-cols-2 gap-px bg-brand-100/60 md:grid-cols-4">
+    <section className="border-b border-brand-100/70 bg-mist-50">
+      <div className="container-page py-10 sm:py-12">
+        {/* A short, quiet deal-in: the strip sits directly under the hero and
+            must not compete with it.
+
+            Equal spacing: every column has the same padding on both sides
+            and the dividers sit between them, so all four have the same
+            width of content and the same gap either side of each divider.
+            The grid is pulled out by that padding (-mx) so the first and last
+            columns still line up with the page edges.
+
+            Phones: a compact two-by-two grid rather than four tall rows. */}
+        <RevealGroup
+          className="grid grid-cols-2 gap-x-5 gap-y-8 sm:-mx-6 sm:gap-x-0 sm:gap-y-10 lg:-mx-8 lg:grid-cols-[repeat(var(--cols),minmax(0,1fr))] lg:gap-0 lg:divide-x lg:divide-brand-100"
+          style={{ "--cols": features.length }}
+          stagger={0.08}
+        >
           {features.map(({ icon: Icon, title, desc }) => (
-            <RevealItem
-              key={title}
-              className="group flex items-center gap-3 bg-white p-4 transition-colors duration-300 hover:bg-mist-50 sm:gap-4 sm:p-6"
-              direction="left"
-              distance={14}
-              duration={0.4}
-            >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-accent-100 to-brand-100 text-accent-700 transition duration-300 group-hover:-rotate-6 group-hover:scale-110 sm:h-12 sm:w-12">
-                <Icon size={20} />
+            <RevealItem key={title} className="group sm:px-6 lg:px-8" distance={14} duration={0.5}>
+              {/* The mark: a soft magenta-to-lavender disc set up and to the
+                  left, the icon over it. The disc grows a touch on hover. */}
+              <span aria-hidden="true" className="relative block h-12 w-14">
+                <span
+                  className="absolute left-0 top-1.5 h-10 w-10 rounded-full transition-transform duration-500 ease-out group-hover:scale-110"
+                  style={{ background: "radial-gradient(circle at 35% 35%, var(--color-accent-50), var(--color-brand-100) 75%)" }}
+                />
+                <Icon size={34} strokeWidth={1.5} absoluteStrokeWidth className="absolute left-3 top-0 text-brand-700" />
               </span>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-ink">{title}</p>
-                <p className="text-xs leading-snug text-ink-soft">{desc}</p>
-              </div>
+              <h3 className="mt-3 font-display text-base font-semibold leading-snug sm:mt-4 sm:text-lg tracking-tight text-brand-800">{title}</h3>
+              <span aria-hidden="true" className="mt-2.5 block h-0.5 w-8 rounded-full bg-accent-400" />
+              <p className="mt-2.5 text-sm leading-relaxed text-ink-soft">{desc}</p>
             </RevealItem>
           ))}
-          </div>
         </RevealGroup>
       </div>
     </section>

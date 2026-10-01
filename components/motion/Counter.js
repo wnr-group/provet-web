@@ -2,12 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useInView, animate } from "framer-motion";
+import { useMotionEnv } from "@/components/motion/MotionProvider";
 
 // Animates "250+", "1,200", "98%" etc. by extracting the leading number and
 // counting up to it once the element scrolls into view, preserving any
-// prefix/suffix text (currency symbols, "+", "%", commas).
+// prefix/suffix text (currency symbols, "+", "%", commas). Under
+// prefers-reduced-motion it shows the final number straight away.
 export default function Counter({ value, duration = 1.4, className }) {
   const ref = useRef(null);
+  const { reduced } = useMotionEnv();
   const isInView = useInView(ref, { once: true, margin: "-40px" });
 
   const match = String(value).match(/^(\D*)([\d,]+)(\D*)$/);
@@ -19,7 +22,7 @@ export default function Counter({ value, duration = 1.4, className }) {
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {
-    if (!isInView || !match) return;
+    if (!isInView || !match || reduced) return;
     const controls = animate(0, target, {
       duration,
       ease: [0.16, 1, 0.3, 1],
@@ -27,7 +30,9 @@ export default function Counter({ value, duration = 1.4, className }) {
     });
     return controls.stop;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isInView, target, duration]);
+  }, [isInView, target, duration, reduced]);
+
+  const shown = reduced ? target : display;
 
   if (!match) {
     return (
@@ -40,7 +45,7 @@ export default function Counter({ value, duration = 1.4, className }) {
   return (
     <span ref={ref} className={className}>
       {prefix}
-      {hasCommas ? display.toLocaleString("en-IN") : display}
+      {hasCommas ? shown.toLocaleString("en-IN") : shown}
       {suffix}
     </span>
   );

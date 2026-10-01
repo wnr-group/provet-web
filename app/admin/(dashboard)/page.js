@@ -5,14 +5,15 @@ import prisma from "@/lib/prisma";
 export const metadata = { title: "Dashboard" };
 
 async function getDashboardData() {
-  const [products, categories, banners, newEnquiries, recentEnquiries] = await Promise.all([
+  const [products, categories, subcategories, banners, newEnquiries, recentEnquiries] = await Promise.all([
     prisma.product.count(),
-    prisma.category.count(),
+    prisma.category.count({ where: { parentId: null } }),
+    prisma.category.count({ where: { NOT: { parentId: null } } }),
     prisma.banner.count(),
     prisma.enquiry.count({ where: { status: "new" } }),
     prisma.enquiry.findMany({ orderBy: { createdAt: "desc" }, take: 5 }),
   ]);
-  return { products, categories, banners, newEnquiries, recentEnquiries };
+  return { products, categories, subcategories, banners, newEnquiries, recentEnquiries };
 }
 
 export default async function Dashboard() {
@@ -20,7 +21,7 @@ export default async function Dashboard() {
 
   const cards = [
     { label: "Products", value: stats.products, icon: Package, href: "/admin/products", color: "bg-brand-100 text-brand-700" },
-    { label: "Categories", value: stats.categories, icon: FolderTree, href: "/admin/categories", color: "bg-accent-100 text-accent-700" },
+    { label: `Categories · ${stats.subcategories} subcategories`, value: stats.categories, icon: FolderTree, href: "/admin/categories", color: "bg-accent-100 text-accent-700" },
     { label: "Banners", value: stats.banners, icon: ImageIcon, href: "/admin/banners", color: "bg-mist-100 text-brand-700" },
     { label: "New Enquiries", value: stats.newEnquiries, icon: Mail, href: "/admin/enquiries", color: "bg-orange-100 text-orange-700" },
   ];
