@@ -1,12 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { Search, SlidersHorizontal, X, ChevronDown } from "lucide-react";
 import clsx from "clsx";
 
 // Past this many subcategories, a category's list gets its own filter box.
 const SUBCATEGORY_FILTER_THRESHOLD = 8;
+
+// The search box searches as you type once this many letters are in, after a
+// short pause - each search reloads the product grid, so it waits for the
+// visitor to stop typing rather than firing on every key.
+const TYPEAHEAD_MIN = 3;
+const TYPEAHEAD_DELAY_MS = 350;
 
 // `tree` is getCategoryTree's output: top-level categories, each with its
 // subcategories as `children`. The active category opens to show them.
@@ -18,18 +24,50 @@ export default function ProductsFilters({ tree = [], activeCategoryId, activeSub
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [subQuery, setSubQuery] = useState("");
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: keep the input in sync when `search` changes externally (e.g. the "Clear filters" button).
-  useEffect(() => setSearchInput(search), [search]);
+  // The search this box last sent. When the results for it arrive, `search`
+  // changes to it - and must not overwrite the letters typed since.
+  const sentSearch = useRef(search);
 
-  const updateParams = (updates) => {
+  // Keep the input in sync when `search` changes from elsewhere (the "Clear
+  // filters" button, the back button), but not when it is our own echo.
+  useEffect(() => {
+    if (search === sentSearch.current) return;
+    sentSearch.current = search;
+    setSearchInput(search);
+  }, [search]);
+
+  const updateParams = (updates, { replace = false } = {}) => {
     const next = new URLSearchParams(searchParams);
     Object.entries(updates).forEach(([key, value]) => {
       if (value) next.set(key, value);
       else next.delete(key);
     });
     if (!("page" in updates)) next.delete("page");
-    router.push(next.size ? `${pathname}?${next.toString()}` : pathname);
+    const url = next.size ? `${pathname}?${next.toString()}` : pathname;
+    // Type-ahead replaces the history entry (one Back undoes the whole
+    // search, not one letter at a time) and keeps the scroll position.
+    if (replace) router.replace(url, { scroll: false });
+    else router.push(url);
   };
+
+  const runSearch = (value, options) => {
+    const query = value.trim();
+    if (query === (sentSearch.current || "")) return;
+    sentSearch.current = query;
+    updateParams({ search: query }, options);
+  };
+
+  // Search as you type: three letters or more, or an emptied box (which shows
+  // everything again). One or two letters wait for more.
+  useEffect(() => {
+    const query = searchInput.trim();
+    if (query.length > 0 && query.length < TYPEAHEAD_MIN) return;
+    const timer = setTimeout(() => runSearch(searchInput, { replace: true }), TYPEAHEAD_DELAY_MS);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- runs on typing only; runSearch reads the latest params itself.
+  }, [searchInput]);
+
+  const typed = searchInput.trim();
 
   return (
     <aside className="lg:sticky lg:top-24 lg:h-fit">
@@ -49,18 +87,27 @@ export default function ProductsFilters({ tree = [], activeCategoryId, activeSub
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              updateParams({ search: searchInput });
+              // Enter searches straight away, even for one or two letters.
+              runSearch(searchInput);
             }}
             className="relative"
           >
             <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft" />
             <input
+              type="search"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search products..."
+              aria-label="Search products"
+              aria-describedby="product-search-hint"
               className="input pl-9"
             />
           </form>
+          <p id="product-search-hint" className="mt-1.5 text-xs text-ink-soft" aria-live="polite">
+            {typed.length > 0 && typed.length < TYPEAHEAD_MIN
+              ? `Type ${TYPEAHEAD_MIN - typed.length} more letter${TYPEAHEAD_MIN - typed.length === 1 ? "" : "s"} to search`
+              : "Results update as you type"}
+          </p>
         </div>
 
         <div>
@@ -126,6 +173,7 @@ export default function ProductsFilters({ tree = [], activeCategoryId, activeSub
           <button
             onClick={() => {
               setSearchInput("");
+              sentSearch.current = "";
               router.push(pathname);
             }}
             className="btn-ghost w-full justify-center text-sm"

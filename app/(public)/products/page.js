@@ -33,7 +33,7 @@ export default async function Products({ searchParams }) {
 
   const [tree, result, featured, brochure] = await Promise.all([
     getCategoryTree(),
-    getProducts({ category, search, page, limit: LIMIT, sort: "newest" }),
+    getProducts({ category, search, page, limit: LIMIT, sort: "newest", prefixFirst: true }),
     showSpotlight ? getProducts({ category, featured: true, limit: 8 }) : null,
     getBrochureSettings(prisma),
   ]);
