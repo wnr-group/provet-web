@@ -95,6 +95,10 @@ model Banner {
   title     String
   subtitle  String?
   image     String
+  // Set when the slide's background is a video rather than its photo. The
+  // image stays required: it is the video's poster, shown while it loads
+  // and instead of it for visitors who prefer reduced motion.
+  video     String?
   ctaText   String?
   ctaLink   String?
   order     Int      @default(0)

@@ -1,4 +1,4 @@
-import { getActiveBanners, getCategoryTree, getProducts, getContentSections, getAddedSections } from "@/lib/data";
+import { getActiveBanners, getCategoryTree, getProducts, getProductsByReference, getContentSections, getAddedSections } from "@/lib/data";
 import { parseHeadedItems, parseStatItems } from "@/lib/contentFormat";
 import { withHomeDefaults, homeSectionOrder, homeLayout } from "@/lib/homeContent";
 import PageSections from "@/components/sections/PageSections";
@@ -6,6 +6,7 @@ import Hero from "@/components/home/Hero";
 import FeatureStrip from "@/components/home/FeatureStrip";
 import CategoryGrid from "@/components/home/CategoryGrid";
 import FeaturedProducts from "@/components/home/FeaturedProducts";
+import TopBrands from "@/components/home/TopBrands";
 import Stats from "@/components/home/Stats";
 import Testimonials from "@/components/home/Testimonials";
 import CtaBanner from "@/components/home/CtaBanner";
@@ -27,7 +28,8 @@ export const metadata = {
 // (lib/homeContent.js): each block's copy, whether it shows, and - for the
 // sections between the hero and the closing call to action - their order.
 // The hero slides are Admin > Banners; the ranges, Admin > Categories; the
-// featured products, the Featured switch in Admin > Products.
+// featured products, the Featured switch in Admin > Products; the top
+// brands, the rows of that block.
 export default async function Home() {
   // Only products marked Featured in the admin, asked for directly (not
   // picked out of the newest few, which would miss older featured products).
@@ -48,6 +50,16 @@ export default async function Home() {
     return b && b.isVisible !== false ? b : null;
   };
 
+  // Top Brands: each row of the block names a product and may give it a
+  // tagline; the product's own short description stands in when it doesn't.
+  // Rows naming no active product are dropped.
+  const brandsBlock = shown("top-brands");
+  const brandRows = brandsBlock ? parseHeadedItems(brandsBlock.body).slice(0, 6) : [];
+  const brandProducts = brandRows.length ? await getProductsByReference(brandRows.map((r) => r.heading)) : [];
+  const brands = brandRows
+    .map((row, i) => brandProducts[i] && { product: brandProducts[i], tagline: row.text || brandProducts[i].shortDescription || "" })
+    .filter((b, i, all) => b && all.findIndex((o) => o?.product.id === b.product.id) === i);
+
   const heroStats = shown("hero-stats");
   const cta = shown("cta");
 
@@ -60,6 +72,8 @@ export default async function Home() {
         return <CategoryGrid key={b.key} categories={categories} title={b.title || undefined} description={b.body} />;
       case "featured":
         return <FeaturedProducts key={b.key} products={featured} title={b.title || undefined} description={b.body} />;
+      case "top-brands":
+        return <TopBrands key={b.key} brands={brands} title={b.title || undefined} />;
       case "stats":
         return <Stats key={b.key} section={b} />;
       case "testimonials":

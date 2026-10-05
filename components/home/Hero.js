@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, ShieldCheck } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowRight, ShieldCheck, Pause, Play } from "lucide-react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import clsx from "clsx";
 import Counter from "@/components/motion/Counter";
@@ -34,6 +34,11 @@ const STATS = [
   { value: "1,200+", label: "Clinics Served" },
 ];
 
+// The browser's data-saver flag (Chrome/Android). Read once; it rarely
+// changes while the page is open.
+const subscribeNever = () => () => {};
+const readSaveData = () => Boolean(navigator.connection?.saveData);
+
 export default function Hero({ banners = [], badge = "Trusted by veterinarians nationwide", stats = STATS }) {
   const slides = banners.length
     ? banners
@@ -63,14 +68,53 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
   const copyFade = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
   const flat = isMobile || reduced;
 
+  const slide = slides[active];
+  const slideKey = slide.id ?? slide.image;
+
+  // A slide is a photo or a video (Admin > Banners). A video slide plays its
+  // video, muted, behind the copy - unless the visitor asked for reduced
+  // motion or to save data, or the video fails to load: then its image (the
+  // poster) shows, exactly like a photo slide.
+  const saveData = useSyncExternalStore(subscribeNever, readSaveData, () => false);
+  const [failed, setFailed] = useState(() => new Set());
+  const playsVideo = Boolean(slide.video) && !reduced && !saveData && !failed.has(slide.video);
+  // Slides that share one video (every slide set to the same Provet video)
+  // play it as one continuous background: it keeps running, looping, while
+  // the headline, text and button change over it on the usual timer.
+  const continues = playsVideo && slides.length > 1 && slides[(active + 1) % slides.length].video === slide.video;
+  const videoRef = useRef(null);
+  const [videoPaused, setVideoPaused] = useState(false);
+
+  // Rotation: a photo slide holds for six seconds; a video slide holds until
+  // its video ends - unless the next slide shares the video, when the words
+  // change on the six-second timer over the still-playing video (a lone
+  // slide's video simply loops). Choosing a slide from the dots gives it a
+  // full hold of its own.
   useEffect(() => {
     if (slides.length <= 1) return;
     if (reduced) return; // an unbidden rotating banner is what the preference is for
-    const t = setInterval(() => setActive((a) => (a + 1) % slides.length), 6000);
-    return () => clearInterval(t);
-  }, [slides.length, reduced]);
+    if (playsVideo && !continues) return;
+    const t = setTimeout(() => setActive((a) => (a + 1) % slides.length), 6000);
+    return () => clearTimeout(t);
+  }, [active, slides.length, reduced, playsVideo, continues]);
 
-  const slide = slides[active];
+  // React sets `muted` as a property, not an attribute, so the server HTML's
+  // <video> isn't muted when the browser decides on autoplay - and browsers
+  // only autoplay muted video. Mute it and start it once it's in the page.
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    el.muted = true;
+    el.play().catch(() => setVideoPaused(true));
+  }, [playsVideo, slide.video]);
+
+  const nextSlide = () => setActive((a) => (a + 1) % slides.length);
+  const toggleVideo = () => {
+    const el = videoRef.current;
+    if (!el) return;
+    if (el.paused) el.play().catch(() => {});
+    else el.pause();
+  };
 
   return (
     <section ref={sectionRef} className="relative isolate overflow-hidden bg-brand-900">
@@ -81,6 +125,33 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
         style={flat ? undefined : { y: parallaxY, scale: parallaxScale }}
       >
         <AnimatePresence mode="sync">
+          {playsVideo ? (
+            <motion.video
+              // Keyed by the video, not the slide: slides sharing it keep
+              // the same element, so it plays on without restarting.
+              key={`video-${slide.video}`}
+              ref={videoRef}
+              src={slide.video}
+              poster={slide.image || HERO_FALLBACK}
+              autoPlay
+              muted
+              playsInline
+              disablePictureInPicture
+              loop={slides.length <= 1 || continues}
+              preload="auto"
+              aria-hidden="true"
+              tabIndex={-1}
+              onEnded={nextSlide}
+              onPlay={() => setVideoPaused(false)}
+              onPause={(e) => !e.currentTarget.ended && setVideoPaused(true)}
+              onError={() => setFailed((f) => new Set(f).add(slide.video))}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.1, ease: EASE }}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
           <motion.img
             key={slide.id ?? slide.image}
             src={slide.image || HERO_FALLBACK}
@@ -96,6 +167,7 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
             transition={{ opacity: { duration: 1.1, ease: EASE }, scale: { duration: 7.5, ease: "linear" } }}
             className="absolute inset-0 h-full w-full object-cover"
           />
+          )}
         </AnimatePresence>
       </motion.div>
       <div className={clsx("pointer-events-none absolute inset-0 -z-10", OVERLAY_GRADIENT)} />
@@ -184,6 +256,25 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
         </motion.div>
 
       </div>
+
+      {/* Moving content that plays on its own needs a way to stop it
+          (WCAG 2.2.2), so a video slide has one quiet pause button - the
+          video itself shows no controls. Pausing also holds the slide, since
+          the next one follows the video's end. */}
+      {playsVideo && (
+        <div className="pointer-events-none absolute inset-x-0 bottom-16 z-10 sm:bottom-20">
+          <div className="container-page flex justify-end">
+            <button
+              type="button"
+              onClick={toggleVideo}
+              aria-label={videoPaused ? "Play background video" : "Pause background video"}
+              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 backdrop-blur-sm transition hover:bg-white/20 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-400"
+            >
+              {videoPaused ? <Play size={14} /> : <Pause size={14} />}
+            </button>
+          </div>
+        </div>
+      )}
 
       {slides.length > 1 && (
         // Raised clear of the feature strip, which overlaps the hero's foot.

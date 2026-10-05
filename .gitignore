@@ -45,3 +45,8 @@ public/uploads/*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# AI assistant skills and local tool settings (per developer, not part of the app)
+.claude/
+.agents/
+skills-lock.json
