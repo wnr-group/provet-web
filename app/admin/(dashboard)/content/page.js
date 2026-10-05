@@ -10,6 +10,7 @@ import {
   adminGetPage,
   adminUpdatePage,
   adminGetCategories,
+  adminGetProducts,
 } from "@/components/admin/adminApi";
 import { PageSpinner } from "@/components/ui/Spinner";
 import { SectionFields } from "@/components/admin/SectionEditor";
@@ -83,6 +84,9 @@ export default function ContentAdmin() {
   const [sections, setSections] = useState(null);
   const [settings, setSettings] = useState(emptySettings);
   const [categories, setCategories] = useState([]);
+  // The catalogue, for the homepage's Top Brands picker. Loaded with the
+  // homepage, the only page that picks products.
+  const [products, setProducts] = useState([]);
   // The page the loaded sections belong to. Tracking it lets the spinner be
   // derived instead of set from inside the effect, which would otherwise
   // cascade a render on every page switch.
@@ -113,6 +117,18 @@ export default function ContentAdmin() {
   useEffect(() => {
     adminGetCategories().then(setCategories).catch(() => setCategories([]));
   }, []);
+
+  const needsProducts = pageKey === "home";
+  useEffect(() => {
+    if (!needsProducts) return;
+    let cancelled = false;
+    loadAllProducts()
+      .then((items) => !cancelled && setProducts(items))
+      .catch(() => !cancelled && setProducts([]));
+    return () => {
+      cancelled = true;
+    };
+  }, [needsProducts]);
 
   // Reads a page without touching state, so both the effect below and the
   // post-save refresh can share it.
@@ -424,6 +440,7 @@ export default function ContentAdmin() {
               <SectionFields
                 section={editingSection}
                 categories={categories}
+                products={products}
                 editable={editable || !isLocked(editingSection)}
                 hint={pageMeta?.[editingSection.key]?.hint}
                 hideConfig={pageMeta?.[editingSection.key]?.hideConfig}
@@ -436,4 +453,17 @@ export default function ContentAdmin() {
       )}
     </div>
   );
+}
+
+// Every product, by name: the admin list API pages at 100 at most.
+async function loadAllProducts() {
+  const items = [];
+  for (let page = 1; ; page += 1) {
+    const res = await adminGetProducts({ page, limit: 100 });
+    items.push(...res.items);
+    if (items.length >= res.total || res.items.length === 0) break;
+  }
+  return items
+    .map(({ name, slug, isActive }) => ({ name, slug, isActive }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 }
