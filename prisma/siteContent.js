@@ -54,13 +54,23 @@ const siteContent = {
       "config": {}
     },
     {
+      "key": "top-brands",
+      "type": "cards",
+      "title": "Top Brands",
+      "body": "bambercin-plus: A novel and potent tribiotic for poultry feed\nnagronex-esf: Natural growth promotion for healthier flocks\nbacitox-plus: Cleaner pond water for thriving aquaculture\npathostat-blu: Protection against vibrio in shrimp farming\n",
+      "image": "",
+      "isVisible": true,
+      "order": 4,
+      "config": {}
+    },
+    {
       "key": "stats",
       "type": "richText",
       "title": "By the Numbers",
       "body": "20+ years combined formulation experience - 100+ SKUs across 6 therapeutic categories - Supplying clinics and distributors across the region.",
       "image": "",
       "isVisible": true,
-      "order": 4,
+      "order": 5,
       "config": {}
     },
     {
@@ -70,7 +80,7 @@ const siteContent = {
       "body": "The research and field knowledge behind our solutions.",
       "image": "",
       "isVisible": true,
-      "order": 5,
+      "order": 6,
       "config": {
         "columns": 4,
         "imageStyle": "accordion",
@@ -110,7 +120,7 @@ const siteContent = {
       "body": "",
       "image": "",
       "isVisible": true,
-      "order": 6,
+      "order": 7,
       "config": {
         "layout": "grid",
         "items": [
@@ -144,7 +154,7 @@ const siteContent = {
       "body": "",
       "image": "",
       "isVisible": true,
-      "order": 7,
+      "order": 8,
       "config": {
         "aspect": "square",
         "autoplay": true,
@@ -176,7 +186,7 @@ const siteContent = {
       "body": "Our veterinary specialists are ready to guide you through composition, dosage and suitability for your practice.",
       "image": "",
       "isVisible": true,
-      "order": 8,
+      "order": 9,
       "config": {}
     }
   ],
