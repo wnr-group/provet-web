@@ -15,10 +15,12 @@ export function CatalogueNavigationProvider({ children }) {
   const [isPending, startTransition] = useTransition();
 
   // `replace` (type-ahead): one history entry for the whole search, and the
-  // scroll position kept. Otherwise a normal push.
+  // scroll position kept. Otherwise a normal push, which scrolls to the top
+  // unless `scroll: false` (the sort and the grid/list switch keep the
+  // visitor where they are).
   const navigate = useCallback(
-    (url, { replace = false } = {}) =>
-      startTransition(() => (replace ? router.replace(url, { scroll: false }) : router.push(url))),
+    (url, { replace = false, scroll = true } = {}) =>
+      startTransition(() => (replace ? router.replace(url, { scroll: false }) : router.push(url, { scroll }))),
     [router]
   );
 
@@ -33,7 +35,8 @@ export function useCatalogueNavigation() {
   if (context) return context;
   return {
     isPending: false,
-    navigate: (url, { replace = false } = {}) => (replace ? router.replace(url, { scroll: false }) : router.push(url)),
+    navigate: (url, { replace = false, scroll = true } = {}) =>
+      replace ? router.replace(url, { scroll: false }) : router.push(url, { scroll }),
   };
 }
 

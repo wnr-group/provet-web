@@ -12,26 +12,60 @@ import clsx from "clsx";
 const TYPEAHEAD_MIN = 3;
 const TYPEAHEAD_DELAY_MS = 350;
 
-// `tree` is getCategoryTree's output: top-level categories, each with its
-// subcategories as `children`. The active category opens to show them.
-export default function ProductsFilters({ tree = [], activeCategoryId, activeSubcategoryId, category, search }) {
-  const { navigate } = useCatalogueNavigation();
+// The catalogue's filters: search, and the product groups - every range's
+// groups under the range's name while all ranges are shown (the therapeutic
+// segments, as the reference catalogues list them), or just the chosen
+// range's. The ranges themselves are the tiles above (RangeTabs).
+//
+// One panel, two presentations: the sticky left column from lg, and below lg
+// a drawer that slides in from the left over the dimmed page, opened from the
+// "Filters" button. Choices apply as they are made; "Show N products" closes
+// it.
+//
+// `tree` is navCategoryTree's output: ranges, each with its groups as
+// `children` (names, slugs and counts only).
+export default function ProductsFilters({ tree = [], activeCategoryId, activeSubcategoryId, category, search, total }) {
+  const { navigate, isPending } = useCatalogueNavigation();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [searchInput, setSearchInput] = useState(search);
-  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const closeRef = useRef(null);
+  const triggerRef = useRef(null);
 
   // The search this box last sent. When the results for it arrive, `search`
   // changes to it - and must not overwrite the letters typed since.
   const sentSearch = useRef(search);
 
-  // Keep the input in sync when `search` changes from elsewhere (the "Clear
-  // filters" button, the back button), but not when it is our own echo.
+  // Keep the input in sync when `search` changes from elsewhere (a filter
+  // chip, the back button), but not when it is our own echo.
   useEffect(() => {
     if (search === sentSearch.current) return;
     sentSearch.current = search;
     setSearchInput(search);
   }, [search]);
+
+  // The drawer: Escape closes it, the page behind does not scroll while it is
+  // open, focus moves into it and back to the button after, and it closes by
+  // itself if the window widens to the desktop layout.
+  useEffect(() => {
+    if (!drawerOpen) return;
+    const trigger = triggerRef.current;
+    const onKey = (e) => e.key === "Escape" && setDrawerOpen(false);
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const onWiden = (e) => e.matches && setDrawerOpen(false);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKey);
+    desktop.addEventListener("change", onWiden);
+    closeRef.current?.focus();
+    return () => {
+      document.body.style.overflow = overflow;
+      document.removeEventListener("keydown", onKey);
+      desktop.removeEventListener("change", onWiden);
+      if (!desktop.matches) trigger?.focus();
+    };
+  }, [drawerOpen]);
 
   const updateParams = (updates, { replace = false } = {}) => {
     const next = new URLSearchParams(searchParams);
@@ -64,133 +98,165 @@ export default function ProductsFilters({ tree = [], activeCategoryId, activeSub
   }, [searchInput]);
 
   const typed = searchInput.trim();
+  const activeCount = (category ? 1 : 0) + (search ? 1 : 0);
+  const range = tree.find((c) => c.id === activeCategoryId);
+  const activeGroup = range?.children.find((s) => s.id === activeSubcategoryId);
+  // While all ranges are shown, every range lists its groups - including one
+  // just added in the admin, before it has groups or products.
+  const sections = range ? [range] : tree;
+
+  const clearAll = () => {
+    setSearchInput("");
+    sentSearch.current = "";
+    updateParams({ search: "", category: "" });
+  };
 
   return (
     <aside className="lg:sticky lg:top-24 lg:h-fit">
+      {/* Below lg: the button that opens the drawer. */}
       <button
-        className="btn-outline mb-4 w-full justify-between lg:hidden"
-        onClick={() => setFiltersOpen((o) => !o)}
+        ref={triggerRef}
+        type="button"
+        onClick={() => setDrawerOpen(true)}
+        aria-expanded={drawerOpen}
+        aria-controls="catalogue-filters"
+        className="flex w-full items-center justify-between gap-3 rounded-xl border border-brand-200 bg-white px-4 py-3 text-sm font-semibold text-ink transition hover:border-brand-300 lg:hidden"
       >
         <span className="flex items-center gap-2">
-          <SlidersHorizontal size={16} /> Filters
+          <SlidersHorizontal size={16} aria-hidden="true" className="text-(--range-accent)" /> Search &amp; filter
+          {activeCount > 0 && (
+            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-(--range-accent) px-1.5 text-[11px] font-bold text-white">
+              {activeCount}
+            </span>
+          )}
         </span>
-        {filtersOpen ? <X size={16} /> : null}
+        <span className="min-w-0 truncate text-xs font-medium text-ink-soft">
+          {[activeGroup?.name, search && `“${search}”`].filter(Boolean).join(" · ") || "Product groups"}
+        </span>
       </button>
 
-      <div className={clsx("panel p-5", !filtersOpen && "hidden lg:block")}>
-        {/* Search */}
-        <div className="flex items-center justify-between">
-          <SectionLabel htmlFor="product-search">Search</SectionLabel>
-          {(category || search) && (
+      {/* Below lg: the dimmed page behind the open drawer. */}
+      <div
+        aria-hidden="true"
+        onClick={() => setDrawerOpen(false)}
+        className={clsx(
+          "fixed inset-0 z-[60] bg-brand-900/40 backdrop-blur-[2px] transition-opacity duration-300 lg:hidden",
+          drawerOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+      />
+
+      {/* The panel: a drawer below lg (hidden - and out of the tab order -
+          while closed), the sticky sidebar from lg. */}
+      <div
+        id="catalogue-filters"
+        role={drawerOpen ? "dialog" : undefined}
+        aria-modal={drawerOpen || undefined}
+        aria-label="Search and filter products"
+        className={clsx(
+          "flex flex-col bg-white",
+          "max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-[61] max-lg:w-[min(22rem,88vw)] max-lg:shadow-2xl max-lg:transition-[transform,visibility] max-lg:duration-300 max-lg:ease-out",
+          drawerOpen ? "max-lg:visible max-lg:translate-x-0" : "max-lg:invisible max-lg:-translate-x-full",
+          "lg:rounded-xl lg:border lg:border-brand-100"
+        )}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between gap-3 border-b border-brand-100 px-5 py-4">
+          <p className="font-display text-base font-bold text-ink">Filter products</p>
+          <div className="flex items-center gap-1">
+            {activeCount > 0 && (
+              <button
+                type="button"
+                onClick={clearAll}
+                className="rounded-md px-2 py-1 text-xs font-semibold text-(--range-text) transition hover:bg-(--range-soft)"
+              >
+                Clear all
+              </button>
+            )}
             <button
+              ref={closeRef}
               type="button"
-              onClick={() => {
-                setSearchInput("");
-                sentSearch.current = "";
-                navigate(pathname);
-              }}
-              className="inline-flex items-center gap-1 text-xs font-semibold text-brand-600 transition hover:text-accent-600"
+              onClick={() => setDrawerOpen(false)}
+              aria-label="Close filters"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-ink-soft transition hover:bg-mist-100 hover:text-ink lg:hidden"
             >
-              <X size={12} /> Clear all
+              <X size={18} />
             </button>
-          )}
+          </div>
         </div>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            // Enter searches straight away, even for one or two letters.
-            runSearch(searchInput);
-          }}
-          className="relative mt-2"
-        >
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft" />
-          <input
-            id="product-search"
-            type="search"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            placeholder="Product name..."
-            aria-label="Search products"
-            aria-describedby="product-search-hint"
-            className="input pl-9"
-          />
-        </form>
-        <p id="product-search-hint" className="mt-1.5 text-[11px] text-ink-soft/80" aria-live="polite">
-          {typed.length > 0 && typed.length < TYPEAHEAD_MIN
-            ? `Type ${TYPEAHEAD_MIN - typed.length} more letter${TYPEAHEAD_MIN - typed.length === 1 ? "" : "s"} to search`
-            : "Results update as you type"}
-        </p>
 
-        {/* Range. With up to three options (All plus two ranges) a compact
-            switch; with more, the names no longer fit side by side ("Avi...",
-            "Blu..."), so they become a list like the product groups below. */}
-        <div className="mt-6 border-t border-brand-100/80 pt-5">
-          <SectionLabel>Range</SectionLabel>
-          {(() => {
-            const options = [
-              { key: "all", label: "All", active: !category, slug: "", count: tree.reduce((sum, c) => sum + (c.productCount || 0), 0) },
-              ...tree.map((c) => ({ key: c.id, label: c.name, active: c.id === activeCategoryId, slug: c.slug, count: c.productCount })),
-            ];
-            if (options.length <= 3) {
-              return (
-                <div
-                  className="mt-2.5 grid gap-1 rounded-xl bg-mist-100/70 p-1"
-                  style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
-                  role="group"
-                  aria-label="Range"
-                >
-                  {options.map((o) => (
-                    <RangeButton key={o.key} active={o.active} onClick={() => updateParams({ category: o.slug })} label={o.label} count={o.count} />
-                  ))}
-                </div>
-              );
-            }
-            return (
-              <ul className="-mx-1 mt-2 space-y-0.5 px-1" role="group" aria-label="Range">
-                {options.map((o) => (
-                  <li key={o.key}>
-                    <GroupButton active={o.active} onClick={() => updateParams({ category: o.slug })} count={o.count}>
-                      {o.key === "all" ? "All ranges" : o.label}
-                    </GroupButton>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-5 pt-4 lg:max-h-[calc(100vh-11rem)] lg:[scrollbar-width:thin]">
+          {/* Search */}
+          <SectionLabel htmlFor="product-search">Search</SectionLabel>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              // Enter searches straight away, even for one or two letters.
+              runSearch(searchInput);
+            }}
+            className="relative mt-2"
+          >
+            <Search size={16} aria-hidden="true" className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-soft" />
+            <input
+              id="product-search"
+              type="search"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Product name"
+              aria-label="Search products"
+              aria-describedby="product-search-hint"
+              className="input pl-9"
+            />
+          </form>
+          {/* Only speaks up while it has something to say: the letters still
+              needed before the type-ahead starts. */}
+          <p id="product-search-hint" className="mt-1.5 min-h-4 text-[11px] text-ink-soft/80" aria-live="polite">
+            {typed.length > 0 && typed.length < TYPEAHEAD_MIN
+              ? `Type ${TYPEAHEAD_MIN - typed.length} more letter${TYPEAHEAD_MIN - typed.length === 1 ? "" : "s"} to search`
+              : ""}
+          </p>
+
+          {/* Product groups, under their range. */}
+          {sections.map((r) => (
+            <div key={r.id} className="mt-3 border-t border-brand-100/80 pt-4">
+              <SectionLabel>{range ? "Product group" : r.name}</SectionLabel>
+              <ul className="mt-2 space-y-0.5">
+                {range && (
+                  <li>
+                    <OptionButton active={!activeSubcategoryId} onClick={() => updateParams({ category: r.slug })} count={r.productCount}>
+                      All {r.name}
+                    </OptionButton>
                   </li>
-                ))}
-              </ul>
-            );
-          })()}
-        </div>
-
-        {/* Product groups of the chosen range. One line each, the count as
-            quiet text; a long list scrolls inside the panel instead of
-            stretching the sidebar down the page. With "All" chosen there is
-            no range to list groups for - the ranges themselves are the Range
-            list above - so the section is left out rather than repeat them. */}
-        {(() => {
-            const range = tree.find((c) => c.id === activeCategoryId);
-            if (!range) return null;
-            return (
-        <div className="mt-6 border-t border-brand-100/80 pt-5">
-          <SectionLabel>Product group</SectionLabel>
-              <ul className="-mx-1 mt-2 max-h-[22rem] space-y-0.5 overflow-y-auto px-1 [scrollbar-width:thin]">
-                <li>
-                  <GroupButton active={!activeSubcategoryId} onClick={() => updateParams({ category: range.slug })} count={range.productCount}>
-                    All {range.name}
-                  </GroupButton>
-                </li>
-                {range.children.map((sub) => (
+                )}
+                {/* Every group, a new empty one too (its count reads 0). */}
+                {r.children.map((sub) => (
                   <li key={sub.id}>
-                    <GroupButton
+                    <OptionButton
                       active={sub.id === activeSubcategoryId}
                       onClick={() => updateParams({ category: sub.slug })}
                       count={sub.productCount}
                     >
                       {sub.name}
-                    </GroupButton>
+                    </OptionButton>
                   </li>
                 ))}
+                {!range && r.children.length === 0 && (
+                  <li>
+                    <OptionButton active={false} onClick={() => updateParams({ category: r.slug })} count={r.productCount}>
+                      All {r.name}
+                    </OptionButton>
+                  </li>
+                )}
               </ul>
             </div>
-          );
-        })()}
+          ))}
+        </div>
+
+        {/* Drawer footer: back to the results. */}
+        <div className="border-t border-brand-100 p-4 lg:hidden">
+          <button type="button" onClick={() => setDrawerOpen(false)} className="btn-primary w-full">
+            {isPending ? "Updating…" : `Show ${total} ${total === 1 ? "product" : "products"}`}
+          </button>
+        </div>
       </div>
     </aside>
   );
@@ -205,45 +271,29 @@ function SectionLabel({ children, htmlFor }) {
   );
 }
 
-// One option of the range switch: the name, and its product count under it.
-// The chosen one lifts out as a white tile in the range's own colour.
-function RangeButton({ active, onClick, label, count }) {
+// One product group: its name on one line (the full name on hover when cut
+// short) and its count at the end. The chosen one fills with the range's soft
+// colour, with an accent bar on its left edge and a tick.
+function OptionButton({ active, onClick, count, disabled = false, children }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      aria-pressed={active}
-      className={clsx(
-        "flex min-w-0 flex-col items-center rounded-lg px-1.5 py-2 text-center transition",
-        active ? "bg-white text-(--range-text) shadow-soft ring-1 ring-brand-100" : "text-ink-soft hover:bg-white/60 hover:text-ink"
-      )}
-    >
-      <span className="w-full truncate text-[13px] font-semibold">{label}</span>
-      {typeof count === "number" && <span className="text-[11px] tabular-nums opacity-75">{count}</span>}
-    </button>
-  );
-}
-
-// One product group: its name on a single line (the full name on hover when
-// it is cut short) and its count as quiet text at the end. The chosen group
-// fills with the range's soft colour and gets a tick.
-function GroupButton({ active, onClick, count, children }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
+      disabled={disabled}
       aria-pressed={active}
       title={typeof children === "string" ? children : undefined}
       className={clsx(
-        "flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-[13px] transition",
-        active ? "bg-(--range-soft) font-semibold text-(--range-text)" : "text-ink-soft hover:bg-mist-50 hover:text-ink"
+        "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition disabled:cursor-not-allowed disabled:opacity-40 lg:py-1.5 lg:text-[13px]",
+        active
+          ? "bg-(--range-soft) font-semibold text-(--range-text) shadow-[inset_3px_0_0_var(--range-accent)]"
+          : "text-ink-soft enabled:hover:bg-mist-50 enabled:hover:text-ink"
       )}
     >
       <span className="min-w-0 flex-1 truncate">{children}</span>
       {active ? (
         <Check size={14} className="shrink-0" aria-hidden="true" />
       ) : (
-        <span className="shrink-0 text-[11px] tabular-nums text-ink-soft/70">{count}</span>
+        typeof count === "number" && <span className="shrink-0 text-[11px] tabular-nums text-ink-soft/70">{count}</span>
       )}
     </button>
   );
