@@ -57,17 +57,20 @@ function BrandTile({ product, tagline }) {
     <Link
       href={`/products/${product.slug}`}
       style={rangeThemeVars(theme)}
-      className="group flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-soft ring-1 ring-brand-100/70 transition duration-300 ease-out hover:-translate-y-1.5 hover:shadow-hover hover:ring-(--range-ring) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-500"
+      className="group flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-soft ring-1 ring-brand-100/70 transition duration-300 ease-out hover:-translate-y-1 hover:shadow-hover hover:ring-(--range-ring) focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-500"
     >
-      {/* The label artwork is a wordmark across the middle of a square with a
-          thin frame line near its edge: cropped to 4:3 and zoomed a little,
-          both trim away empty space and the frame. */}
+      {/* The label artwork fills the tile's image area edge to edge. It is a
+          wordmark across the middle of a square with a thin grey frame line
+          about 1.7% in from each edge: cropped to 4:3 (only white space goes
+          off the top and bottom) and zoomed 5% - which trims 2.4% off each
+          side, past the frame, while the widest wordmark (7% in) keeps a
+          clear margin. On hover it zooms a little further. */}
       <div className="relative aspect-[4/3] overflow-hidden bg-white">
         <SiteImage
           src={product.images?.[0] || FALLBACK_IMG}
           alt={product.name}
           sizes="(min-width: 1024px) 280px, (min-width: 640px) 45vw, 72vw"
-          className="h-full w-full scale-[1.03] object-cover transition-transform duration-500 ease-out group-hover:scale-[1.08]"
+          className="h-full w-full scale-[1.05] object-cover transition-transform duration-500 ease-out group-hover:scale-[1.09]"
         />
       </div>
 
