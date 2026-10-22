@@ -102,7 +102,20 @@ const PARENT_CATEGORIES = [
 // (mirrored), 04 #3311091 (mirrored; a live trout), 05 #26425523,
 // 06 #35877061. Mirrored and cropped so the subject sits right of the
 // headline, clear of the hero's dark left-hand overlay.
+//
+// First of all, a video slide: the Provet loop shipped in public/content/hero
+// (see CREDITS.md there), its first frame as the poster. Order -1 puts it
+// ahead of the photo slides without renumbering them.
 const bannersData = [
+  {
+    title: "Animal Health for Every Farm We Serve",
+    subtitle: "Poultry, dairy, shrimp and fish - formulations built for the way modern livestock and aquaculture farms work.",
+    image: "/content/hero/provet-hero-poster.jpg",
+    video: "/content/hero/provet-hero-1280.mp4",
+    ctaText: "Explore Products",
+    ctaLink: "/products",
+    order: -1,
+  },
   {
     title: "Complete Poultry Health Solutions",
     subtitle: "Antibiotics, vaccines and growth-support formulations trusted by poultry farms nationwide.",
