@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion"
 import clsx from "clsx";
 import Counter from "@/components/motion/Counter";
 import { useMotionEnv } from "@/components/motion/MotionProvider";
+import SiteImage from "@/components/ui/SiteImage";
 import { EASE } from "@/lib/motion";
 
 // Requested at full-bleed width now that the image spans the viewport rather
@@ -19,11 +20,14 @@ const HERO_FALLBACK =
 // whatever is behind it: a vertical wash on narrow screens (where the text
 // sits over the middle of the image) and a left-weighted one from `sm` up
 // (where the text occupies the left half and the photo should stay visible on
-// the right). Arbitrary values rather than `bg-gradient-to-*` so the
-// direction switch is explicit and version-proof.
+// the right). From `sm` the shade covers only the text column and fades out
+// by the middle, so the right half shows the photo at full strength; a soft
+// text shadow on the headline and intro carries legibility where it thins.
+// Arbitrary values rather than `bg-gradient-to-*` so the direction switch is
+// explicit and version-proof.
 const OVERLAY_GRADIENT =
-  "bg-[linear-gradient(to_bottom,rgba(21,18,48,0.88),rgba(21,18,48,0.72)_55%,rgba(21,18,48,0.82))] " +
-  "sm:bg-[linear-gradient(to_right,rgba(21,18,48,0.94),rgba(21,18,48,0.78)_45%,rgba(21,18,48,0.30))]";
+  "bg-[linear-gradient(to_bottom,rgba(21,18,48,0.62),rgba(21,18,48,0.45)_50%,rgba(21,18,48,0.72))] " +
+  "sm:bg-[linear-gradient(to_right,rgba(21,18,48,0.86),rgba(21,18,48,0.6)_32%,rgba(21,18,48,0.15)_58%,transparent_78%)]";
 
 // The badge and figures come from the "hero-stats" block in Admin > Website
 // Content > Homepage (lib/homeContent.js), passed in by the page; these are
@@ -71,6 +75,7 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
   }, [slides.length, reduced]);
 
   const slide = slides[active];
+  const next = slides[(active + 1) % slides.length];
 
   return (
     <section ref={sectionRef} className="relative isolate overflow-hidden bg-brand-900">
@@ -81,12 +86,9 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
         style={flat ? undefined : { y: parallaxY, scale: parallaxScale }}
       >
         <AnimatePresence mode="sync">
-          <motion.img
+          <motion.div
             key={slide.id ?? slide.image}
-            src={slide.image || HERO_FALLBACK}
-            alt=""
             aria-hidden="true"
-            fetchPriority="high"
             // The photo fades in, then keeps easing back from a slight zoom
             // for the whole time the slide holds (a slow "Ken Burns" push),
             // so the hero is never a still image.
@@ -94,12 +96,25 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ opacity: { duration: 1.1, ease: EASE }, scale: { duration: 7.5, ease: "linear" } }}
-            className="absolute inset-0 h-full w-full object-cover"
-          />
+            className="absolute inset-0"
+          >
+            {/* Site-hosted photos (/content/hero/...) go through Next's image
+                optimizer, so each screen gets a WebP at its own width rather
+                than the 2400px master; external URLs stay plain images. */}
+            <HeroPhoto src={slide.image || HERO_FALLBACK} eager />
+          </motion.div>
         </AnimatePresence>
+        {/* The next slide's photo, loaded ahead out of sight - the same size
+            as the visible one, so when it fades in it comes from the cache
+            instead of popping in half-way through the crossfade. */}
+        {slides.length > 1 && (
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-0">
+            <HeroPhoto key={next.id ?? next.image} src={next.image || HERO_FALLBACK} />
+          </div>
+        )}
       </motion.div>
       <div className={clsx("pointer-events-none absolute inset-0 -z-10", OVERLAY_GRADIENT)} />
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,rgba(229,9,127,0.22),transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_left,rgba(229,9,127,0.12),transparent_45%)]" />
 
       {/* A fixed height, not min-height: the banners have titles of 30-47
           characters, so with min-height the whole hero (and the image with
@@ -132,7 +147,7 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
               // Three lines reserved (leading-[1.1] x 3), clamped to the
               // same, so a 30-character title and a 47-character one occupy
               // identical space and an over-long one can't stretch the hero.
-              className="mt-5 line-clamp-3 min-h-[7.425rem] max-w-xl font-display text-4xl font-extrabold leading-[1.1] text-white sm:min-h-[9.9rem] sm:text-5xl"
+              className="mt-5 line-clamp-3 min-h-[7.425rem] max-w-xl font-display text-4xl font-extrabold leading-[1.1] text-white [text-shadow:0_2px_16px_rgba(10,8,30,0.45)] sm:min-h-[9.9rem] sm:text-5xl"
             >
               {slide.title}
             </motion.h1>
@@ -143,7 +158,7 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
             // Two lines reserved (leading-relaxed x 2) for the same reason.
-            className="mt-5 line-clamp-2 min-h-[3.25rem] max-w-lg leading-relaxed text-brand-100"
+            className="mt-5 line-clamp-2 min-h-[3.25rem] max-w-lg leading-relaxed text-white/90 [text-shadow:0_1px_10px_rgba(10,8,30,0.5)]"
           >
             {slide.subtitle}
           </motion.p>
@@ -205,5 +220,21 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
         </div>
       )}
     </section>
+  );
+}
+
+// One banner photo, filling the hero. `sizes="100vw"` because it spans the
+// viewport; the visible one loads first and at high priority (it is the
+// page's largest paint), the one loaded ahead for the next slide at low.
+function HeroPhoto({ src, eager = false }) {
+  return (
+    <SiteImage
+      src={src}
+      alt=""
+      sizes="100vw"
+      eager
+      fetchPriority={eager ? "high" : "low"}
+      className="absolute inset-0 h-full w-full object-cover"
+    />
   );
 }
