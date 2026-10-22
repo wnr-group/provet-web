@@ -97,6 +97,76 @@ export function ImagePicker({ value, onChange, compact = false, label = "Image" 
   );
 }
 
+// Mirrors MAX_VIDEO_MB's default in app/api/admin/upload/route.js.
+const VIDEO_HINT = "MP4 or WebM · up to 30 MB · a short, silent, compressed loop";
+
+// Single-video picker (the homepage hero video): upload a file, or paste a
+// link to one hosted elsewhere.
+export function VideoPicker({ value, onChange, label = "Video" }) {
+  const inputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleFile = async (file) => {
+    if (!file) return;
+    setUploading(true);
+    setError("");
+    try {
+      const { url } = await adminUploadFile(file);
+      onChange(url);
+    } catch (err) {
+      setError(err.message || "Upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  return (
+    <div>
+      {value && (
+        <div className="relative mb-3 aspect-video w-full max-w-xs overflow-hidden rounded-xl border border-brand-100 bg-brand-900">
+          {/* A still frame (#t=) with controls rather than autoplay: the
+              admin can play it, and the page isn't playing two videos. */}
+          <video key={value} src={`${value}#t=1`} muted controls playsInline preload="metadata" className="h-full w-full object-cover" />
+          <button
+            type="button"
+            onClick={() => onChange("")}
+            className="absolute right-1.5 top-1.5 rounded-full bg-black/60 p-1 text-white"
+            aria-label={`Remove ${label.toLowerCase()}`}
+          >
+            <X size={12} />
+          </button>
+        </div>
+      )}
+      <div className="flex flex-wrap items-center gap-3">
+        <button type="button" onClick={() => inputRef.current?.click()} className="btn-outline text-sm" disabled={uploading}>
+          {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+          {uploading ? "Uploading..." : value ? "Replace Video" : "Upload Video"}
+        </button>
+        <span className="text-xs text-ink-soft">{VIDEO_HINT}</span>
+      </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="video/mp4,video/webm"
+        hidden
+        onChange={(e) => {
+          handleFile(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+      />
+      <input
+        className="input mt-3"
+        placeholder="...or paste a link to an MP4 / WebM file"
+        value={value || ""}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={`${label} link`}
+      />
+      {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
 // Multi-image picker (products). The first image is the cover - the one the
 // catalogue card, search results and enquiry list show - so it is labelled,
 // and any other image can be promoted to it or moved along the row.
