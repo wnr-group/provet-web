@@ -94,19 +94,27 @@ const PARENT_CATEGORIES = [
 ];
 
 
+// The homepage banner slides, in this order (as set in Admin > Banners):
+// broiler hens, dairy cows, shrimp, fish, farm animals, poultry. The photo
+// files are numbered by subject, not position. Photos from Pexels (free to use under the
+// Pexels licence), hosted in public/content/hero/ so the homepage serves them
+// through Next's image optimizer: 01 #35877071, 02 #17765377, 03 #17091518
+// (mirrored), 04 #3311091 (mirrored; a live trout), 05 #26425523,
+// 06 #35877061. Mirrored and cropped so the subject sits right of the
+// headline, clear of the hero's dark left-hand overlay.
 const bannersData = [
   {
     title: "Complete Poultry Health Solutions",
     subtitle: "Antibiotics, vaccines and growth-support formulations trusted by poultry farms nationwide.",
-    image: img(PHOTO.broilerFlock, 1920, 800),
+    image: "/content/hero/01-poultry-house.jpg",
     ctaText: "Explore Products",
     ctaLink: "/products",
-    order: 0,
+    order: 5,
   },
   {
     title: "From Day-Old Chicks to Full Flock Health",
     subtitle: "Brooding support, growth formulations and biosecurity products for commercial poultry operations.",
-    image: img(PHOTO.goatHerd, 1920, 800),
+    image: "/content/hero/02-dairy-cows.jpg",
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 1,
@@ -114,7 +122,7 @@ const bannersData = [
   {
     title: "Trusted Veterinary Medicines, Backed by Science",
     subtitle: "Quality formulations for companion animals and livestock, from a partner you can rely on.",
-    image: img(PHOTO.shrimpHarvest, 1920, 800),
+    image: "/content/hero/03-shrimp.jpg",
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 2,
@@ -122,7 +130,7 @@ const bannersData = [
   {
     title: "Comprehensive Anti-parasitic Range",
     subtitle: "Protecting herds and companion animals from ticks, worms and mites, season after season.",
-    image: img(PHOTO.dairyBarn, 1920, 800),
+    image: "/content/hero/04-fish-live.jpg",
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 3,
@@ -130,7 +138,7 @@ const bannersData = [
   {
     title: "Vaccination Programs That Work",
     subtitle: "Biologicals designed for real-world herd health and companion animal immunization schedules.",
-    image: img(PHOTO.sheepFlock, 1920, 800),
+    image: "/content/hero/05-farm-animals.jpg",
     ctaText: "Explore Products",
     ctaLink: "/products",
     order: 4,
@@ -138,10 +146,10 @@ const bannersData = [
   {
     title: "Partnering with Veterinarians Nationwide",
     subtitle: "A growing catalogue built with input from practicing veterinarians and animal health experts.",
-    image: img(PHOTO.fishCagesBoat, 1920, 800),
+    image: "/content/hero/06-broiler-hens.jpg",
     ctaText: "Explore Products",
     ctaLink: "/products",
-    order: 5,
+    order: 0,
   },
 ];
 

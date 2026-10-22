@@ -358,26 +358,58 @@ const BODY_COLUMNS = {
   ],
 };
 
-const NEW_ROW = { lines: { text: "" }, headed: { heading: "", text: "" }, stats: { value: "", label: "" } };
+const NEW_ROW = {
+  lines: { text: "" },
+  headed: { heading: "", text: "" },
+  stats: { value: "", label: "" },
+  brands: { heading: "", text: "" },
+};
+
+// The homepage's Top Brands: the most it shows (as in app/(public)/page.js).
+const MAX_BRANDS = 6;
+
+// Top Brands rows pick a product from the catalogue (saved by slug) rather
+// than typing its name. A row whose product has since been deleted keeps its
+// value, flagged, so opening the dialog doesn't silently change it.
+function brandColumns(products, rows) {
+  const known = new Set(products.map((p) => p.slug));
+  const missing = [...new Set(rows.map((r) => r.heading).filter((h) => h && !known.has(h)))];
+  return [
+    {
+      key: "heading",
+      label: "Product",
+      type: "select",
+      width: "40%",
+      options: [
+        { value: "", label: "Choose a product..." },
+        ...products.map((p) => ({ value: p.slug, label: `${p.name}${p.isActive === false ? " (inactive)" : ""}` })),
+        ...missing.map((slug) => ({ value: slug, label: `${slug} (not in the catalogue)` })),
+      ],
+    },
+    { key: "text", label: "Tagline", type: "textarea", placeholder: "Optional - the product's short description otherwise" },
+  ];
+}
 
 // The rows live in their own state while the dialog is open, and the body
 // text is written from them on every change. Deriving the rows back from the
 // body on each keystroke would trim a space typed at the end of a cell and
 // drop a just-added empty row, since the saved text keeps neither.
-function BodyRows({ format, body, onBody }) {
+function BodyRows({ format, body, onBody, products = [] }) {
   const [rows, setRows] = useState(() => bodyToRows(format, body));
+  const brands = format === "brands";
   return (
     <RowsTable
-      columns={BODY_COLUMNS[format]}
+      columns={brands ? brandColumns(products, rows) : BODY_COLUMNS[format]}
       rows={rows}
       onChange={(next) => {
         setRows(next);
         onBody(rowsToBody(format, next));
       }}
       newRow={NEW_ROW[format]}
-      addLabel={format === "stats" ? "Add figure" : "Add row"}
-      itemLabel={format === "stats" ? "figure" : "row"}
-      emptyText="No rows yet - add the first one."
+      addLabel={format === "stats" ? "Add figure" : brands ? "Add brand" : "Add row"}
+      itemLabel={format === "stats" ? "figure" : brands ? "brand" : "row"}
+      max={brands ? MAX_BRANDS : undefined}
+      emptyText={brands ? "No brands yet - add the first one." : "No rows yet - add the first one."}
     />
   );
 }
@@ -393,7 +425,7 @@ export function bodyFormatFor(section, override) {
 // `hint` / `hideConfig` / `bodyFormat` are per-block overrides from a fixed
 // page (FIXED_PAGE_DEFAULTS in the content admin): what the block does on its
 // page, type settings its layout ignores, and how its body is structured.
-export function SectionFields({ section, categories, editable, hint, hideConfig = false, bodyFormat, onChange }) {
+export function SectionFields({ section, categories, products, editable, hint, hideConfig = false, bodyFormat, onChange }) {
   const definition = SECTION_TYPES[section.type] || SECTION_TYPES.richText;
   const fields = definition.fields;
   const set = (patch) => onChange({ ...section, ...patch });
@@ -428,8 +460,16 @@ export function SectionFields({ section, categories, editable, hint, hideConfig 
       {fields.includes("body") &&
         (format ? (
           <div>
-            <label className="label">{format === "stats" ? "Figures" : format === "lines" ? "Items" : "Rows"}</label>
-            <BodyRows key={`${section.key}-${format}`} format={format} body={section.body} onBody={(body) => set({ body })} />
+            <label className="label">
+              {format === "stats" ? "Figures" : format === "lines" ? "Items" : format === "brands" ? "Brands" : "Rows"}
+            </label>
+            <BodyRows
+              key={`${section.key}-${format}`}
+              format={format}
+              body={section.body}
+              products={products}
+              onBody={(body) => set({ body })}
+            />
           </div>
         ) : (
           <div>

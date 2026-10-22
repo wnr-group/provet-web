@@ -44,7 +44,7 @@ export default function PageBanner({ variant = "asymmetric", eyebrow, crumbs, br
 
 // ---- shared pieces ----------------------------------------------------------
 
-function Crumbs({ trail, tone = "light" }) {
+export function Crumbs({ trail, tone = "light" }) {
   const dark = tone === "dark";
   return (
     <nav aria-label="Breadcrumb">

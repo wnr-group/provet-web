@@ -1,39 +1,45 @@
 import { getCategoryTree, getProducts, getPublicBrochureSettings } from "@/lib/data";
 import { resolveCategorySlug, navCategoryTree } from "@/lib/categoryTree";
-import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
+import { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 import CatalogueCard from "@/components/catalogue/CatalogueCard";
-import CatalogueHero from "@/components/catalogue/CatalogueHero";
-import FeaturedSpotlight from "@/components/catalogue/FeaturedSpotlight";
+import CatalogueHeader from "@/components/catalogue/CatalogueHeader";
+import RangeTabs from "@/components/catalogue/RangeTabs";
+import ProductRow, { ProductListHeader } from "@/components/catalogue/ProductRow";
 import EmptyState from "@/components/ui/EmptyState";
 import ProductsFilters from "@/components/products/ProductsFilters";
 import ProductsPagination from "@/components/products/ProductsPagination";
+import ProductsToolbar from "@/components/products/ProductsToolbar";
 import BrochureDownload from "@/components/products/BrochureDownload";
 import { brochureAvailable } from "@/lib/brochureSettings";
 import { CatalogueNavigationProvider, PendingResults } from "@/components/catalogue/CatalogueNavigation";
-import CategoryBackdrop from "@/components/catalogue/CategoryBackdrop";
 import { categoryTheme, rangeThemeVars } from "@/lib/categoryTheme";
 
 const LIMIT = 12;
+const SORTS = ["newest", "name"];
 
 export const metadata = {
   title: "Products",
   description: "Browse Provet's full catalogue by category and subcategory, or search for a specific product.",
 };
 
+// The catalogue, laid out the way the animal-health companies' catalogues
+// are: a short header, the ranges as tiles to pick the sector first, then the
+// product groups and search on the left and the products on the right - as a
+// grid of cards or a scannable list (`?view=list`).
+//
+// One page of products (LIMIT) is fetched per request, plus the cached
+// category tree and the brochure settings.
 export default async function Products({ searchParams }) {
   const params = await searchParams;
   const category = params.category || "";
   const search = params.search || "";
-  const page = Number(params.page || 1);
+  const page = Math.max(1, Number(params.page) || 1);
+  const sort = SORTS.includes(params.sort) ? params.sort : "newest";
+  const view = params.view === "list" ? "list" : "grid";
 
-  // The spotlight opens browsing (the catalogue or a category); searching and
-  // paging skip it.
-  const showSpotlight = page === 1 && !search;
-
-  const [tree, result, featured, brochure] = await Promise.all([
+  const [tree, result, brochure] = await Promise.all([
     getCategoryTree(),
-    getProducts({ category, search, page, limit: LIMIT, sort: "newest", prefixFirst: true }),
-    showSpotlight ? getProducts({ category, featured: true, limit: 8 }) : null,
+    getProducts({ category, search, page, limit: LIMIT, sort, prefixFirst: true }),
     getPublicBrochureSettings(),
   ]);
 
@@ -44,14 +50,23 @@ export default async function Products({ searchParams }) {
   const activeCategory = active?.category || null;
   const activeSubcategory = active?.subcategory || null;
   const activeNode = activeSubcategory || activeCategory;
-  const spotlight = featured?.items || [];
-  // A search spans the whole catalogue, so it keeps the neutral backdrop.
-  const theme = categoryTheme(search ? null : activeCategory);
+  const theme = categoryTheme(activeCategory);
+
+  // The filters in force, as chips above the products. Removing a product
+  // group steps back up to its range; removing the range shows every range.
+  const chips = [
+    ...(activeCategory ? [{ key: "range", label: activeCategory.name, clear: { category: "" } }] : []),
+    ...(activeSubcategory
+      ? [{ key: "group", label: activeSubcategory.name, clear: { category: activeCategory?.slug || "" } }]
+      : []),
+    ...(search ? [{ key: "search", label: `Search: “${search}”`, clear: { search: "" } }] : []),
+  ];
 
   return (
-    <div className="range-theme" style={rangeThemeVars(theme)}>
-      <CatalogueHero
-        themeKey={theme.key}
+    <div className="range-theme bg-white" style={rangeThemeVars(theme)}>
+      <CatalogueHeader
+        tint={theme.base}
+        eyebrow={activeCategory ? theme.label || activeCategory.name : "Product catalogue"}
         title={activeNode ? activeNode.name : "Our Products"}
         description={
           activeNode?.description ||
@@ -59,8 +74,12 @@ export default async function Products({ searchParams }) {
           "Explore Provet's complete catalogue across two specialist ranges: Avinova for poultry health and Blunova for aquaculture. From anticoccidials, growth promoters and probiotics to mineral mixtures, feed additives and water-quality solutions, every formulation is research-based and backed by our technical services and support."
         }
         count={result.total}
-        images={Object.fromEntries(tree.map((c) => [c.slug, c.image]))}
-        products={spotlight.length ? spotlight : result.items}
+        // The range's own photo from the admin; for the whole catalogue, the
+        // ranges' photos (the header shows the first two that are set).
+        images={(activeCategory ? [activeCategory] : tree).map((r) => ({
+          src: r.image,
+          alt: r.name,
+        }))}
         crumbs={[
           { label: "Home", href: "/" },
           { label: "Products", href: activeCategory ? "/products" : undefined },
@@ -79,92 +98,84 @@ export default async function Products({ searchParams }) {
             fileUrl={brochure.requireDetails ? null : brochure.fileUrl}
           />
         )}
-      </CatalogueHero>
+      </CatalogueHeader>
 
-      {/* Everything below the banner sits on the chosen range's backdrop. */}
-      <div className="relative isolate">
-        <CategoryBackdrop themeKey={theme.key} />
+      <RangeTabs ranges={tree} activeId={activeCategory?.id} />
 
-        {/* Browsing opens with the spotlight; searching and paging skip it. */}
-        {spotlight.length > 0 && (
-          <div className="container-page pt-8 sm:pt-10">
-            <Reveal distance={20}>
-              <FeaturedSpotlight products={spotlight} />
-            </Reveal>
-          </div>
-        )}
-
-        <CatalogueNavigationProvider>
-        <div className="container-page grid gap-8 py-10 lg:grid-cols-[260px_1fr] sm:py-14">
+      <CatalogueNavigationProvider>
+        <div className="container-page grid gap-5 pb-16 pt-6 sm:pb-20 sm:pt-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
           <ProductsFilters
             tree={navCategoryTree(tree)}
             activeCategoryId={activeCategory?.id}
             activeSubcategoryId={activeSubcategory?.id}
             category={category}
             search={search}
+            total={result.total}
           />
 
           <PendingResults>
+            <ProductsToolbar
+              shown={result.items.length}
+              total={result.total}
+              page={page}
+              limit={LIMIT}
+              sort={sort}
+              view={view}
+              chips={chips}
+            />
             {result.items.length ? (
               <>
-                {/* A frosted strip under the counts: the backdrop's ribbon lines run
-                    right through this band and made the text hard to read. */}
-                <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-white/85 px-4 py-2.5 shadow-soft ring-1 ring-brand-100/70 backdrop-blur-sm">
-                  <p className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-ink-soft">
-                    {theme.label && (
-                      <span
-                        className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em]"
-                        style={{ backgroundColor: "var(--range-soft)", color: "var(--range-accent)" }}
-                      >
-                        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" />
-                        {activeCategory.name} · {theme.label}
-                      </span>
-                    )}
-                    <span>
-                      Showing <span className="font-semibold text-ink">{result.items.length}</span> of{" "}
-                      <span className="font-semibold text-ink">{result.total}</span> products
-                      {search && (
-                        <>
-                          {" "}for <span className="font-semibold text-brand-700">&ldquo;{search}&rdquo;</span>
-                        </>
-                      )}
-                    </span>
-                  </p>
-                  {totalPages > 1 && (
-                    <span className="text-xs font-medium text-ink-soft">
-                      Page {page} of {totalPages}
-                    </span>
-                  )}
-                </div>
-                {/* Keyed on the query, so the grid re-deals whenever the filter
-                    or page changes - a visible answer to the click rather than
-                    cards silently swapping in place. mode="mount" because the
-                    grid is above the fold.
-
-                    No scroll tilt here: leaning a grid this tall back in 3D
-                    pushed its top edge far below the "Showing ..." line,
-                    leaving an empty band until it was scrolled upright. */}
-                <RevealGroup
-                  key={`${category}|${search}|${page}`}
-                  mode="mount"
-                  stagger={0.05}
-                  className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3"
-                >
-                  {result.items.map((p) => (
-                    <RevealItem key={p.id} className="h-full" distance={18} duration={0.45}>
-                      <CatalogueCard product={p} />
-                    </RevealItem>
-                  ))}
-                </RevealGroup>
+                {/* Keyed on the query, so the products fade in afresh whenever
+                    the filter, search, sort, view or page changes - a visible
+                    answer to the click. mode="mount" because they are above
+                    the fold. */}
+                {view === "list" ? (
+                  <div className="overflow-hidden rounded-xl border border-brand-100">
+                    <ProductListHeader />
+                    <RevealGroup
+                      key={`${category}|${search}|${sort}|${page}|list`}
+                      mode="mount"
+                      stagger={0.025}
+                      className="divide-y divide-brand-100"
+                    >
+                      {result.items.map((p) => (
+                        <RevealItem key={p.id} distance={8} duration={0.3}>
+                          <ProductRow product={p} />
+                        </RevealItem>
+                      ))}
+                    </RevealGroup>
+                  </div>
+                ) : (
+                  <RevealGroup
+                    key={`${category}|${search}|${sort}|${page}|grid`}
+                    mode="mount"
+                    stagger={0.03}
+                    className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:gap-5"
+                  >
+                    {result.items.map((p) => (
+                      <RevealItem key={p.id} className="h-full" distance={10} duration={0.35}>
+                        <CatalogueCard product={p} />
+                      </RevealItem>
+                    ))}
+                  </RevealGroup>
+                )}
                 <ProductsPagination page={page} totalPages={totalPages} />
               </>
             ) : (
-              <EmptyState title="No products found" description="Try adjusting your search or browsing a different category." />
+              // A search with no matches, or a range or product group just
+              // added in the admin that has no products yet.
+              <EmptyState
+                title={search || !activeNode ? "No products found" : `No products in ${activeNode.name} yet`}
+                description={
+                  search || !activeNode
+                    ? "Try a different search term, or choose another range or product group."
+                    : "Products added to it in the admin will appear here. Meanwhile, browse the other ranges above."
+                }
+              />
             )}
           </PendingResults>
         </div>
-        </CatalogueNavigationProvider>
-      </div>
+      </CatalogueNavigationProvider>
     </div>
   );
 }
