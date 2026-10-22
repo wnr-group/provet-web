@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Pause, Play } from "lucide-react";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import clsx from "clsx";
 import Counter from "@/components/motion/Counter";
@@ -38,10 +38,36 @@ const STATS = [
   { value: "1,200+", label: "Clinics Served" },
 ];
 
-// The browser's data-saver flag (Chrome/Android). Read once; it rarely
-// changes while the page is open.
+// How long a photo slide holds. A video slide holds until its video ends, but
+// no longer than VIDEO_MAX_HOLD, so a long upload can't take the banner over.
+const PHOTO_HOLD = 6000;
+const VIDEO_MAX_HOLD = 30000;
+// A video that hasn't started (or has stalled) for this long - a slow
+// connection, a blocked autoplay - gives up and its slide carries on as a
+// photo slide on its poster, so the slider never hangs on a black frame.
+const VIDEO_START_TIMEOUT = 5000;
+
+// A connection to spare: the data-saver flag (Chrome/Android) or a 2G/3G
+// link. Read once; it rarely changes while the page is open.
 const subscribeNever = () => () => {};
-const readSaveData = () => Boolean(navigator.connection?.saveData);
+const readLiteConnection = () => {
+  const c = navigator.connection;
+  return Boolean(c?.saveData) || /2g|3g/.test(c?.effectiveType || "");
+};
+
+// The video waits for the page's own load to finish, so the poster (the
+// largest paint) and the rest of the page never queue behind a few MB of it.
+const subscribeLoad = (onChange) => {
+  window.addEventListener("load", onChange);
+  return () => window.removeEventListener("load", onChange);
+};
+const readLoaded = () => document.readyState === "complete";
+
+const subscribeVisibility = (onChange) => {
+  document.addEventListener("visibilitychange", onChange);
+  return () => document.removeEventListener("visibilitychange", onChange);
+};
+const readVisible = () => document.visibilityState === "visible";
 
 export default function Hero({ banners = [], badge = "Trusted by veterinarians nationwide", stats = STATS }) {
   const slides = banners.length
@@ -73,57 +99,143 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
   const flat = isMobile || reduced;
 
   const slide = slides[active];
-  const slideKey = slide.id ?? slide.image;
-
-  // A slide is a photo or a video (Admin > Banners). A video slide plays its
-  // video, muted, behind the copy - unless the visitor asked for reduced
-  // motion or to save data, or the video fails to load: then its image (the
-  // poster) shows, exactly like a photo slide.
-  const saveData = useSyncExternalStore(subscribeNever, readSaveData, () => false);
-  const [failed, setFailed] = useState(() => new Set());
-  const playsVideo = Boolean(slide.video) && !reduced && !saveData && !failed.has(slide.video);
-  // Slides that share one video (every slide set to the same Provet video)
-  // play it as one continuous background: it keeps running, looping, while
-  // the headline, text and button change over it on the usual timer.
-  const continues = playsVideo && slides.length > 1 && slides[(active + 1) % slides.length].video === slide.video;
-  const videoRef = useRef(null);
-  const [videoPaused, setVideoPaused] = useState(false);
-
-  // Rotation: a photo slide holds for six seconds; a video slide holds until
-  // its video ends - unless the next slide shares the video, when the words
-  // change on the six-second timer over the still-playing video (a lone
-  // slide's video simply loops). Choosing a slide from the dots gives it a
-  // full hold of its own.
-  useEffect(() => {
-    if (slides.length <= 1) return;
-    if (reduced) return; // an unbidden rotating banner is what the preference is for
-    if (playsVideo && !continues) return;
-    const t = setTimeout(() => setActive((a) => (a + 1) % slides.length), 6000);
-    return () => clearTimeout(t);
-  }, [active, slides.length, reduced, playsVideo, continues]);
-
   const next = slides[(active + 1) % slides.length];
 
-  // React sets `muted` as a property, not an attribute, so the server HTML's
-  // <video> isn't muted when the browser decides on autoplay - and browsers
-  // only autoplay muted video. Mute it and start it once it's in the page.
+  // Nothing plays or counts down while the hero is scrolled away or the tab
+  // is in the background: the visitor comes back to the slide they left.
+  const [inView, setInView] = useState(true);
+  useEffect(() => {
+    const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting));
+    io.observe(sectionRef.current);
+    return () => io.disconnect();
+  }, []);
+  const pageVisible = useSyncExternalStore(subscribeVisibility, readVisible, () => true);
+  const onScreen = inView && pageVisible;
+  // The visitor's pause button: holds the slide and its video.
+  const [paused, setPaused] = useState(false);
+
+  // A slide is a photo or a video (Admin > Banners). A video slide shows its
+  // image (the poster) at once and fades its video in over it once playing -
+  // unless the visitor asked for reduced motion or to save data, or the video
+  // fails, is blocked or is too slow to start: then the poster stays and the
+  // slide behaves exactly like a photo slide.
+  const lite = useSyncExternalStore(subscribeNever, readLiteConnection, () => false);
+  const loaded = useSyncExternalStore(subscribeLoad, readLoaded, () => false);
+  const [failed, setFailed] = useState(() => new Set());
+  const fail = useCallback((src) => setFailed((f) => (f.has(src) ? f : new Set(f).add(src))), []);
+  const wantsVideo = Boolean(slide.video) && !reduced && !lite && !failed.has(slide.video);
+  const mountsVideo = wantsVideo && loaded;
+  // The video now showing (it fades in on its first frame) and whether it is
+  // waiting on the network mid-play.
+  const [playingSrc, setPlayingSrc] = useState(null);
+  const [stalled, setStalled] = useState(false);
+  const videoPlaying = mountsVideo && playingSrc === slide.video;
+
+  // Slides that share one video (every slide set to the same Provet video)
+  // play it as one continuous background: it keeps running, looping, while
+  // the headline, text and button change over it on the photo timer.
+  const continues = wantsVideo && slides.length > 1 && next.video === slide.video;
+  // Who moves the slider on: the video's own end, or the photo clock.
+  const videoTimed = wantsVideo && !continues;
+  const rotates = slides.length > 1 && !reduced && !paused && onScreen;
+
+  // Every slide change goes through here, so the clock, the progress bar and
+  // the video handlers below always agree on which slide is current.
+  const activeRef = useRef(0);
+  const elapsed = useRef(0);
+  const barRef = useRef(null);
+  const paintBar = (p) => {
+    if (barRef.current) barRef.current.style.transform = `scaleX(${p})`;
+  };
+  const goTo = useCallback((i) => {
+    activeRef.current = i;
+    elapsed.current = 0;
+    setActive(i);
+  }, []);
+  const goNext = useCallback(() => goTo((activeRef.current + 1) % slides.length), [goTo, slides.length]);
+
+  // The photo clock: six seconds of time actually on screen and unpaused (it
+  // stops and resumes rather than restarting), drawn into the active dot.
+  useEffect(() => {
+    if (!rotates || videoTimed) return;
+    let frame;
+    let last = performance.now();
+    const tick = (now) => {
+      elapsed.current += now - last;
+      last = now;
+      const p = Math.min(elapsed.current / PHOTO_HOLD, 1);
+      if (barRef.current) barRef.current.style.transform = `scaleX(${p})`;
+      if (p >= 1) return goNext();
+      frame = requestAnimationFrame(tick);
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [active, rotates, videoTimed, goNext]);
+
+  // The watchdog: a video that hasn't shown a frame, or has stalled, within
+  // VIDEO_START_TIMEOUT of the slide being on screen gives way to its poster.
+  useEffect(() => {
+    if (!wantsVideo || paused || !onScreen || (videoPlaying && !stalled)) return;
+    const src = slide.video;
+    const t = setTimeout(() => fail(src), VIDEO_START_TIMEOUT);
+    return () => clearTimeout(t);
+  }, [wantsVideo, paused, onScreen, videoPlaying, stalled, slide.video, fail]);
+
+  // The current slide's video element. A callback ref with a cleanup, not a
+  // plain ref: a slide fading out still holds its own <video> for a moment,
+  // and its unmount mustn't clear the ref the incoming slide just set.
+  const videoRef = useRef(null);
+  const attachVideo = useCallback((el) => {
+    videoRef.current = el;
+    return () => {
+      if (videoRef.current === el) videoRef.current = null;
+    };
+  }, []);
+
+  // React sets `muted` as a property, not an attribute, so the <video> isn't
+  // muted when the browser decides on autoplay - and browsers only autoplay
+  // muted video. Mute it, then play or pause it to match the hero's state. A
+  // refused play() (autoplay blocked, low-power mode) falls back to the
+  // poster; an AbortError is just a pause() overtaking it.
   useEffect(() => {
     const el = videoRef.current;
     if (!el) return;
     el.muted = true;
-    el.play().catch(() => setVideoPaused(true));
-  }, [playsVideo, slide.video]);
+    if (paused || !onScreen) {
+      el.pause();
+      return;
+    }
+    const src = slide.video;
+    el.play().catch((err) => err?.name !== "AbortError" && fail(src));
+  }, [mountsVideo, slide.video, paused, onScreen, fail]);
 
-  const nextSlide = () => setActive((a) => (a + 1) % slides.length);
-  const toggleVideo = () => {
-    const el = videoRef.current;
-    if (!el) return;
-    if (el.paused) el.play().catch(() => {});
-    else el.pause();
+  // Handlers for the current slide's video only: a fading-out slide's video
+  // (whose handlers still carry its old index) must not move the slider on.
+  const own = active;
+  const isCurrent = () => activeRef.current === own;
+  const onVideoTime = (e) => {
+    if (!isCurrent() || !videoTimed) return;
+    const el = e.currentTarget;
+    const hold = Math.min(el.duration || Infinity, VIDEO_MAX_HOLD / 1000);
+    if (Number.isFinite(hold) && hold > 0) paintBar(Math.min(el.currentTime / hold, 1));
+    if (slides.length > 1 && el.currentTime * 1000 >= VIDEO_MAX_HOLD) goNext();
   };
 
+  // The background layer is keyed by the slide - or by the video for a video
+  // slide, so slides sharing one keep the same element and it plays on
+  // without restarting. A video that fails mid-slide changes the key, and
+  // its layer crossfades to the poster-only one.
+  const layerKey = wantsVideo ? `video:${slide.video}` : slide.id ?? slide.image;
+  const loopsVideo = slides.length <= 1 || continues;
+  const showsToggle = !reduced && (slides.length > 1 || mountsVideo);
+
   return (
-    <section ref={sectionRef} className="relative isolate overflow-hidden bg-brand-900">
+    <section
+      ref={sectionRef}
+      aria-roledescription="carousel"
+      aria-label="Highlights"
+      className="relative isolate overflow-hidden bg-brand-900"
+    >
       {/* Full-bleed banner: the image covers the whole section rather than
           sitting in a card, so it spans the viewport edge to edge. */}
       <motion.div
@@ -131,40 +243,14 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
         style={flat ? undefined : { y: parallaxY, scale: parallaxScale }}
       >
         <AnimatePresence mode="sync">
-          {playsVideo ? (
-            <motion.video
-              // Keyed by the video, not the slide: slides sharing it keep
-              // the same element, so it plays on without restarting.
-              key={`video-${slide.video}`}
-              ref={videoRef}
-              src={slide.video}
-              poster={slide.image || HERO_FALLBACK}
-              autoPlay
-              muted
-              playsInline
-              disablePictureInPicture
-              loop={slides.length <= 1 || continues}
-              preload="auto"
-              aria-hidden="true"
-              tabIndex={-1}
-              onEnded={nextSlide}
-              onPlay={() => setVideoPaused(false)}
-              onPause={(e) => !e.currentTarget.ended && setVideoPaused(true)}
-              onError={() => setFailed((f) => new Set(f).add(slide.video))}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.1, ease: EASE }}
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          ) : (
           <motion.div
-            key={slide.id ?? slide.image}
+            key={layerKey}
             aria-hidden="true"
             // The photo fades in, then keeps easing back from a slight zoom
             // for the whole time the slide holds (a slow "Ken Burns" push),
-            // so the hero is never a still image.
-            initial={{ opacity: 0, scale: 1.12 }}
+            // so the hero is never a still image. A video slide brings its
+            // own movement, so it only fades.
+            initial={{ opacity: 0, scale: wantsVideo ? 1 : 1.12 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ opacity: { duration: 1.1, ease: EASE }, scale: { duration: 7.5, ease: "linear" } }}
@@ -172,14 +258,43 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
           >
             {/* Site-hosted photos (/content/hero/...) go through Next's image
                 optimizer, so each screen gets a WebP at its own width rather
-                than the 2400px master; external URLs stay plain images. */}
+                than the 2400px master; external URLs stay plain images. On a
+                video slide this is the poster, under the video. */}
             <HeroPhoto src={slide.image || HERO_FALLBACK} eager />
+            {mountsVideo && (
+              <video
+                ref={attachVideo}
+                src={slide.video}
+                muted
+                playsInline
+                disablePictureInPicture
+                loop={loopsVideo}
+                preload="auto"
+                tabIndex={-1}
+                onLoadStart={() => isCurrent() && setPlayingSrc(null)}
+                onPlaying={(e) => {
+                  if (!isCurrent()) return;
+                  setPlayingSrc(e.currentTarget.getAttribute("src"));
+                  setStalled(false);
+                }}
+                onWaiting={() => isCurrent() && setStalled(true)}
+                onTimeUpdate={onVideoTime}
+                onEnded={() => isCurrent() && slides.length > 1 && goNext()}
+                onError={(e) => fail(e.currentTarget.getAttribute("src"))}
+                // Hidden until its first frame plays, so the poster never
+                // flashes black while the video buffers.
+                className={clsx(
+                  "absolute inset-0 h-full w-full object-cover transition-opacity duration-700",
+                  videoPlaying ? "opacity-100" : "opacity-0"
+                )}
+              />
+            )}
           </motion.div>
-          )}
         </AnimatePresence>
-        {/* The next slide's photo, loaded ahead out of sight - the same size
-            as the visible one, so when it fades in it comes from the cache
-            instead of popping in half-way through the crossfade. */}
+        {/* The next slide's photo (a video slide's poster), loaded ahead out
+            of sight - the same size as the visible one, so when it fades in
+            it comes from the cache instead of popping in half-way through
+            the crossfade. */}
         {slides.length > 1 && (
           <div aria-hidden="true" className="pointer-events-none absolute inset-0 opacity-0">
             <HeroPhoto key={next.id ?? next.image} src={next.image || HERO_FALLBACK} />
@@ -273,41 +388,56 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
 
       </div>
 
-      {/* Moving content that plays on its own needs a way to stop it
-          (WCAG 2.2.2), so a video slide has one quiet pause button - the
-          video itself shows no controls. Pausing also holds the slide, since
-          the next one follows the video's end. */}
-      {playsVideo && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-16 z-10 sm:bottom-20">
-          <div className="container-page flex justify-end">
-            <button
-              type="button"
-              onClick={toggleVideo}
-              aria-label={videoPaused ? "Play background video" : "Pause background video"}
-              className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white/80 backdrop-blur-sm transition hover:bg-white/20 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-400"
-            >
-              {videoPaused ? <Play size={14} /> : <Pause size={14} />}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {slides.length > 1 && (
+      {(showsToggle || slides.length > 1) && (
         // Raised clear of the feature strip, which overlaps the hero's foot.
+        // One row of controls for photos and videos alike: a pause button -
+        // anything that moves on its own needs a way to stop it (WCAG
+        // 2.2.2), and it holds both the rotation and the video - then a dot
+        // per slide, the current one filling as its photo time or its video
+        // runs.
         <div className="absolute inset-x-0 bottom-16 z-10 sm:bottom-20">
-          <div className="container-page flex gap-2">
-            {slides.map((s, i) => (
+          <div className="container-page flex items-center gap-3">
+            {showsToggle && (
               <button
-                key={s.id}
-                onClick={() => setActive(i)}
-                aria-label={`Show slide ${i + 1}`}
-                aria-current={i === active}
-                className={clsx(
-                  "h-2 rounded-full transition-all",
-                  i === active ? "w-6 bg-accent-400" : "w-2 bg-white/40 hover:bg-white/60"
-                )}
-              />
-            ))}
+                type="button"
+                onClick={() => setPaused((p) => !p)}
+                aria-label={
+                  slides.length > 1
+                    ? paused ? "Play slideshow" : "Pause slideshow"
+                    : paused ? "Play background video" : "Pause background video"
+                }
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/10 text-white/80 backdrop-blur-sm transition hover:bg-white/20 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-400"
+              >
+                {paused ? <Play size={14} /> : <Pause size={14} />}
+              </button>
+            )}
+            {slides.length > 1 && (
+              <div role="group" aria-label="Choose a slide" className="flex items-center gap-2">
+                {slides.map((s, i) => (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() => goTo(i)}
+                    aria-label={`Show slide ${i + 1}${s.video ? " (video)" : ""}`}
+                    aria-current={i === active ? "true" : undefined}
+                    className={clsx(
+                      "relative h-2 overflow-hidden rounded-full transition-all",
+                      i === active ? "w-8 bg-white/30" : "w-2 bg-white/40 hover:bg-white/60"
+                    )}
+                  >
+                    {i === active && (
+                      // Written to directly by the clock and the video, not
+                      // through state - a re-render a frame would be waste.
+                      <span
+                        ref={barRef}
+                        className="absolute inset-0 origin-left rounded-full bg-accent-400"
+                        style={{ transform: reduced ? "scaleX(1)" : "scaleX(0)" }}
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -163,7 +163,7 @@ export default function BannersAdmin() {
           step="1"
           icon={Layers}
           title="Slides take turns"
-          text="A photo slide shows for 6 seconds; a video slide until its video ends."
+          text="A photo slide shows for 6 seconds; a video slide until its video ends (30 seconds at most)."
         />
         <HowItWorks
           step="2"
