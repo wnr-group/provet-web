@@ -74,6 +74,7 @@ export default async function Products({ searchParams }) {
           "Explore Provet's complete catalogue across two specialist ranges: Avinova for poultry health and Blunova for aquaculture. From anticoccidials, growth promoters and probiotics to mineral mixtures, feed additives and water-quality solutions, every formulation is research-based and backed by our technical services and support."
         }
         count={result.total}
+        logo={activeCategory ? { logo: theme.logo, alt: activeCategory.name, asTitle: !activeSubcategory } : null}
         // The range's own photo from the admin; for the whole catalogue, the
         // ranges' photos (the header shows the first two that are set).
         images={(activeCategory ? [activeCategory] : tree).map((r) => ({

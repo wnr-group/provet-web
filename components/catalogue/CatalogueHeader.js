@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { Crumbs } from "@/components/ui/PageBanner";
 import Reveal from "@/components/motion/Reveal";
 import SiteImage from "@/components/ui/SiteImage";
+import RangeLogo from "@/components/ui/RangeLogo";
 
 // The catalogue's page header: a title and a line of context beside the
 // range's own photography, as the animal-health catalogues it is modelled on
@@ -16,8 +17,14 @@ import SiteImage from "@/components/ui/SiteImage";
 //
 // `images` is a list of { src, alt }: one for a range, up to two for the
 // catalogue. None leaves the copy full width.
-export default function CatalogueHeader({ title, description, eyebrow, crumbs, count, tint, images = [], children }) {
+//
+// `logo` is the range's wordmark (its theme's `logo`) with `alt`, the range's
+// name. On the range's own page (`logo.asTitle`) the wordmark is the title -
+// the name set in type beneath it would only repeat it; on a product group's
+// page it sits above the eyebrow, naming the range the group belongs to.
+export default function CatalogueHeader({ title, description, eyebrow, crumbs, count, tint, images = [], logo, children }) {
   const photos = images.filter((i) => i?.src).slice(0, 2);
+  const logoTitle = logo?.logo && logo.asTitle;
 
   return (
     <section className="relative overflow-hidden" style={{ backgroundColor: tint }}>
@@ -34,11 +41,26 @@ export default function CatalogueHeader({ title, description, eyebrow, crumbs, c
       >
         <Reveal mode="mount" distance={10}>
           <Crumbs trail={crumbs} />
+          {logo?.logo && !logoTitle && (
+            <RangeLogo logo={logo.logo} alt={logo.alt} eager sizes="162px" className="mt-6 h-[30px]" />
+          )}
           {eyebrow && (
-            <p className="mt-6 text-xs font-semibold uppercase tracking-[0.14em] text-(--range-accent)">{eyebrow}</p>
+            <p className={clsx("text-xs font-semibold uppercase tracking-[0.14em] text-(--range-accent)", logo?.logo && !logoTitle ? "mt-4" : "mt-6")}>
+              {eyebrow}
+            </p>
           )}
           <h1 className="mt-1.5 font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl lg:text-[2.75rem] lg:leading-[1.1]">
-            {title}
+            {logoTitle ? (
+              <RangeLogo
+                logo={logo.logo}
+                alt={title}
+                eager
+                sizes="(min-width: 640px) 290px, 216px"
+                className="mt-3 h-10 sm:h-[54px]"
+              />
+            ) : (
+              title
+            )}
           </h1>
           <span aria-hidden="true" className="mt-4 block h-1 w-12 rounded-full bg-(--range-accent)" />
           {description && (

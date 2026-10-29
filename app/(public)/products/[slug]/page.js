@@ -11,6 +11,7 @@ import ProductTabs from "@/components/catalogue/ProductTabs";
 import ProductRail from "@/components/catalogue/ProductRail";
 import { ScrollTilt, Tilt } from "@/components/motion/effects";
 import { categoryTheme } from "@/lib/categoryTheme";
+import RangeLogo from "@/components/ui/RangeLogo";
 import { Enter } from "@/components/sections/entrances";
 
 const FALLBACK_IMG =
@@ -59,8 +60,10 @@ export default async function ProductDetail({ params }) {
     limit: 8,
   });
 
-  // The product's range colour (amber for Avinova, ocean for Blunova).
-  const tone = categoryTheme(product.category).ui.accent;
+  // The product's range colour (amber for Avinova, ocean for Blunova) and
+  // its wordmark.
+  const rangeTheme = categoryTheme(product.category);
+  const tone = rangeTheme.ui.accent;
 
   return (
     <div className="bg-mist-50/40">
@@ -112,7 +115,17 @@ export default async function ProductDetail({ params }) {
             </nav>
 
             <div className="mt-6 flex flex-wrap items-center gap-2">
-              {product.category?.name && (
+              {/* The range: its logo where it has one (it links to the range,
+                  named by the logo's alt text), otherwise its name. */}
+              {product.category?.name && rangeTheme.logo && (
+                <Link
+                  href={`/products?category=${product.category.slug}`}
+                  className="rounded-full bg-white px-3 py-1.5 ring-1 ring-brand-100 transition hover:ring-brand-300"
+                >
+                  <RangeLogo logo={rangeTheme.logo} alt={product.category.name} eager sizes="108px" className="h-5" />
+                </Link>
+              )}
+              {product.category?.name && !rangeTheme.logo && (
                 <Link
                   href={`/products?category=${product.category.slug}`}
                   className="rounded-full bg-white px-3 py-1 text-xs font-semibold ring-1 ring-brand-100 transition hover:ring-brand-300"
