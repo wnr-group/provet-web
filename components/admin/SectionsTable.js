@@ -330,7 +330,7 @@ function summarize(section, format) {
       .slice(0, 3)
       .map((r) => (format === "stats" ? [r.value, r.label].filter(Boolean).join(" ") : r.heading || r.text))
       .join(", ");
-    const noun = format === "stats" ? "figure" : format === "lines" ? "item" : format === "brands" ? "brand" : "row";
+    const noun = format === "stats" ? "figure" : format === "lines" ? "item" : format === "brands" ? "brand" : format === "regions" ? "region" : format === "distributors" ? "country" : "row";
     return `${plural(rows.length, noun)}: ${first}${rows.length > 3 ? ", ..." : ""}`;
   }
 

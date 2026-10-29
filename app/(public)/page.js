@@ -10,7 +10,6 @@ import TopBrands from "@/components/home/TopBrands";
 import Stats from "@/components/home/Stats";
 import Testimonials from "@/components/home/Testimonials";
 import CtaBanner from "@/components/home/CtaBanner";
-import ScrollProgress from "@/components/motion/ScrollProgress";
 
 // Without this, Next.js prerenders this page once at build time (no
 // searchParams/cookies/etc. here to trigger dynamic rendering automatically)
@@ -85,7 +84,6 @@ export default async function Home() {
 
   return (
     <>
-      <ScrollProgress />
       <Hero
         banners={banners}
         badge={heroStats ? heroStats.title || null : null}

@@ -352,6 +352,17 @@ const BODY_COLUMNS = {
     { key: "heading", label: "Heading", placeholder: "Heading", width: "32%" },
     { key: "text", label: "Text", type: "textarea", placeholder: "Text" },
   ],
+  distributors: [
+    { key: "heading", label: "Country", placeholder: "India", width: "14%" },
+    { key: "name", label: "Name", placeholder: "Distributor name", width: "20%" },
+    { key: "address", label: "Address", type: "textarea", placeholder: "Street, city, postcode" },
+    { key: "phone", label: "Phone", placeholder: "+00 000 000 0000", width: "15%" },
+    { key: "email", label: "Email", placeholder: "name@example.com", width: "18%" },
+  ],
+  regions: [
+    { key: "heading", label: "Region", placeholder: "South Asia", width: "32%" },
+    { key: "text", label: "Countries", type: "textarea", placeholder: "India, Sri Lanka, Nepal - separated by commas" },
+  ],
   stats: [
     { key: "value", label: "Figure", placeholder: "250+", width: "8rem" },
     { key: "label", label: "Caption", placeholder: "Products - or a note, with the figure left empty" },
@@ -363,6 +374,8 @@ const NEW_ROW = {
   headed: { heading: "", text: "" },
   stats: { value: "", label: "" },
   brands: { heading: "", text: "" },
+  regions: { heading: "", text: "" },
+  distributors: { heading: "", name: "", address: "", phone: "", email: "" },
 };
 
 // The homepage's Top Brands: the most it shows (as in app/(public)/page.js).
@@ -406,8 +419,8 @@ function BodyRows({ format, body, onBody, products = [] }) {
         onBody(rowsToBody(format, next));
       }}
       newRow={NEW_ROW[format]}
-      addLabel={format === "stats" ? "Add figure" : brands ? "Add brand" : "Add row"}
-      itemLabel={format === "stats" ? "figure" : brands ? "brand" : "row"}
+      addLabel={format === "stats" ? "Add figure" : brands ? "Add brand" : format === "regions" ? "Add region" : format === "distributors" ? "Add country" : "Add row"}
+      itemLabel={format === "stats" ? "figure" : brands ? "brand" : format === "regions" ? "region" : format === "distributors" ? "country" : "row"}
       max={brands ? MAX_BRANDS : undefined}
       emptyText={brands ? "No brands yet - add the first one." : "No rows yet - add the first one."}
     />
@@ -461,7 +474,7 @@ export function SectionFields({ section, categories, products, editable, hint, h
         (format ? (
           <div>
             <label className="label">
-              {format === "stats" ? "Figures" : format === "lines" ? "Items" : format === "brands" ? "Brands" : "Rows"}
+              {format === "stats" ? "Figures" : format === "lines" ? "Items" : format === "brands" ? "Brands" : format === "regions" ? "Regions" : format === "distributors" ? "Countries" : "Rows"}
             </label>
             <BodyRows
               key={`${section.key}-${format}`}
