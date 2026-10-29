@@ -35,7 +35,7 @@ export default function CatalogueHeader({ title, description, eyebrow, crumbs, c
       />
       <div
         className={clsx(
-          "container-page relative grid gap-8 pb-9 pt-7 sm:pb-12 sm:pt-9",
+          "container-wide relative grid gap-8 pb-9 pt-7 sm:pb-12 sm:pt-9",
           photos.length && "md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] md:items-center lg:gap-14"
         )}
       >

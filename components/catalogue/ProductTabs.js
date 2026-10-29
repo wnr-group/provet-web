@@ -62,7 +62,7 @@ export default function ProductTabs({ fields }) {
               onClick={() => setActive(field.key)}
               onKeyDown={(e) => onKeyDown(e, i)}
               className={clsx(
-                "relative flex shrink-0 items-center rounded-2xl font-semibold transition-colors",
+                "relative flex shrink-0 items-center rounded-2xl font-semibold transition-colors sm:flex-1 sm:justify-center",
                 segmented
                   ? "flex-col justify-center gap-1 px-2 py-2 text-center text-xs leading-tight sm:flex-row sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
                   : "gap-2 px-4 py-2.5 text-sm",
@@ -92,7 +92,7 @@ export default function ProductTabs({ fields }) {
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
-        className="whitespace-pre-line p-6 text-[15px] leading-relaxed text-ink-soft sm:p-8"
+        className="whitespace-pre-line p-5 text-[15px] leading-relaxed text-ink-soft sm:p-6"
       >
         {current.value}
       </motion.div>

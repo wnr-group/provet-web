@@ -46,7 +46,7 @@ export default function RangeTabs({ ranges, activeId }) {
 
   return (
     <nav aria-label="Product ranges" className="border-b border-brand-100 bg-white">
-      <ul className="container-page flex gap-3 overflow-x-auto py-5 [scrollbar-width:none] sm:gap-4 [&::-webkit-scrollbar]:hidden">
+      <ul className="container-wide flex gap-3 overflow-x-auto py-5 [scrollbar-width:none] sm:gap-4 [&::-webkit-scrollbar]:hidden">
         {tiles.map(({ id, name, label, count, href, image, theme }) => {
           const active = id === (activeId || null);
           return (

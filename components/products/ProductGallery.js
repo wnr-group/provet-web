@@ -3,14 +3,12 @@
 import { useState } from "react";
 import { ImageOff } from "lucide-react";
 import clsx from "clsx";
-import { Tilt } from "@/components/motion/effects";
 
-// The product page's image, presented on a 3D stage: a white card holding a
-// soft pedestal, with the product image floating 90px in front of it. Tilt
-// leans the stage toward the pointer so the image slides against its
-// backdrop. The image is contained, never cropped (the shots are label
-// artwork with the name printed on them). No clipping on the tilting layers -
-// overflow would flatten the 3D - so each layer rounds its own corners.
+// The product page's image on a single square stage, contained and never
+// cropped (the shots are label artwork with the name printed on them), with a
+// row of equal thumbnails beneath when there are several. The page already
+// puts the gallery on a white card that leans toward the pointer, so nothing
+// here is a second card or a second tilt.
 export default function ProductGallery({ images, name }) {
   const [activeImg, setActiveImg] = useState(0);
   // Tracked per-index so one broken URL does not blank out the whole gallery -
@@ -33,43 +31,33 @@ export default function ProductGallery({ images, name }) {
 
   return (
     <div>
-      <Tilt max={12} lift={1.03} glare shadow glareClassName="rounded-3xl">
-        <div className="relative rounded-3xl bg-white p-4 shadow-[0_30px_60px_-30px_rgba(21,18,48,0.55)] ring-1 ring-brand-100 [transform-style:preserve-3d]">
-          <div className="relative aspect-square rounded-2xl bg-[radial-gradient(circle_at_50%_35%,#ffffff_0%,var(--color-mist-100)_60%,var(--color-brand-100)_100%)] [transform-style:preserve-3d]">
-            <span aria-hidden="true" className="absolute inset-[10%] rounded-full border border-brand-200/60 [transform:translateZ(-30px)]" />
-            <span aria-hidden="true" className="absolute inset-[22%] rounded-full border border-dashed border-accent-300/60 [transform:translateZ(30px)]" />
-            <span
-              aria-hidden="true"
-              className="absolute bottom-[8%] left-1/2 h-5 w-1/2 -translate-x-1/2 rounded-full bg-brand-900/20 blur-lg"
-            />
-            <div className="absolute inset-[14%] flex items-center justify-center [transform:translateZ(90px)]">
-              {failed[activeImg] ? (
-                <div className="flex flex-col items-center justify-center gap-2 text-ink-soft">
-                  <ImageOff size={28} />
-                  <span className="text-sm">Image unavailable</span>
-                </div>
-              ) : (
-                /* eslint-disable-next-line @next/next/no-img-element -- arbitrary external/uploaded URLs, not a fixed set of remote hosts */
-                <img
-                  key={images[activeImg]}
-                  src={images[activeImg]}
-                  alt={`${name}${hasMultiple ? ` - view ${activeImg + 1} of ${images.length}` : ""}`}
-                  onError={() => markFailed(activeImg)}
-                  className="max-h-full max-w-full rounded-xl object-contain shadow-[0_20px_36px_-16px_rgba(21,18,48,0.45)]"
-                />
-              )}
-            </div>
-            {hasMultiple && (
-              <span className="absolute bottom-3 right-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold tabular-nums text-ink ring-1 ring-brand-100">
-                {activeImg + 1} / {images.length}
-              </span>
-            )}
+      {/* The image is centred and contained at the same padding whatever its
+          proportions. */}
+      <div className="relative aspect-square overflow-hidden rounded-2xl bg-[radial-gradient(circle_at_50%_40%,#ffffff_0%,var(--color-mist-100)_70%,var(--color-brand-100)_100%)]">
+        {failed[activeImg] ? (
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-ink-soft">
+            <ImageOff size={28} />
+            <span className="text-sm">Image unavailable</span>
           </div>
-        </div>
-      </Tilt>
+        ) : (
+          /* eslint-disable-next-line @next/next/no-img-element -- arbitrary external/uploaded URLs, not a fixed set of remote hosts */
+          <img
+            key={images[activeImg]}
+            src={images[activeImg]}
+            alt={`${name}${hasMultiple ? ` - view ${activeImg + 1} of ${images.length}` : ""}`}
+            onError={() => markFailed(activeImg)}
+            className="absolute inset-0 h-full w-full object-contain p-[3%]"
+          />
+        )}
+        {hasMultiple && (
+          <span className="absolute bottom-3 right-3 rounded-full bg-white/90 px-2.5 py-1 text-xs font-semibold tabular-nums text-ink ring-1 ring-brand-100">
+            {activeImg + 1} / {images.length}
+          </span>
+        )}
+      </div>
 
       {hasMultiple && (
-        <div className="mt-3 flex flex-wrap gap-3" role="tablist" aria-label={`${name} images`}>
+        <div className="mt-4 flex flex-wrap justify-center gap-3" role="tablist" aria-label={`${name} images`}>
           {images.map((img, i) => (
             <button
               key={img + i}

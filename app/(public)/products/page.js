@@ -104,7 +104,7 @@ export default async function Products({ searchParams }) {
       <RangeTabs ranges={tree} activeId={activeCategory?.id} />
 
       <CatalogueNavigationProvider>
-        <div className="container-page grid gap-5 pb-16 pt-6 sm:pb-20 sm:pt-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
+        <div className="container-wide grid gap-5 pb-16 pt-6 sm:pb-20 sm:pt-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-10">
           <ProductsFilters
             tree={navCategoryTree(tree)}
             activeCategoryId={activeCategory?.id}
@@ -151,7 +151,7 @@ export default async function Products({ searchParams }) {
                     key={`${category}|${search}|${sort}|${page}|grid`}
                     mode="mount"
                     stagger={0.03}
-                    className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:gap-5"
+                    className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:gap-5 2xl:grid-cols-4"
                   >
                     {result.items.map((p) => (
                       <RevealItem key={p.id} className="h-full" distance={10} duration={0.35}>
