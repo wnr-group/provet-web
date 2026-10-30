@@ -26,6 +26,7 @@ import { contentPages } from "@/lib/navigation";
 import { DEFAULT_SECTION_TYPE, parseSectionConfig } from "@/lib/sectionTypes";
 import { toSlug } from "@/lib/slug";
 import { CONTACT_SECTIONS, withContactDefaults } from "@/lib/contactContent";
+import { EXPORT_SECTIONS, withExportDefaults } from "@/lib/exportContent";
 import { HOME_SECTIONS, withHomeDefaults } from "@/lib/homeContent";
 import { ABOUT_SECTIONS, withAboutDefaults } from "@/lib/aboutContent";
 import { isBuiltInSection, addedSections } from "@/lib/fixedPages";
@@ -51,6 +52,12 @@ const FIXED_PAGE_DEFAULTS = {
     merge: withAboutDefaults,
     meta: Object.fromEntries(
       ABOUT_SECTIONS.map((s) => [s.key, { hint: s.hint, hideConfig: s.hideConfig, bodyFormat: s.bodyFormat }])
+    ),
+  },
+  export: {
+    merge: withExportDefaults,
+    meta: Object.fromEntries(
+      EXPORT_SECTIONS.map((s) => [s.key, { hint: s.hint, hideConfig: s.hideConfig, bodyFormat: s.bodyFormat }])
     ),
   },
   home: {

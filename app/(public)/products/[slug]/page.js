@@ -9,9 +9,9 @@ import ProductSpecs from "@/components/products/ProductSpecs";
 import CatalogueCard from "@/components/catalogue/CatalogueCard";
 import ProductTabs from "@/components/catalogue/ProductTabs";
 import ProductRail from "@/components/catalogue/ProductRail";
-import { ScrollTilt, Tilt } from "@/components/motion/effects";
+import { Tilt } from "@/components/motion/effects";
 import { categoryTheme } from "@/lib/categoryTheme";
-import { Enter } from "@/components/sections/entrances";
+import RangeLogo from "@/components/ui/RangeLogo";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1664216294580-079bc527ae49?auto=format&fit=crop&w=800&h=600&q=80";
@@ -59,34 +59,24 @@ export default async function ProductDetail({ params }) {
     limit: 8,
   });
 
-  // The product's range colour (amber for Avinova, ocean for Blunova).
-  const tone = categoryTheme(product.category).ui.accent;
+  // The product's range colour (amber for Avinova, ocean for Blunova) and
+  // its wordmark.
+  const rangeTheme = categoryTheme(product.category);
+  const tone = rangeTheme.ui.accent;
 
   return (
-    <div className="bg-mist-50/40">
-      {/* ---- Banner -----------------------------------------------------
-          Product-focused, in the catalogue's light banner language
-          (components/ui/PageBanner.js "product"): the copy on the left, and
-          the product itself as the visual - a large white stage lit by a
-          soft glow in the range's colour, leaning toward the pointer. The
-          stage hangs a little below the band into the page, so the product
-          reads as lifted off it. The band's decoration is clipped in its own
-          layer - the section itself can't clip, or the overhang would be cut
-          off. */}
-      <section className="relative isolate border-b border-brand-100">
-        <div aria-hidden="true" className="absolute inset-0 -z-10 overflow-hidden bg-mist-50">
-          {/* Blue into pink: a soft brand-blue glow top left, magenta bottom
-              left, the range's colour behind the product. */}
-          <div className="absolute -left-40 -top-40 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,rgba(97,87,193,0.16),transparent_65%)]" />
-          <div className="absolute -bottom-48 left-1/3 h-[28rem] w-[28rem] rounded-full bg-[radial-gradient(circle,rgba(229,9,127,0.1),transparent_65%)]" />
-          <div
-            className="absolute -right-24 top-1/2 h-[42rem] w-[42rem] -translate-y-1/2 rounded-full opacity-[0.16]"
-            style={{ backgroundImage: `radial-gradient(circle, ${tone}, transparent 65%)` }}
-          />
-        </div>
+    <div className="bg-white">
+      {/* ---- Overview ---------------------------------------------------
+          Two columns under the breadcrumb: the product image and its key
+          details on the left, and on the right the range, name, summary,
+          enquiry buttons, product information tabs and the safety note, read
+          top to bottom. The related products come after. */}
+      <section className="relative isolate">
+        <div aria-hidden="true" className="absolute inset-x-0 top-0 -z-10 h-72 bg-gradient-to-b from-mist-50 to-white" />
+        <div aria-hidden="true" className="absolute inset-x-0 top-0 h-1" style={{ backgroundImage: `linear-gradient(90deg, ${tone}, transparent)` }} />
 
-        <div className="container-page grid items-center gap-10 pb-10 pt-10 md:grid-cols-2 md:gap-14 md:pb-0 md:pt-14">
-          <Reveal mode="mount" distance={14} className="md:pb-16">
+        <div className="container-page pb-12 pt-6 sm:pt-8 lg:pb-16">
+          <Reveal mode="mount" distance={10}>
             <nav aria-label="Breadcrumb">
               <ol className="flex flex-wrap items-center gap-1.5 text-xs font-medium text-ink-soft">
                 <li>
@@ -110,101 +100,102 @@ export default async function ProductDetail({ params }) {
                 <li aria-current="page" className="font-semibold text-ink">{product.name}</li>
               </ol>
             </nav>
-
-            <div className="mt-6 flex flex-wrap items-center gap-2">
-              {product.category?.name && (
-                <Link
-                  href={`/products?category=${product.category.slug}`}
-                  className="rounded-full bg-white px-3 py-1 text-xs font-semibold ring-1 ring-brand-100 transition hover:ring-brand-300"
-                  style={{ color: tone }}
-                >
-                  {product.category.name}
-                </Link>
-              )}
-              {product.subcategory?.name && (
-                <Link
-                  href={`/products?category=${product.subcategory.slug}`}
-                  className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink-soft ring-1 ring-brand-100 transition hover:text-ink hover:ring-brand-300"
-                >
-                  {product.subcategory.name}
-                </Link>
-              )}
-              {product.isFeatured && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-accent-500 px-3 py-1 text-xs font-semibold text-white">
-                  <Sparkles size={12} /> Featured
-                </span>
-              )}
-            </div>
-
-            <h1 className="mt-5 break-words text-balance font-display text-4xl font-extrabold leading-[1.02] tracking-tight text-brand-900 sm:text-5xl lg:text-6xl">
-              {product.name}
-            </h1>
-            {product.shortDescription && (
-              <p className="mt-5 max-w-xl text-pretty text-lg leading-relaxed text-ink-soft">{product.shortDescription}</p>
-            )}
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <Link
-                href={`/contact?product=${encodeURIComponent(product.name)}`}
-                className="btn-accent w-full sm:w-auto"
-              >
-                <Mail size={16} /> Enquire About This Product
-              </Link>
-              <Link href="/contact" className="btn-outline w-full bg-white sm:w-auto">
-                <Phone size={16} /> Talk to Our Team
-              </Link>
-            </div>
           </Reveal>
 
-          {/* The stage: a white plate on the band, leaning toward the
-              pointer; it overhangs the band's foot by 3rem on desktop. */}
-          <Enter preset="depth" delay={0.15} className="mx-auto w-full max-w-md md:-mb-12">
-            <Tilt max={6} lift={1.01}>
-              <div className="rounded-[2rem] bg-white p-4 shadow-[0_40px_70px_-40px_rgba(21,18,48,0.5)] ring-1 ring-brand-100 sm:p-5">
-                <ProductGallery images={images} name={product.name} />
+          <div className="mt-6 grid items-start gap-8 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:gap-12">
+            {/* Left: the product, with its key details under it. */}
+            <Reveal mode="mount" delay={0.05} distance={16}>
+              <Tilt max={4} lift={1.005}>
+                <div className="mx-auto w-full max-w-sm rounded-[2rem] bg-white p-3 lg:max-w-none shadow-[0_30px_60px_-34px_rgba(21,18,48,0.45)] ring-1 ring-brand-100 sm:p-4">
+                  <ProductGallery images={images} name={product.name} />
+                </div>
+              </Tilt>
+
+              {/* Under the image, in a card of the same width. */}
+              <div className="mx-auto mt-5 w-full max-w-sm rounded-3xl bg-white p-5 shadow-soft ring-1 ring-brand-100 lg:max-w-none">
+                <h2 className="font-display text-base font-bold text-ink">Key details</h2>
+                <ProductSpecs product={product} className="mt-4" />
               </div>
-            </Tilt>
-          </Enter>
-        </div>
-      </section>
+            </Reveal>
 
-      {/* ---- Information --------------------------------------------------
-          The long-form copy in one tabbed card, beside a key-details card and
-          the safety note. */}
-      <section className="container-page grid items-start gap-6 pb-14 pt-10 md:pt-20 lg:grid-cols-[1fr_22rem] lg:gap-8">
-        <Reveal distance={16}>
-          <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink">Product information</h2>
-          <span aria-hidden="true" className="mb-6 mt-3 block h-1 w-12 rounded-full bg-gradient-to-r from-brand-500 to-accent-500" />
-          {details.length > 0 ? (
-            <ScrollTilt amount={10}>
-              <ProductTabs fields={details} />
-            </ScrollTilt>
-          ) : (
-            <p className="rounded-3xl bg-white p-6 text-sm text-ink-soft shadow-soft ring-1 ring-brand-100">
-              Detailed information for this product is available on request.
-            </p>
-          )}
-        </Reveal>
+            {/* Right: the product's details, one block after another. */}
+            <Reveal mode="mount" delay={0.1} distance={16} className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* The range: its logo where it has one (it links to the range,
+                    named by the logo's alt text), otherwise its name. */}
+                {product.category?.name && rangeTheme.logo && (
+                  <Link
+                    href={`/products?category=${product.category.slug}`}
+                    className="rounded-full bg-white px-3 py-1.5 ring-1 ring-brand-100 transition hover:ring-brand-300"
+                  >
+                    <RangeLogo logo={rangeTheme.logo} alt={product.category.name} eager sizes="108px" className="h-5" />
+                  </Link>
+                )}
+                {product.category?.name && !rangeTheme.logo && (
+                  <Link
+                    href={`/products?category=${product.category.slug}`}
+                    className="rounded-full bg-white px-3 py-1 text-xs font-semibold ring-1 ring-brand-100 transition hover:ring-brand-300"
+                    style={{ color: tone }}
+                  >
+                    {product.category.name}
+                  </Link>
+                )}
+                {product.subcategory?.name && (
+                  <Link
+                    href={`/products?category=${product.subcategory.slug}`}
+                    className="rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink-soft ring-1 ring-brand-100 transition hover:text-ink hover:ring-brand-300"
+                  >
+                    {product.subcategory.name}
+                  </Link>
+                )}
+                {product.isFeatured && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-accent-500 px-3 py-1 text-xs font-semibold text-white">
+                    <Sparkles size={12} /> Featured
+                  </span>
+                )}
+              </div>
 
-        {/* The key details slide in from the side while the tabs rise, so the
-            information arrives as two columns, not one block. */}
-        <Reveal delay={0.12} direction="left" distance={28} className="space-y-4 lg:sticky lg:top-24">
-          <div className="rounded-3xl bg-white p-5 shadow-soft ring-1 ring-brand-100">
-            <h2 className="font-display text-base font-bold text-ink">Key details</h2>
-            <ProductSpecs product={product} className="mt-4" />
+              <h1 className="mt-4 break-words text-balance font-display text-3xl font-extrabold leading-tight tracking-tight text-brand-900 sm:text-4xl lg:text-5xl">
+                {product.name}
+              </h1>
+              {product.shortDescription && (
+                <p className="mt-4 text-pretty text-lg leading-relaxed text-ink-soft">{product.shortDescription}</p>
+              )}
+
+              <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href={`/contact?product=${encodeURIComponent(product.name)}`}
+                  className="btn-accent w-full sm:flex-1"
+                >
+                  <Mail size={16} /> Enquire About This Product
+                </Link>
+                <Link href="/contact" className="btn-outline w-full bg-white sm:flex-1">
+                  <Phone size={16} /> Talk to Our Team
+                </Link>
+              </div>
+
+              {details.length > 0 && (
+                <div className="mt-9">
+                  <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink">Product information</h2>
+                  <span aria-hidden="true" className="mb-5 mt-3 block h-1 w-12 rounded-full bg-gradient-to-r from-brand-500 to-accent-500" />
+                  <ProductTabs fields={details} />
+                </div>
+              )}
+
+              <p className="mt-6 flex items-start gap-2.5 rounded-2xl bg-brand-50 p-4 text-xs leading-relaxed text-ink-soft ring-1 ring-brand-100">
+                <ShieldCheck size={16} className="mt-0.5 shrink-0 text-brand-500" />
+                For veterinary use only. Dosage and administration should be confirmed by a registered
+                veterinary practitioner.
+              </p>
+            </Reveal>
           </div>
-          <p className="flex items-start gap-2.5 rounded-2xl bg-brand-50 p-4 text-xs leading-relaxed text-ink-soft ring-1 ring-brand-100">
-            <ShieldCheck size={16} className="mt-0.5 shrink-0 text-brand-500" />
-            For veterinary use only. Dosage and administration should be confirmed by a registered
-            veterinary practitioner.
-          </p>
-        </Reveal>
+        </div>
       </section>
 
       {/* ---- Related: a sideways rail ------------------------------------ */}
       {related.length > 0 && (
-        <section className="border-t border-brand-100 bg-white py-12 sm:py-14">
-          <ScrollTilt amount={12} className="container-page">
+        <section className="border-t border-brand-100 bg-mist-50/60 py-8 sm:py-10">
+          <div className="container-page">
             <ProductRail
               title={
                 <div>
@@ -229,7 +220,7 @@ export default async function ProductDetail({ params }) {
                 </div>
               ))}
             </ProductRail>
-          </ScrollTilt>
+          </div>
         </section>
       )}
     </div>

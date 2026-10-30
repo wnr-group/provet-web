@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, ShieldCheck, Pause, Play } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { AnimatePresence, motion, useScroll, useTransform } from "framer-motion";
 import clsx from "clsx";
 import Counter from "@/components/motion/Counter";
@@ -70,19 +70,23 @@ const subscribeVisibility = (onChange) => {
 const readVisible = () => document.visibilityState === "visible";
 
 export default function Hero({ banners = [], badge = "Trusted by veterinarians nationwide", stats = STATS }) {
-  const slides = banners.length
-    ? banners
-    : [
-        {
-          id: "default",
-          title: "Quality Veterinary Medicine You Can Trust",
-          subtitle:
-            "Antibiotics, vaccines, supplements and therapeutic solutions formulated for better animal health outcomes.",
-          image: HERO_FALLBACK,
-          ctaText: "Explore Products",
-          ctaLink: "/products",
-        },
-      ];
+  const slides = useMemo(
+    () =>
+      banners.length
+        ? banners
+        : [
+            {
+              id: "default",
+              title: "Quality Veterinary Medicine You Can Trust",
+              subtitle:
+                "Antibiotics, vaccines, supplements and therapeutic solutions formulated for better animal health outcomes.",
+              image: HERO_FALLBACK,
+              ctaText: "Explore Products",
+              ctaLink: "/products",
+            },
+          ],
+    [banners]
+  );
 
   const [active, setActive] = useState(0);
   const sectionRef = useRef(null);
@@ -147,11 +151,24 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
   const paintBar = (p) => {
     if (barRef.current) barRef.current.style.transform = `scaleX(${p})`;
   };
-  const goTo = useCallback((i) => {
-    activeRef.current = i;
-    elapsed.current = 0;
-    setActive(i);
-  }, []);
+  const goTo = useCallback(
+    (i) => {
+      // Arriving at a different video starts it fresh: the last pass's
+      // playing/stalled state doesn't carry over, and a video that gave up
+      // last time (a stall, a blocked play, a slow start) gets another try,
+      // so every pass of the slider plays it again. Slides sharing one video
+      // keep it running, so they skip this.
+      if (slides[i].video && slides[i].video !== slides[activeRef.current].video) {
+        setPlayingSrc(null);
+        setStalled(false);
+        setFailed((f) => (f.has(slides[i].video) ? new Set([...f].filter((s) => s !== slides[i].video)) : f));
+      }
+      activeRef.current = i;
+      elapsed.current = 0;
+      setActive(i);
+    },
+    [slides]
+  );
   const goNext = useCallback(() => goTo((activeRef.current + 1) % slides.length), [goTo, slides.length]);
 
   // The photo clock: six seconds of time actually on screen and unpaused (it
@@ -196,10 +213,12 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
   // muted when the browser decides on autoplay - and browsers only autoplay
   // muted video. Mute it, then play or pause it to match the hero's state. A
   // refused play() (autoplay blocked, low-power mode) falls back to the
-  // poster; an AbortError is just a pause() overtaking it.
+  // poster; an AbortError is just a pause() overtaking it. On a slide without
+  // a video the ref may still hold the outgoing slide's, fading out - left
+  // alone, not restarted from its first frame.
   useEffect(() => {
     const el = videoRef.current;
-    if (!el) return;
+    if (!el || !mountsVideo) return;
     el.muted = true;
     if (paused || !onScreen) {
       el.pause();

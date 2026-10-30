@@ -1,4 +1,5 @@
 import { Eye, Target, Compass } from "lucide-react";
+import SiteImage from "@/components/ui/SiteImage";
 import clsx from "clsx";
 import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 import { Tilt, DrawLine, Parallax, ScrollExpand, SplitText } from "@/components/motion/effects";
@@ -18,6 +19,13 @@ import { Tilt, DrawLine, Parallax, ScrollExpand, SplitText } from "@/components/
 // index numbers floating inside them. All of it is tied to scroll position
 // and is off under prefers-reduced-motion (Parallax also on phones).
 const DRIFT = { vision: 10, mission: 34 };
+
+// The photo at the head of each card, from the animals Provet serves: Vision is
+// healthy cattle at pasture, Mission the poultry farms it supports every day.
+const IMAGES = {
+  vision: { src: "https://images.unsplash.com/photo-1549488235-42996ae3b650?auto=format&fit=crop&w=900&h=520&q=80", alt: "Cattle grazing on a green pasture" },
+  mission: { src: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&w=900&h=520&q=80", alt: "A healthy hen on a poultry farm" },
+};
 export default function VisionMission({ vision, mission }) {
   const items = [
     vision && { key: "vision", heading: "Our Vision", text: vision, icon: Eye, index: "01", tone: "solid" },
@@ -65,6 +73,16 @@ export default function VisionMission({ vision, mission }) {
                           : "bg-white/[0.07] text-white ring-1 ring-white/15 backdrop-blur-md"
                       )}
                     >
+                      <div className="relative -mx-8 -mt-8 mb-0 h-48 overflow-hidden sm:-mx-10 sm:-mt-10 sm:h-56">
+                        <SiteImage
+                          src={IMAGES[item.key].src}
+                          alt={IMAGES[item.key].alt}
+                          sizes="(min-width: 768px) 480px, 100vw"
+                          className="h-full w-full object-cover transition-transform duration-700 ease-out hover:scale-105"
+                        />
+                        <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+                      </div>
+
                       {/* Oversized index, faint, as a typographic anchor. */}
                       <Parallax distance={26} className="pointer-events-none absolute -right-2 -top-6">
                         <span
@@ -80,7 +98,7 @@ export default function VisionMission({ vision, mission }) {
 
                     <span
                       className={clsx(
-                        "relative flex h-12 w-12 items-center justify-center rounded-2xl",
+                        "relative -mt-12 flex h-12 w-12 items-center justify-center rounded-2xl",
                         item.tone === "solid"
                           ? "bg-gradient-to-br from-brand-600 to-accent-500 text-white shadow-[0_12px_20px_-8px_rgba(72,62,168,0.6)]"
                           : "bg-white/10 text-accent-200 ring-1 ring-white/20"

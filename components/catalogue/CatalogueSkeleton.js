@@ -27,7 +27,7 @@ export default function CatalogueSkeleton({ cards = 9 }) {
     <div aria-busy="true" aria-label="Loading products">
       {/* Header */}
       <div className="bg-mist-50">
-        <div className="container-page space-y-3 pb-8 pt-7 sm:pb-10 sm:pt-9">
+        <div className="container-wide space-y-3 pb-8 pt-7 sm:pb-10 sm:pt-9">
           <div className={`${shimmer} h-3 w-32`} />
           <div className={`${shimmer} mt-5 h-3 w-28`} />
           <div className={`${shimmer} h-9 w-64`} />
@@ -38,7 +38,7 @@ export default function CatalogueSkeleton({ cards = 9 }) {
 
       {/* Range tiles */}
       <div className="border-b border-brand-100">
-        <div className="container-page flex gap-4 overflow-hidden py-4">
+        <div className="container-wide flex gap-4 overflow-hidden py-4">
           {[0, 1, 2].map((i) => (
             <div key={i} className="h-[4.5rem] min-w-[13.5rem] flex-1 animate-pulse rounded-xl border border-brand-100 bg-white" />
           ))}
@@ -46,14 +46,14 @@ export default function CatalogueSkeleton({ cards = 9 }) {
       </div>
 
       {/* Filters and grid */}
-      <div className="container-page grid gap-5 pb-16 pt-6 sm:pt-8 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-10">
+      <div className="container-wide grid gap-5 pb-16 pt-6 sm:pt-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-10">
         <div className="h-12 animate-pulse rounded-xl border border-brand-100 bg-white lg:h-[28rem]" />
         <div>
           <div className="mb-5 flex items-center justify-between border-b border-brand-100 pb-4">
             <div className={`${shimmer} h-4 w-48`} />
             <div className={`${shimmer} h-9 w-48`} />
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:gap-5">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:gap-5 2xl:grid-cols-4">
             {Array.from({ length: cards }, (_, i) => (
               <ProductCardSkeleton key={i} />
             ))}

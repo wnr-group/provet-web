@@ -4,6 +4,7 @@ import SectionHeading from "@/components/ui/SectionHeading";
 import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 import { Parallax, Tilt } from "@/components/motion/effects";
 import { categoryTheme } from "@/lib/categoryTheme";
+import RangeLogo from "@/components/ui/RangeLogo";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1589922583749-6b8473a85048?auto=format&fit=crop&w=1200&h=900&q=80";
@@ -112,7 +113,20 @@ function RangePanel({ category }) {
             {theme.label}
           </p>
         )}
-        <h3 className="mt-2 font-display text-2xl font-extrabold tracking-tight sm:text-3xl">{category.name}</h3>
+        {/* A range with its own wordmark (Avinova, Blunova) shows that in
+            place of its name - the logo's alt text keeps it the heading. */}
+        <h3 className="mt-2 font-display text-2xl font-extrabold tracking-tight sm:text-3xl">
+          {theme.logo ? (
+            <RangeLogo
+              logo={theme.logo}
+              alt={category.name}
+              sizes="(min-width: 640px) 216px, 172px"
+              className="mt-3 h-8 drop-shadow-[0_4px_14px_rgba(10,8,30,0.35)] sm:h-10"
+            />
+          ) : (
+            category.name
+          )}
+        </h3>
         <div className="mt-4 flex items-center justify-between gap-4 border-t border-white/15 pt-4">
           {/* Each count stays in one piece, so on a narrow panel the line
               breaks between them rather than mid-phrase. */}

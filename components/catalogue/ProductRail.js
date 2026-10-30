@@ -107,7 +107,10 @@ export default function ProductRail({ title, children, autoplay = 0 }) {
       <div
         ref={ref}
         className={clsx(
-          "-mx-4 mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-6 pt-2 sm:-mx-6 sm:gap-5 sm:px-6",
+          // scroll-px matches px: without it, snapping lines the first card
+          // up with the row's edge, not its padding, and it sits left of the
+          // title above it.
+          "-mx-4 mt-6 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-6 pt-2 sm:-mx-6 sm:scroll-px-6 sm:gap-5 sm:px-6",
           "[scrollbar-width:thin]"
         )}
       >

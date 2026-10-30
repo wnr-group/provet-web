@@ -1,5 +1,7 @@
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import ScrollProgress from "@/components/motion/ScrollProgress";
+import BackToTop from "@/components/motion/BackToTop";
 import { getCategoryTree } from "@/lib/data";
 import { navCategoryTree } from "@/lib/categoryTree";
 
@@ -11,9 +13,11 @@ export default async function PublicLayout({ children }) {
 
   return (
     <div className="flex min-h-screen flex-col">
+      <ScrollProgress />
       <Navbar categories={navCategoryTree(categories)} />
       <main className="flex-1">{children}</main>
       <Footer />
+      <BackToTop />
     </div>
   );
 }

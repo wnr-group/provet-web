@@ -167,8 +167,12 @@
 @utility container-page {
   @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
 }
+/* The product catalogue uses more of a wide screen than the rest of the site. */
+@utility container-wide {
+  @apply mx-auto w-full max-w-[96rem] px-4 sm:px-6 lg:px-10;
+}
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-150 disabled:opacity-50 disabled:pointer-events-none;
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-card active:translate-y-0 active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none disabled:transform-none;
 }
 @utility btn-primary {
   @apply btn bg-brand-600 text-white shadow-soft hover:bg-brand-700 active:bg-brand-800;
@@ -184,6 +188,11 @@
 }
 @utility card {
   @apply rounded-2xl border border-brand-100/70 bg-white shadow-soft;
+}
+/* Cards that are themselves links or buttons lift on hover; static cards (forms, panels) stay put. */
+a.card,
+button.card {
+  @apply transition duration-300 ease-out hover:-translate-y-1 hover:border-brand-200 hover:shadow-hover;
 }
 @utility input {
   @apply w-full rounded-xl border border-brand-200 bg-white px-4 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 outline-none transition focus:border-brand-500 focus:ring-2 focus:ring-brand-100;
