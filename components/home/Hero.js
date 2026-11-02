@@ -344,31 +344,35 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
             </motion.span>
           )}
 
-          <AnimatePresence mode="wait">
-            <motion.h1
-              key={slide.id ?? slide.title}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -16 }}
-              transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-              // Three lines reserved (leading-[1.1] x 3), clamped to the
-              // same, so a 30-character title and a 47-character one occupy
-              // identical space and an over-long one can't stretch the hero.
-              className="mt-5 line-clamp-3 min-h-[7.425rem] max-w-xl font-display text-4xl font-extrabold leading-[1.1] text-white [text-shadow:0_2px_16px_rgba(10,8,30,0.45)] sm:min-h-[9.9rem] sm:text-5xl"
-            >
-              {slide.title}
-            </motion.h1>
-          </AnimatePresence>
+          {/* No height is reserved: the headline, the text and the buttons
+              keep the same spacing on every slide, and the block stays
+              centred in the hero as the headline's length changes. */}
+          <div>
+            <AnimatePresence mode="wait">
+              <motion.h1
+                key={slide.id ?? slide.title}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                // One size for every slide, chosen so the longest headline
+                // (about 70 characters) fits three lines; clamped so an
+                // over-long one can't stretch the hero.
+                className="mt-5 line-clamp-3 max-w-2xl font-display text-3xl font-extrabold leading-[1.1] text-white [text-shadow:0_2px_16px_rgba(10,8,30,0.45)] sm:text-4xl"
+              >
+                {slide.title}
+              </motion.h1>
+            </AnimatePresence>
 
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            // Two lines reserved (leading-relaxed x 2) for the same reason.
-            className="mt-5 line-clamp-2 min-h-[3.25rem] max-w-lg leading-relaxed text-white/90 [text-shadow:0_1px_10px_rgba(10,8,30,0.5)]"
-          >
-            {slide.subtitle}
-          </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="mt-5 line-clamp-3 max-w-2xl leading-relaxed text-white/90 [text-shadow:0_1px_10px_rgba(10,8,30,0.5)]"
+            >
+              {slide.subtitle}
+            </motion.p>
+          </div>
 
           <motion.div
             initial={{ opacity: 0, y: 12 }}

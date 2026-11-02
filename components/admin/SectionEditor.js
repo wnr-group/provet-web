@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronUp, ChevronDown, Trash2, Plus, CheckCircle2, AlertCircle, PlayCircle } from "lucide-react";
+import { ChevronUp, ChevronDown, Trash2, Plus, CheckCircle2, AlertCircle, PlayCircle, Upload, Copy } from "lucide-react";
 import clsx from "clsx";
 import { ImagePicker } from "@/components/admin/ImagePicker";
 import RowsTable from "@/components/admin/RowsTable";
+import { adminUploadFile } from "@/components/admin/adminApi";
 import { bodyToRows, rowsToBody } from "@/lib/contentFormat";
 import { SECTION_TYPES, SECTION_TYPE_KEYS } from "@/lib/sectionTypes";
 import { buildCategoryTree } from "@/lib/categoryTree";
@@ -25,6 +26,98 @@ const BODY_HINT = {
   cta: "Optional supporting line under the heading.",
 };
 
+// The details that open under each point of the homepage trust strip (the
+// "feature-strip" block): one row per point, matched to the strip's own rows
+// by heading. Links are one "Label | address" per line; a PDF can be uploaded
+// here to get an address for it.
+function FeatureDetailsEditor({ config, onConfig }) {
+  const details = config.details || [];
+  return (
+    <div className="space-y-4">
+      <div>
+        <label className="label">Details under each point</label>
+        <p className="mb-2 text-xs text-ink-soft">
+          The Point must match a point&apos;s heading above. In the details, leave a blank line between paragraphs and
+          start a line with &quot;- &quot; for a bullet. Write each link as <code>Label | address</code>, one per line - an
+          address is a page like <code>/contact</code> or a full <code>https://</code> link.
+        </p>
+        <RowsTable
+          columns={[
+            { key: "heading", label: "Point", placeholder: "e.g. Certified Quality", width: "18%" },
+            { key: "text", label: "Details", type: "textarea", placeholder: "What opens under this point" },
+            { key: "links", label: "Links", type: "textarea", placeholder: "View certificate | /uploads/...pdf", width: "30%" },
+          ]}
+          rows={details}
+          onChange={(next) => onConfig({ details: next })}
+          newRow={{ heading: "", text: "", links: "" }}
+          addLabel="Add details"
+          itemLabel="details"
+          max={8}
+          emptyText="No details yet - the points stay plain text."
+        />
+      </div>
+      <PdfLinkHelper />
+    </div>
+  );
+}
+
+// Uploads a PDF (a certificate, say) and shows the address to paste into a
+// link above. Nothing is attached to the content until it is pasted there.
+function PdfLinkHelper() {
+  const [url, setUrl] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const onPick = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setBusy(true);
+    setError("");
+    setCopied(false);
+    try {
+      const { url: uploaded } = await adminUploadFile(file);
+      setUrl(uploaded);
+    } catch (err) {
+      setError(err.data?.error || err.message || "Upload failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <div className="rounded-xl border border-brand-100 p-4">
+      <p className="text-sm font-semibold text-ink">Need a link for a certificate PDF?</p>
+      <p className="mt-0.5 text-xs text-ink-soft">Upload it here, then paste the address into a link above, e.g. View certificate | the address.</p>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <label className={clsx("btn-outline cursor-pointer text-sm", busy && "pointer-events-none opacity-60")}>
+          <Upload size={14} /> {busy ? "Uploading..." : "Upload a PDF"}
+          <input type="file" accept="application/pdf,.pdf" hidden onChange={onPick} />
+        </label>
+        {url && (
+          <>
+            <input readOnly className="input min-w-0 flex-1 py-2 text-sm" value={url} aria-label="Uploaded PDF address" onFocus={(e) => e.target.select()} />
+            <button type="button" onClick={copy} className="btn-ghost text-sm">
+              <Copy size={14} /> {copied ? "Copied" : "Copy"}
+            </button>
+          </>
+        )}
+      </div>
+      {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+    </div>
+  );
+}
+
 function ConfigFields({ section, categories, onConfig }) {
   const { type, config } = section;
 
@@ -42,6 +135,11 @@ function ConfigFields({ section, categories, onConfig }) {
         </select>
       </div>
     );
+  }
+
+  // The homepage trust strip: no column count, but the details under each point.
+  if (type === "cards" && section.key === "feature-strip") {
+    return <FeatureDetailsEditor config={config} onConfig={onConfig} />;
   }
 
   if (type === "cards") {

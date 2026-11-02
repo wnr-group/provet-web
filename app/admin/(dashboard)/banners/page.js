@@ -44,7 +44,7 @@ const PROVET_VIDEO_POSTER = "/content/hero/provet-hero-poster.jpg";
 
 // What the hero shows of each field (components/home/Hero.js clamps the
 // headline to three lines and the text to two) - used for the counters.
-const HEADLINE_SOFT_MAX = 50;
+const HEADLINE_SOFT_MAX = 110;
 const TEXT_SOFT_MAX = 140;
 
 // The homepage hero's slides. Each one has a background - a photo or a

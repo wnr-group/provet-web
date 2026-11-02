@@ -88,82 +88,91 @@ const PARENT_CATEGORIES = [
     slug: "blunova",
     description:
       "The Blunova aquaculture range: probiotics, mineral mixtures, feed additives and water-quality solutions for shrimp and fish farming. It also covers ammonia reducers, oxygen supplements, toxin binders, sanitizers, immunostimulants and parasiticides, for hatcheries and grow-out ponds alike. Every product is backed by Provet's technical services and support for farmers.",
-    image: img(PHOTO.fishSchool, 800, 600),
+    image: "/content/ranges/blunova-shrimp.jpg",
     sortOrder: 1,
   },
 ];
 
 
-// The homepage banner slides, in this order (as set in Admin > Banners):
-// broiler hens, dairy cows, shrimp, fish, farm animals, poultry. The photo
-// files are numbered by subject, not position. Photos from Pexels (free to use under the
-// Pexels licence), hosted in public/content/hero/ so the homepage serves them
-// through Next's image optimizer: 01 #35877071, 02 #17765377, 03 #17091518
-// (mirrored), 04 #3311091 (mirrored; a live trout), 05 #26425523,
-// 06 #35877061. Mirrored and cropped so the subject sits right of the
+// The homepage banner slides, in this order (as set in Admin > Banners): the
+// first is the Provet video loop (public/content/hero, see CREDITS.md there,
+// its first frame as the poster); the other seven are photo slides. Photos are
+// from Pexels (free to use under the Pexels licence), numbered by subject:
+// 01 poultry house, 02 dairy cows, 03 shrimp, 04 fish, 05 farm animals,
+// 06 broiler hens. Mirrored and cropped so the subject sits right of the
 // headline, clear of the hero's dark left-hand overlay.
-//
-// First of all, a video slide: the Provet loop shipped in public/content/hero
-// (see CREDITS.md there), its first frame as the poster. Order -1 puts it
-// ahead of the photo slides without renumbering them.
+const HERO = "/content/hero";
+const slide = (order, title, subtitle, image, video) => ({
+  title,
+  subtitle,
+  image,
+  ...(video ? { video } : {}),
+  ctaText: "Explore Products",
+  ctaLink: "/products",
+  order,
+});
 const bannersData = [
-  {
-    title: "Animal Health for Every Farm We Serve",
-    subtitle: "Poultry, dairy, shrimp and fish - formulations built for the way modern livestock and aquaculture farms work.",
-    image: "/content/hero/provet-hero-poster.jpg",
-    video: "/content/hero/provet-hero-1280.mp4",
-    ctaText: "Explore Products",
-    ctaLink: "/products",
-    order: -1,
-  },
-  {
-    title: "Complete Poultry Health Solutions",
-    subtitle: "Antibiotics, vaccines and growth-support formulations trusted by poultry farms nationwide.",
-    image: "/content/hero/01-poultry-house.jpg",
-    ctaText: "Explore Products",
-    ctaLink: "/products",
-    order: 5,
-  },
-  {
-    title: "From Day-Old Chicks to Full Flock Health",
-    subtitle: "Brooding support, growth formulations and biosecurity products for commercial poultry operations.",
-    image: "/content/hero/02-dairy-cows.jpg",
-    ctaText: "Explore Products",
-    ctaLink: "/products",
-    order: 1,
-  },
-  {
-    title: "Trusted Veterinary Medicines, Backed by Science",
-    subtitle: "Quality formulations for companion animals and livestock, from a partner you can rely on.",
-    image: "/content/hero/03-shrimp.jpg",
-    ctaText: "Explore Products",
-    ctaLink: "/products",
-    order: 2,
-  },
-  {
-    title: "Comprehensive Anti-parasitic Range",
-    subtitle: "Protecting herds and companion animals from ticks, worms and mites, season after season.",
-    image: "/content/hero/04-fish-live.jpg",
-    ctaText: "Explore Products",
-    ctaLink: "/products",
-    order: 3,
-  },
-  {
-    title: "Vaccination Programs That Work",
-    subtitle: "Biologicals designed for real-world herd health and companion animal immunization schedules.",
-    image: "/content/hero/05-farm-animals.jpg",
-    ctaText: "Explore Products",
-    ctaLink: "/products",
-    order: 4,
-  },
-  {
-    title: "Partnering with Veterinarians Nationwide",
-    subtitle: "A growing catalogue built with input from practicing veterinarians and animal health experts.",
-    image: "/content/hero/06-broiler-hens.jpg",
-    ctaText: "Explore Products",
-    ctaLink: "/products",
-    order: 0,
-  },
+  slide(
+    0,
+    "Complete Solutions for Poultry, Aquaculture and Livestock",
+    "Comprehensive animal health and nutrition solutions, backed by research and innovation, for healthier animals and higher productivity",
+    `${HERO}/provet-hero-poster.jpg`,
+    `${HERO}/provet-hero-1280.mp4`
+  ),
+  slide(
+    1,
+    "Advancing Animal Health, Empowering Every Farm",
+    "Poultry, Dairy, Fish & Shrimp – Formulations built for the way how modern farms work",
+    `${HERO}/04-fish-live.jpg`
+  ),
+  slide(
+    2,
+    "Partnering with Farmers and veterinarians",
+    "A growing Catalogue built with inputs from farmers and Animal Health Professionals",
+    `${HERO}/05-farm-animals.jpg`
+  ),
+  slide(
+    3,
+    "From Hatch to Harvest, Optimizing Poultry Performance",
+    "Science-driven solutions spanning early chick care, nutrition, disease prevention, and flock management",
+    `${HERO}/01-poultry-house.jpg`
+  ),
+  slide(
+    4,
+    "Science-Backed Nutritional Interventions for Optimal Performance",
+    "Quality formulations for Poultry, Aquaculture and livestock, from a partner you can rely on",
+    `${HERO}/06-broiler-hens.jpg`
+  ),
+  slide(
+    5,
+    "Building Healthier Herds, Driving Better Returns",
+    "Solutions focused on animal well-being, resilience, and farm profitability",
+    `${HERO}/02-dairy-cows.jpg`
+  ),
+  slide(
+    6,
+    "Transforming Research into Performance, Productivity & Profitability",
+    "Research-Based Formulations. Sustainable Performance. Trusted Outcomes",
+    `${HERO}/05-farm-animals.jpg`
+  ),
+  slide(
+    7,
+    "From Pond to Profit, Maximizing Aquaculture Potential",
+    "Innovative solutions for water quality, nutrition, health management, and sustainable fish and shrimp production",
+    `${HERO}/03-shrimp.jpg`
+  ),
+];
+
+// Slides from earlier versions of this list; removed so they don't sit in
+// front of the current eight.
+const legacyBannerTitles = [
+  "Animal Health for Every Farm We Serve",
+  "Complete Poultry Health Solutions",
+  "From Day-Old Chicks to Full Flock Health",
+  "Trusted Veterinary Medicines, Backed by Science",
+  "Comprehensive Anti-parasitic Range",
+  "Vaccination Programs That Work",
+  "Partnering with Veterinarians Nationwide",
 ];
 
 async function main() {
@@ -296,6 +305,7 @@ async function main() {
   }
 
   // --- Banners ----------------------------------------------------------
+  await prisma.banner.deleteMany({ where: { title: { in: legacyBannerTitles } } });
   for (const banner of bannersData) {
     const existing = await prisma.banner.findFirst({ where: { title: banner.title } });
     if (!existing) {

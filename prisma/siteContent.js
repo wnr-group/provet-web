@@ -30,7 +30,29 @@ const siteContent = {
       "isVisible": true,
       "order": 1,
       "config": {
-        "columns": 3
+        "columns": 3,
+        "details": [
+          {
+            "heading": "Reliable Supply",
+            "text": "Our B2B customers plan their own production and treatment cycles around ours, so supply is planned rather than improvised.\n\n- Stock of core ranges is held against forecast demand, so regular orders ship from inventory.\n- Production and dispatch are scheduled with lead times agreed with distributors, including advance planning for seasonal peaks.\n- Order status and delivery timelines are shared in advance, so you can plan with confidence.",
+            "links": "Plan an order with our team | /contact"
+          },
+          {
+            "heading": "Certified Quality",
+            "text": "Quality is built into how Provet manufactures. Where we hold a certification, you can read the certificate and check it with the certification body yourself.\n\n- FAMI-QS: the quality and safety system for feed additives and premixtures. Provet's certification can be checked on the official FAMI-QS register.\n- GMP: manufacturing to Good Manufacturing Practices, for hygienic, consistent and traceable production.",
+            "links": "Check Provet on the FAMI-QS register | https://fami-qs.org/certified-organisations/"
+          },
+          {
+            "heading": "Research Backed",
+            "text": "Every Provet solution represents a lot of work before it reaches a farm, and it is formulated with veterinary experts.\n\n- Research and development of the formulation\n- Trials to confirm it works as intended\n- Testing for safety and quality\n- Compliance with the regulations that apply",
+            "links": "Explore our products | /products"
+          },
+          {
+            "heading": "Animal Wellness",
+            "text": "Healthy animals are productive animals. Wellness means preventing disease early, supporting nutrition and gut health, and treating quickly when problems occur.\n\n- Prevention and treatment: antibacterials, anticoccidials and antiparasitics for poultry and livestock\n- Nutrition and gut health: supplements, probiotics, enzymes and toxin binders\n- Farm hygiene: disinfectants and sanitizers, including for aquaculture ponds and hatcheries\n\nHealthier animals mean better growth, fewer losses and a more profitable farm.",
+            "links": "See products by species | /products"
+          }
+        ]
       }
     },
     {
@@ -67,7 +89,7 @@ const siteContent = {
       "key": "stats",
       "type": "richText",
       "title": "By the Numbers",
-      "body": "20+ years combined formulation experience - 100+ SKUs across 6 therapeutic categories - Supplying clinics and distributors across the region.",
+      "body": "15+ Years in existence\n250+ Employees\n5,000+ Farms covered\n50,000+ Acres covered\n12+ Countries we operate in\n",
       "image": "",
       "isVisible": true,
       "order": 5,
