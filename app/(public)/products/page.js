@@ -17,6 +17,22 @@ import { categoryTheme, rangeThemeVars } from "@/lib/categoryTheme";
 const LIMIT = 12;
 const SORTS = ["newest", "name"];
 
+// " across three specialist ranges: Avinova for poultry, Blunova for aquaculture
+// and Bovinova for cattle", from the ranges as they are now, so a new range
+// is named without anyone editing this sentence. A range with no species
+// label is named on its own.
+const COUNT_WORDS = ["", "one", "two", "three", "four", "five", "six"];
+function rangesSentence(ranges) {
+  if (!ranges.length) return "";
+  const parts = ranges.map((r) => {
+    const label = categoryTheme(r).label;
+    return label ? `${r.name} for ${label.toLowerCase()}` : r.name;
+  });
+  const list = parts.length > 1 ? `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}` : parts[0];
+  const count = COUNT_WORDS[ranges.length] || String(ranges.length);
+  return ` across ${count} specialist range${ranges.length === 1 ? "" : "s"}: ${list}`;
+}
+
 export const metadata = {
   title: "Products",
   description: "Browse Provet's full catalogue by category and subcategory, or search for a specific product.",
@@ -71,7 +87,7 @@ export default async function Products({ searchParams }) {
         description={
           activeNode?.description ||
           activeCategory?.description ||
-          "Explore Provet's complete catalogue across two specialist ranges: Avinova for poultry health and Blunova for aquaculture. From anticoccidials, growth promoters and probiotics to mineral mixtures, feed additives and water-quality solutions, every formulation is research-based and backed by our technical services and support."
+          `Explore Provet's complete catalogue${rangesSentence(tree)}. From anticoccidials, growth promoters and probiotics to mineral mixtures, feed additives and water-quality solutions, every formulation is research-based and backed by our technical services and support.`
         }
         count={result.total}
         logo={activeCategory ? { logo: theme.logo, alt: activeCategory.name, asTitle: !activeSubcategory } : null}
