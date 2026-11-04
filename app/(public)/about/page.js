@@ -1,6 +1,6 @@
 import { Award, Microscope, Users, Target } from "lucide-react";
 import { getContentSections, getAddedSections } from "@/lib/data";
-import { findHeadedText, parseStatItems } from "@/lib/contentFormat";
+import { parseStatItems } from "@/lib/contentFormat";
 import { withAboutDefaults } from "@/lib/aboutContent";
 import PageSections from "@/components/sections/PageSections";
 import CtaBanner from "@/components/home/CtaBanner";
@@ -12,14 +12,6 @@ import VisionMission from "@/components/about/VisionMission";
 import WhyUs from "@/components/home/WhyUs";
 
 const ICONS = { mission: Target, quality: Award, team: Users };
-
-// Provet's Vision and Mission are written once, in the "Vision & Mission"
-// block on the Who We Are page (Admin > Website Content > Who We Are), as
-// "Vision: ..." and "Mission: ..." lines. This page reads the same block, so
-// the two pages can never state them differently. If that block has no
-// Mission line, this page's own "mission" block stands in.
-const VISION_MISSION_PAGE = "about/who-we-are";
-const VISION_MISSION_KEY = "vision-mission";
 
 // See app/(public)/page.js for why this is needed - otherwise admin edits to
 // the About content blocks wouldn't show up without a rebuild.
@@ -33,26 +25,24 @@ export const metadata = {
 
 // Everything on this page is a block in Admin > Website Content > About Us
 // (lib/aboutContent.js) - the banner, story, values, Why Provet and the
-// closing call to action - apart from Vision and Mission (see above).
+// closing call to action.
 export default async function About() {
-  const [sections, whoWeAre, added] = await Promise.all([
-    getContentSections("about"),
-    getContentSections(VISION_MISSION_PAGE),
-    getAddedSections("about"),
-  ]);
+  const [sections, added] = await Promise.all([getContentSections("about"), getAddedSections("about")]);
   const blocks = withAboutDefaults(sections);
   const shown = (key) => blocks.find((s) => s.key === key && s.isVisible !== false) || null;
   const banner = shown("banner");
   const story = shown("story");
-  const ownMission = shown("mission");
+  const visionBlock = shown("vision");
+  const missionBlock = shown("mission");
   const whyUs = shown("why-us");
   const figureBlock = shown("why-us-figure");
   const figure = figureBlock ? parseStatItems(figureBlock.body).find((f) => f.value) || null : null;
   const cta = shown("cta");
 
-  const statements = whoWeAre.find((s) => s.key === VISION_MISSION_KEY)?.body;
-  const vision = findHeadedText(statements, "Vision");
-  const mission = findHeadedText(statements, "Mission") || ownMission?.body || null;
+  // Vision and Mission here are this page's own blocks; the Who We Are page
+  // keeps separate ones.
+  const vision = visionBlock?.body || null;
+  const mission = missionBlock?.body || null;
 
   // The "What We Stand For" cards: Quality Commitment and Our Team. Sections
   // the admin adds render further down, through PageSections.

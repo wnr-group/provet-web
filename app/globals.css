@@ -74,6 +74,21 @@
   to { transform: translateX(300%); }
 }
 
+/* The Knowledge Centre reel (components/sections/ImageAccordion.js): the bar
+   under the active row filling up as the reel's timer runs, and the caption
+   rising in when the item changes. */
+@keyframes reel-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes reel-caption {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reel-caption { animation: none !important; }
+}
+
 .animate-sway3d {
   animation: sway3d 7s ease-in-out infinite alternate;
   transform-style: preserve-3d;
@@ -82,6 +97,21 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+  }
+
+  /* Tailwind's reset leaves buttons with the default arrow. Anything that
+     can be clicked - including the upload areas in the admin - shows a hand,
+     and a disabled one says so. */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  summary,
+  label:has(> input[type="file"]),
+  input[type="file"],
+  select {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
   }
 
   /* Motion safety net - see the inline script in app/layout.js.

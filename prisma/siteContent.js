@@ -25,7 +25,7 @@ const siteContent = {
       "key": "feature-strip",
       "type": "cards",
       "title": "Why choose Provet",
-      "body": "Reliable Supply: Consistent stock & timely delivery\nCertified Quality: GMP-compliant manufacturing\nResearch Backed: Formulated with veterinary experts\nAnimal Wellness: Focused on better health outcomes",
+      "body": "Reliable Supply: Consistent stock and timely delivery\nFAMI-QS Quality Standards: Committed to feed safety and quality assurance\nResearch-Driven Formulations: Developed with scientific and technical expertise\nQuality Control Excellence: Quality checks throughout the manufacturing process\nTechnical Expertise: Specialised support for animal nutrition solutions\nManufacturing Excellence: Consistent processes and product quality\nCustomer-Centric Approach: Solutions tailored to customer requirements\nConsistent Product Quality: Standardised manufacturing and quality practices\nResponsible Nutrition: Focused on effective and responsible feed supplementation",
       "image": "",
       "isVisible": true,
       "order": 1,
@@ -230,6 +230,16 @@ const siteContent = {
       "image": "",
       "isVisible": true,
       "order": 0,
+      "config": {}
+    },
+    {
+      "key": "vision",
+      "type": "richText",
+      "title": "Our Vision",
+      "body": "To be recognized as a complete solution provider offering affordable, innovative and research-based solutions for healthcare and nutrition to the veterinary farming fraternity globally.",
+      "image": "",
+      "isVisible": true,
+      "order": 1,
       "config": {}
     },
     {
