@@ -66,7 +66,7 @@ export default async function Home() {
   const renderSection = (b) => {
     switch (b.key) {
       case "feature-strip":
-        return <FeatureStrip key={b.key} items={parseHeadedItems(b.body)} details={b.config?.details} />;
+        return <FeatureStrip key={b.key} items={parseHeadedItems(b.body)} title={b.title} />;
       case "species":
         return <CategoryGrid key={b.key} categories={categories} title={b.title || undefined} description={b.body} />;
       case "featured":

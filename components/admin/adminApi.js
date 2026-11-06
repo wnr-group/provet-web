@@ -102,7 +102,34 @@ export const adminUpdateEnquiryStatus = (id, status) =>
   apiFetch(`/admin/enquiries/${id}`, { method: "PATCH", body: JSON.stringify({ status }) });
 
 // ---- Admin: Upload ----
+// Vercel refuses request bodies over ~4.5 MB, so anything near that goes
+// straight from the browser to storage (see app/api/admin/upload/sign); smaller
+// files, and every file when storage is local, use the checked upload route.
+const DIRECT_UPLOAD_OVER = 4 * 1024 * 1024;
+
+async function uploadDirect(file) {
+  const res = await fetch("/api/admin/upload/sign", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: file.name, type: file.type, size: file.size }),
+  });
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw Object.assign(new Error(data?.error || "Upload failed"), { data, status: res.status });
+  if (!data.direct) return null;
+
+  const form = new FormData();
+  form.append("cacheControl", "31536000");
+  form.append("", file);
+  const put = await fetch(data.uploadUrl, { method: "PUT", body: form });
+  if (!put.ok) throw Object.assign(new Error("Upload failed"), { status: put.status });
+  return { url: data.url };
+}
+
 export const adminUploadFile = async (file) => {
+  if (file.size > DIRECT_UPLOAD_OVER) {
+    const direct = await uploadDirect(file);
+    if (direct) return direct;
+  }
   const form = new FormData();
   form.append("file", file);
   const res = await fetch("/api/admin/upload", { method: "POST", body: form });

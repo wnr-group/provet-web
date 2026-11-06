@@ -1,16 +1,9 @@
-"use client";
-
-import { useId, useState } from "react";
-import Link from "next/link";
-import { AnimatePresence, motion } from "framer-motion";
-import { Truck, ShieldCheck, FlaskConical, HeartPulse, ChevronDown, ArrowRight, ExternalLink } from "lucide-react";
+import { Truck, ShieldCheck, FlaskConical, Microscope, GraduationCap, Factory, Handshake, ClipboardCheck, HeartPulse } from "lucide-react";
 import clsx from "clsx";
-import { RevealGroup, RevealItem } from "@/components/motion/Reveal";
-import { useMotionEnv } from "@/components/motion/MotionProvider";
-import { detailFor, isExternalLink } from "@/lib/featureDetails";
+import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 
 // The icons, by position - the points themselves are the admin's.
-const ICONS = [Truck, ShieldCheck, FlaskConical, HeartPulse];
+const ICONS = [Truck, ShieldCheck, FlaskConical, Microscope, GraduationCap, Factory, Handshake, ClipboardCheck, HeartPulse];
 
 const DEFAULT_ITEMS = [
   { heading: "Reliable Supply", text: "Consistent stock & timely delivery" },
@@ -19,53 +12,71 @@ const DEFAULT_ITEMS = [
   { heading: "Animal Wellness", text: "Focused on better health outcomes" },
 ];
 
-// The trust strip under the hero: the points laid flat on a pale band, not
-// boxed in cards - a line icon over a soft disc, the point, a short magenta
-// rule and a line of description, with hairline dividers between the
-// columns. In the theme's own colours (brand navy, accent magenta).
+// The trust strip under the hero, under its own heading.
 //
 // `items` ([{ heading, text }]) come from the "feature-strip" block in Admin >
-// Website Content > Homepage (lib/homeContent.js); up to four show, one
-// column each on large screens. A point that has `details` (the same block's
-// config, matched by heading - lib/featureDetails.js) becomes a button that
-// opens them in a panel under the strip: one open at a time, and a second
-// click closes it. A point with none stays plain text.
-export default function FeatureStrip({ items = DEFAULT_ITEMS, details = [] }) {
-  const [openIndex, setOpenIndex] = useState(null);
-  const panelId = useId();
-  const { reduced } = useMotionEnv();
-
-  const features = items.slice(0, 4).map((item, i) => ({
+// Website Content > Homepage (lib/homeContent.js), and `title` is that
+// block's title; up to twelve points show. Up to four stand on the band in a
+// row (a line icon over a soft disc, the point, a short magenta rule and a
+// line of description, with hairline dividers between columns). More than
+// that would make a tall, sparse wall of text, so they become compact cards
+// in a grid: three across (two on tablets), icon beside the text.
+export default function FeatureStrip({ items = DEFAULT_ITEMS, title = "" }) {
+  const features = items.slice(0, 12).map((item, i) => ({
     icon: ICONS[i % ICONS.length],
     title: item.heading,
     desc: item.text,
-    detail: detailFor(details, item.heading),
   }));
   if (!features.length) return null;
-  const open = openIndex === null ? null : features[openIndex];
+  const compact = features.length > 4;
 
   return (
     <section className="border-b border-brand-100/70 bg-mist-50">
-      <div className="container-page py-10 sm:py-12">
-        {/* A short, quiet deal-in: the strip sits directly under the hero and
-            must not compete with it.
+      <div className="container-page py-12 sm:py-16">
+        {title && (
+          <Reveal className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
+            <h2 className="font-display text-2xl font-extrabold tracking-tight text-brand-800 sm:text-3xl">{title}</h2>
+            <span aria-hidden="true" className="mx-auto mt-4 block h-1 w-14 rounded-full bg-accent-400" />
+          </Reveal>
+        )}
 
-            Equal spacing: every column has the same padding on both sides
-            and the dividers sit between them, so all four have the same
-            width of content and the same gap either side of each divider.
-            The grid is pulled out by that padding (-mx) so the first and last
-            columns still line up with the page edges.
-
-            Phones: a compact two-by-two grid rather than four tall rows. */}
+        {/* Equal spacing in the row layout: every column has the same padding
+            on both sides and the dividers sit between them. The grid is pulled
+            out by that padding (-mx) so the first and last columns still line
+            up with the page edges. Phones: a compact two-by-two grid. */}
         <RevealGroup
-          className="grid grid-cols-2 gap-x-5 gap-y-8 sm:-mx-6 sm:gap-x-0 sm:gap-y-10 lg:-mx-8 lg:grid-cols-[repeat(var(--cols),minmax(0,1fr))] lg:gap-0 lg:divide-x lg:divide-brand-100"
+          className={clsx(
+            "grid",
+            compact
+              ? "gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5"
+              : "grid-cols-2 gap-x-5 gap-y-8 sm:-mx-6 sm:gap-x-0 sm:gap-y-10 lg:-mx-8 lg:grid-cols-[repeat(var(--cols),minmax(0,1fr))] lg:gap-0 lg:divide-x lg:divide-brand-100"
+          )}
           style={{ "--cols": features.length }}
           stagger={0.08}
         >
-          {features.map(({ icon: Icon, title, desc, detail }, i) => {
-            const isOpen = openIndex === i;
-            const content = (
-              <>
+          {features.map(({ icon: Icon, title: heading, desc }, i) =>
+            compact ? (
+              <RevealItem
+                key={heading}
+                className="group rounded-2xl bg-white p-5 ring-1 ring-brand-100 transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-brand-800/10 hover:ring-accent-300"
+                distance={14}
+                duration={0.5}
+              >
+                <div className="flex h-full items-start gap-4">
+                  <span
+                    aria-hidden="true"
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-50 to-brand-100 text-brand-700 transition-all duration-300 group-hover:rotate-3 group-hover:scale-110 group-hover:from-brand-600 group-hover:to-brand-500 group-hover:text-white"
+                  >
+                    <Icon size={24} strokeWidth={1.6} absoluteStrokeWidth />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-display text-base font-semibold leading-snug tracking-tight text-brand-800">{heading}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{desc}</p>
+                  </div>
+                </div>
+              </RevealItem>
+            ) : (
+              <RevealItem key={heading} className="group sm:px-6 lg:px-8" distance={14} duration={0.5}>
                 {/* The mark: a soft magenta-to-lavender disc set up and to the
                     left, the icon over it. The disc grows a touch on hover. */}
                 <span aria-hidden="true" className="relative block h-12 w-14">
@@ -78,113 +89,14 @@ export default function FeatureStrip({ items = DEFAULT_ITEMS, details = [] }) {
                   />
                   <Icon size={34} strokeWidth={1.5} absoluteStrokeWidth className="absolute left-3 top-0 text-brand-700" />
                 </span>
-                <h3 className="mt-3 font-display text-base font-semibold leading-snug sm:mt-4 sm:text-lg tracking-tight text-brand-800">{title}</h3>
-                <span
-                  aria-hidden="true"
-                  className={clsx(
-                    "mt-2.5 block h-0.5 rounded-full bg-accent-400 transition-all duration-300",
-                    isOpen ? "w-14" : "w-8 group-hover:w-12"
-                  )}
-                />
+                <h3 className="mt-3 font-display text-base font-semibold leading-snug tracking-tight text-brand-800 sm:mt-4 sm:text-lg">{heading}</h3>
+                <span aria-hidden="true" className="mt-2.5 block h-0.5 w-8 rounded-full bg-accent-400 transition-all duration-300 group-hover:w-12" />
                 <p className="mt-2.5 text-sm leading-relaxed text-ink-soft">{desc}</p>
-                {detail && (
-                  <span className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent-600">
-                    {isOpen ? "Close" : "Learn more"}
-                    <ChevronDown size={14} aria-hidden="true" className={clsx("transition-transform duration-300", isOpen && "rotate-180")} />
-                  </span>
-                )}
-              </>
-            );
-
-            return (
-              <RevealItem key={title} className="group sm:px-6 lg:px-8" distance={14} duration={0.5}>
-                {detail ? (
-                  <button
-                    type="button"
-                    onClick={() => setOpenIndex(isOpen ? null : i)}
-                    aria-expanded={isOpen}
-                    aria-controls={panelId}
-                    className="block w-full cursor-pointer rounded-lg text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-500"
-                  >
-                    {content}
-                  </button>
-                ) : (
-                  content
-                )}
               </RevealItem>
-            );
-          })}
-        </RevealGroup>
-
-        <AnimatePresence initial={false}>
-          {open?.detail && (
-            <motion.div
-              key={openIndex}
-              id={panelId}
-              role="region"
-              aria-label={open.title}
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: reduced ? 0 : 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="overflow-hidden"
-            >
-              <DetailPanel title={open.title} detail={open.detail} />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </section>
-  );
-}
-
-// What a point opens to: its heading, the paragraphs and bullets, and its
-// links down the side. Links to another site open in a new tab.
-function DetailPanel({ title, detail }) {
-  return (
-    <div className="mt-8 grid gap-8 rounded-3xl bg-white p-6 ring-1 ring-brand-100 sm:p-8 lg:grid-cols-12 lg:gap-12">
-      <div className="lg:col-span-8">
-        <h4 className="font-display text-xl font-extrabold tracking-tight text-ink sm:text-2xl">{title}</h4>
-        <span aria-hidden="true" className="mt-3 block h-1 w-10 rounded-full bg-gradient-to-r from-brand-500 to-accent-500" />
-        <div className="mt-5 space-y-4 leading-relaxed text-ink-soft">
-          {detail.blocks.map((block, i) =>
-            block.type === "ul" ? (
-              <ul key={i} className="space-y-2.5">
-                {block.items.map((item) => (
-                  <li key={item} className="flex gap-3">
-                    <span aria-hidden="true" className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent-500" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p key={i}>{block.text}</p>
             )
           )}
-        </div>
+        </RevealGroup>
       </div>
-
-      {detail.links.length > 0 && (
-        <ul className="flex flex-col gap-3 lg:col-span-4 lg:justify-center">
-          {detail.links.map((link, i) => {
-            const external = isExternalLink(link.url);
-            const className = clsx("text-sm", i === 0 ? "btn-primary" : "btn-outline", "justify-between text-left");
-            return (
-              <li key={link.url}>
-                {external ? (
-                  <a href={link.url} target="_blank" rel="noopener noreferrer" className={clsx(className, "w-full")}>
-                    <span>{link.label}</span> <ExternalLink size={15} aria-hidden="true" className="shrink-0" />
-                  </a>
-                ) : (
-                  <Link href={link.url} className={clsx(className, "w-full")}>
-                    <span>{link.label}</span> <ArrowRight size={15} aria-hidden="true" className="shrink-0" />
-                  </Link>
-                )}
-              </li>
-            );
-          })}
-        </ul>
-      )}
-    </div>
+    </section>
   );
 }

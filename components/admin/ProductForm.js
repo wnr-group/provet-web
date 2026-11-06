@@ -256,6 +256,10 @@ export default function ProductForm({ id }) {
             </p>
           )}
 
+          <Card title="Images" description="The first image is the cover, used on cards and in search.">
+            <MultiImagePicker value={form.images} onChange={(images) => setForm((f) => ({ ...f, images }))} />
+          </Card>
+
           <Card title="General">
             <Field label="Product name" required error={fieldErrors.name} htmlFor="product-name">
               <input
@@ -345,10 +349,6 @@ export default function ProductForm({ id }) {
                 placeholder="What the product is and what it does, in a sentence or two."
               />
             </Field>
-          </Card>
-
-          <Card title="Images" description="The first image is the cover, used on cards and in search.">
-            <MultiImagePicker value={form.images} onChange={(images) => setForm((f) => ({ ...f, images }))} />
           </Card>
 
           <Card title="Product information" description="Each filled tab appears on the product page; empty ones are left out.">
