@@ -360,7 +360,7 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
                 // over-long one can't stretch the hero.
                 className="mt-5 line-clamp-3 max-w-2xl font-display text-3xl font-extrabold leading-[1.1] text-white [text-shadow:0_2px_16px_rgba(10,8,30,0.45)] sm:text-4xl"
               >
-                {slide.title}
+                <Typewriter text={slide.title} instant={reduced} />
               </motion.h1>
             </AnimatePresence>
 
@@ -465,6 +465,40 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
         </div>
       )}
     </section>
+  );
+}
+
+// Types the headline out one character at a time. The untyped remainder is
+// rendered transparent in the same flow, so the lines wrap exactly as the
+// finished headline will and nothing jumps while it types. The full text is
+// the accessible name, so a screen reader doesn't hear it letter by letter.
+const TYPE_DELAY = 38;
+const TYPE_START = 250;
+function Typewriter({ text = "", instant = false }) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (instant) return;
+    let i = 0;
+    let timer;
+    const step = () => {
+      i += 1;
+      setCount(i);
+      if (i < text.length) timer = setTimeout(step, TYPE_DELAY);
+    };
+    setCount(0);
+    timer = setTimeout(step, TYPE_START);
+    return () => clearTimeout(timer);
+  }, [text, instant]);
+
+  if (instant) return text;
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true">
+        {text.slice(0, count)}
+        <span className="opacity-0">{text.slice(count)}</span>
+      </span>
+    </>
   );
 }
 
