@@ -1,5 +1,6 @@
 "use client";
 
+import ProductName from "@/components/ui/ProductName";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
@@ -41,7 +42,7 @@ export default function FeaturedSpotlight({ products }) {
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
-      className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-50 via-white to-accent-50 p-4 shadow-soft ring-1 ring-brand-100 sm:p-6"
+      className="relative overflow-hidden rounded-3xl bg-brand-50 p-4 shadow-soft ring-1 ring-brand-100 sm:p-6"
     >
       {/* Kept compact: it introduces the catalogue rather than competing with
           it, so the product grid stays close to the top of the page. */}
@@ -100,7 +101,7 @@ export default function FeaturedSpotlight({ products }) {
                 </p>
               )}
               <h2 className="mt-0.5 font-display text-xl font-extrabold tracking-tight text-ink sm:text-2xl">
-                {product.name}
+                <ProductName name={product.name} slug={product.slug} className="h-8 sm:h-10" sizes="360px" />
               </h2>
               {product.shortDescription && (
                 <p className="mt-2 line-clamp-2 max-w-2xl text-sm leading-relaxed text-ink-soft">

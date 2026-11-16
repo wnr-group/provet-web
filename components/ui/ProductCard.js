@@ -1,3 +1,4 @@
+import ProductName from "@/components/ui/ProductName";
 import Link from "next/link";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import SiteImage from "@/components/ui/SiteImage";
@@ -17,7 +18,7 @@ export default function ProductCard({ product }) {
           costs nothing to animate. */}
       <span
         aria-hidden="true"
-        className="absolute inset-x-0 top-0 z-10 h-1 origin-left scale-x-0 bg-gradient-to-r from-brand-500 to-accent-500 transition-transform duration-500 ease-out group-hover:scale-x-100"
+        className="absolute inset-x-0 top-0 z-10 h-1 origin-left scale-x-0 bg-accent-500 transition-transform duration-500 ease-out group-hover:scale-x-100"
       />
 
       {/* The photo is inset with its own radius rather than bleeding to the
@@ -52,7 +53,7 @@ export default function ProductCard({ product }) {
           {product.subcategory?.name || product.category?.name}
         </span>
         <h3 className="mt-1 line-clamp-2 font-display text-[15px] font-bold leading-snug text-ink transition-colors group-hover:text-(--range-text) sm:text-base">
-          {product.name}
+          <ProductName name={product.name} slug={product.slug} className="h-5 sm:h-6" sizes="260px" />
         </h3>
         <p className="mt-1.5 line-clamp-3 text-[13px] leading-5 text-ink-soft sm:line-clamp-6 sm:text-sm">{product.shortDescription}</p>
         <div className="mt-auto flex items-end justify-between gap-3 pt-3">

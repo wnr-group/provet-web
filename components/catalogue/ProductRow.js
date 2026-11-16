@@ -1,3 +1,4 @@
+import ProductName from "@/components/ui/ProductName";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import SiteImage from "@/components/ui/SiteImage";
@@ -35,7 +36,7 @@ export default function ProductRow({ product }) {
 
       <span className="min-w-0">
         <span className="block truncate font-display text-[15px] font-bold text-ink transition-colors group-hover:text-(--range-text)">
-          {product.name}
+          <ProductName name={product.name} slug={product.slug} className="h-5" sizes="200px" />
         </span>
         {group && <span className="mt-0.5 block truncate text-xs font-medium text-(--range-accent)">{group}</span>}
         {product.packSize && <span className="mt-0.5 block truncate text-xs text-ink-soft md:hidden">{product.packSize}</span>}

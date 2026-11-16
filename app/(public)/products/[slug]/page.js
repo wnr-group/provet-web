@@ -1,3 +1,4 @@
+import ProductName from "@/components/ui/ProductName";
 import { Fragment } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -97,7 +98,9 @@ export default async function ProductDetail({ params }) {
                   </Fragment>
                 ))}
                 <ChevronRight size={12} aria-hidden="true" className="shrink-0 opacity-60" />
-                <li aria-current="page" className="font-semibold text-ink">{product.name}</li>
+                <li aria-current="page" className="font-semibold text-ink">
+                  <ProductName name={product.name} slug={product.slug} className="h-4" sizes="160px" />
+                </li>
               </ol>
             </nav>
           </Reveal>
@@ -156,7 +159,7 @@ export default async function ProductDetail({ params }) {
               </div>
 
               <h1 className="mt-4 break-words text-balance font-display text-3xl font-extrabold leading-tight tracking-tight text-brand-900 sm:text-4xl lg:text-5xl">
-                {product.name}
+                <ProductName name={product.name} slug={product.slug} className="h-9 sm:h-11 lg:h-14" sizes="560px" eager />
               </h1>
               {product.shortDescription && (
                 <p className="mt-4 text-pretty text-lg leading-relaxed text-ink-soft">{product.shortDescription}</p>
@@ -177,7 +180,7 @@ export default async function ProductDetail({ params }) {
               {details.length > 0 && (
                 <div className="mt-9">
                   <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink">Product information</h2>
-                  <span aria-hidden="true" className="mb-5 mt-3 block h-1 w-12 rounded-full bg-gradient-to-r from-brand-500 to-accent-500" />
+                  <span aria-hidden="true" className="mb-5 mt-3 block h-1 w-12 rounded-full bg-accent-500" />
                   <ProductTabs fields={details} />
                 </div>
               )}

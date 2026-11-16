@@ -1,3 +1,4 @@
+import ProductName from "@/components/ui/ProductName";
 import Link from "next/link";
 import { ArrowRight, Package } from "lucide-react";
 import SiteImage from "@/components/ui/SiteImage";
@@ -48,7 +49,7 @@ export default function CatalogueCard({ product }) {
           <p className="line-clamp-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-(--range-accent) sm:text-[11px]">{group}</p>
         )}
         <h3 className="mt-1 line-clamp-2 font-display text-sm font-bold leading-snug text-ink transition-colors group-hover:text-(--range-text) sm:text-base">
-          {product.name}
+          <ProductName name={product.name} slug={product.slug} className="h-5 sm:h-6" sizes="240px" />
         </h3>
         {product.shortDescription && (
           <p className="mt-1.5 line-clamp-2 text-xs leading-[1.125rem] text-ink-soft sm:text-[13px] sm:leading-5">{product.shortDescription}</p>
