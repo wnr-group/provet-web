@@ -37,11 +37,11 @@ export default function ImageAccordion({ section, items }) {
   return (
     <div>
       {(section.title || section.body) && (
-        <Enter preset="drop" className="mx-auto mb-10 max-w-2xl text-center sm:mb-12">
+        <Enter preset="drop" className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
           {section.title && (
             <h2 className="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">{section.title}</h2>
           )}
-          <span aria-hidden="true" className="mx-auto mt-4 block h-1 w-14 rounded-full bg-gradient-to-r from-brand-500 to-accent-500" />
+          <span aria-hidden="true" className="mx-auto mt-4 block h-1 w-14 rounded-full bg-accent-500" />
           {section.body && <p className="mt-4 leading-relaxed text-ink-soft">{section.body}</p>}
         </Enter>
       )}
@@ -112,7 +112,7 @@ export default function ImageAccordion({ section, items }) {
                   <span
                     className={clsx(
                       "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl font-display text-sm font-bold tabular-nums transition-colors duration-300",
-                      isActive ? "bg-gradient-to-br from-brand-600 to-accent-500 text-white" : "bg-brand-50 text-brand-700"
+                      isActive ? "bg-brand-600 text-white" : "bg-brand-50 text-brand-700"
                     )}
                   >
                     {String(i + 1).padStart(2, "0")}

@@ -15,7 +15,7 @@ export default function CategoryCard({ category }) {
           gradients can't be transitioned directly. */}
       <span
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-b from-white via-white to-accent-50 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        className="absolute inset-0 -z-10 bg-accent-50 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
       />
 
       {/* The thumbnail zooms inside its own rounded frame while the card

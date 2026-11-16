@@ -93,14 +93,14 @@ export default function BookletShelf({ section, items, columns = 3 }) {
   return (
     <div>
       {section.title && (
-        <div className="mb-12 flex items-end justify-between gap-4 border-b border-brand-900/10 pb-3">
+        <div className="mb-8 flex items-end justify-between gap-4 border-b border-brand-900/10 pb-3">
           <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{section.title}</h2>
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-soft">
             {items.length} {items.length === 1 ? "volume" : "volumes"}
           </span>
         </div>
       )}
-      {section.body && <p className="-mt-6 mb-12 max-w-2xl leading-relaxed text-ink-soft">{section.body}</p>}
+      {section.body && <p className="-mt-4 mb-8 max-w-2xl leading-relaxed text-ink-soft">{section.body}</p>}
 
       <EnterGroup className={clsx("grid gap-x-8 gap-y-14 sm:grid-cols-2", COLUMNS[columns] || COLUMNS[3])} stagger={0.1}>
         {items.map((item, i) => (

@@ -75,18 +75,18 @@ export default async function CoreValuesPage() {
       />
 
       {intro?.body && (
-        <section className="py-16 sm:py-24">
-          <div className="container-page grid gap-6 lg:grid-cols-12 lg:gap-12">
+        <section className="py-12 sm:py-16">
+          <div className="container-page grid gap-6 lg:grid-cols-12 lg:gap-10">
             {/* Motion: the label's rule draws in, then the statement comes into
                 focus in place - a quiet read, not a slide. */}
             <Reveal className="lg:col-span-4" distance={8}>
-              <p className="flex items-center gap-3 text-sm font-semibold text-accent-600">
-                <DrawLine origin="left" className="block h-0.5 w-8 rounded-full bg-accent-400" />
+              <DrawLine origin="left" className="block h-1 w-12 rounded-full bg-accent-500" />
+              <h2 className="mt-4 text-balance font-display text-2xl font-extrabold leading-tight tracking-tight text-ink sm:text-3xl">
                 {intro.title || "Our values"}
-              </p>
+              </h2>
             </Reveal>
             <Enter preset="blur" delay={0.15} className="lg:col-span-8">
-              <p className="whitespace-pre-line text-pretty font-display text-2xl font-normal leading-snug tracking-tight text-brand-800 sm:text-3xl sm:leading-snug">
+              <p className="whitespace-pre-line text-pretty font-display text-lg font-normal leading-relaxed tracking-tight text-brand-800 sm:text-xl sm:leading-relaxed">
                 {intro.body}
               </p>
             </Enter>
@@ -95,7 +95,7 @@ export default async function CoreValuesPage() {
       )}
 
       {values.length > 0 && (
-        <section className="relative overflow-hidden bg-mist-50 py-16 sm:py-24">
+        <section className="relative overflow-hidden bg-mist-50 py-12 sm:py-16">
           <div className="container-page">
             {valuesBlock.title && (
               <Reveal distance={12}>
@@ -110,7 +110,7 @@ export default async function CoreValuesPage() {
             {/* Motion: the value cards tip upright one after another, like
                 cards being stood on a table - the values' own entrance, unlike
                 the fades and wipes elsewhere on the site. */}
-            <EnterGroup className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-6" stagger={0.1}>
+            <EnterGroup className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-6" stagger={0.1}>
               {values.map((value, i) => {
                 const mark = markFor(value.heading);
                 return (

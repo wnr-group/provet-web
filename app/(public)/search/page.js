@@ -57,7 +57,7 @@ export default async function SearchPage({ searchParams }) {
         <SearchInput query={query} />
       </PageBanner>
 
-      <div className="container-page space-y-12 py-12 sm:py-16">
+      <div className="container-page space-y-10 py-10 sm:py-12">
         {!searchable ? (
           <EmptyState
             icon={SearchIcon}

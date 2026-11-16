@@ -23,7 +23,7 @@ export default function WhyUs({ section, figure = null }) {
     : DEFAULT_POINTS;
 
   return (
-    <section className="relative isolate overflow-hidden bg-brand-800 py-16 text-white sm:py-24">
+    <section className="relative isolate overflow-hidden bg-brand-800 py-12 text-white sm:py-16">
       {/* Texture and light for the one dark band mid-page: a faint dot grid
           fading out toward the centre, and a magenta glow behind the copy
           side. Both static - the motion here belongs to the photo and list. */}
@@ -35,7 +35,7 @@ export default function WhyUs({ section, figure = null }) {
         aria-hidden="true"
         className="pointer-events-none absolute -right-40 top-1/2 -z-10 h-[32rem] w-[32rem] -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(229,9,127,0.22),transparent_65%)]"
       />
-      <div className="container-page grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
+      <div className="container-page grid items-center gap-10 lg:grid-cols-2 lg:gap-12">
         {/* Image-and-text identity: the photo is *uncovered* by a clip-path
             travelling up while the picture inside settles back from an
             overscale, and the copy arrives from the other side a beat later.

@@ -485,7 +485,6 @@ function Typewriter({ text = "", instant = false }) {
       setCount(i);
       if (i < text.length) timer = setTimeout(step, TYPE_DELAY);
     };
-    setCount(0);
     timer = setTimeout(step, TYPE_START);
     return () => clearTimeout(timer);
   }, [text, instant]);

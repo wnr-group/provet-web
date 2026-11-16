@@ -246,14 +246,12 @@ button.card {
 
 @utility btn-gradient {
   @apply btn relative overflow-hidden text-white;
-  background-image: linear-gradient(135deg, var(--color-brand-600) 0%, var(--color-brand-500) 45%, var(--color-accent-500) 100%);
-  background-size: 160% 160%;
-  background-position: 0% 50%;
+  background-color: var(--color-accent-500);
   box-shadow: 0 8px 24px rgba(229, 9, 127, 0.28);
-  transition: background-position 0.45s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
 
   &:hover {
-    background-position: 100% 50%;
+    background-color: var(--color-accent-600);
     box-shadow: 0 12px 32px rgba(229, 9, 127, 0.38);
   }
   &:active {
@@ -281,20 +279,16 @@ button.card {
 
 /* --- Shared surfaces -------------------------------------------------- */
 
-/* Navy-to-magenta, the brand pairing, as clipped text for figures and
+/* Solid navy, a logo colour, for figures and
    highlighted words. */
 @utility text-gradient {
-  background-image: linear-gradient(120deg, var(--color-brand-600) 0%, var(--color-brand-400) 45%, var(--color-accent-500) 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: var(--color-brand-600);
 }
 
 /* The brand gradient as a surface (CTA band). Oversized so the pan
    animation has somewhere to travel. */
 @utility bg-brand-gradient {
-  background-image: linear-gradient(120deg, var(--color-brand-800) 0%, var(--color-brand-600) 40%, var(--color-accent-500) 100%);
-  background-size: 200% 200%;
+  background-color: var(--color-brand-600);
 }
 
 /* The inner-page banner band (page banners, catalogue, product detail). Kept
@@ -302,7 +296,7 @@ button.card {
    near-black, while white copy still has ample contrast. */
 @utility bg-banner {
   /* Each stop sits halfway between two brand shades (700/600, 600/500). */
-  background-image: linear-gradient(120deg, #322b75 0%, #413897 60%, #5a2f88 100%);
+  background-color: var(--color-brand-600);
 }
 
 /* A faint dot grid for dark or tinted bands, so a large flat colour field has

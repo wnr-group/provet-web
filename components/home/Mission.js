@@ -10,7 +10,7 @@ export default function Mission({ section }) {
   if (!section?.title && !section?.body) return null;
 
   return (
-    <section className="relative overflow-hidden bg-mist-50/60 py-16 sm:py-24">
+    <section className="relative overflow-hidden bg-mist-50/60 py-12 sm:py-16">
       {/* Tinted rather than white: it sits between the (white) featured
           products above and the dark "Why Provet" band below, so a plain
           white band would merge into the products section. The soft brand

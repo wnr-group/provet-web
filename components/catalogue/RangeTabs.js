@@ -79,7 +79,7 @@ export default function RangeTabs({ ranges, activeId }) {
                     />
                   </>
                 ) : (
-                  <span aria-hidden="true" className="absolute inset-0 -z-20 bg-[linear-gradient(120deg,#2b2565_0%,#483ea8_55%,#b60765_130%)]" />
+                  <span aria-hidden="true" className="absolute inset-0 -z-20 bg-brand-700" />
                 )}
 
                 <span className="flex items-center gap-1.5">

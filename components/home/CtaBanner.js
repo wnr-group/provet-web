@@ -16,7 +16,7 @@ export default async function CtaBanner({
   const { phones } = contactInfo(await getContentSections("contact"));
   const phone = phones[0];
   return (
-    <section className="py-16 sm:py-20">
+    <section className="py-12 sm:py-16">
       <div className="container-page">
         {/* CTA identity: the panel expands out of its own centre, then the
             headline, copy and buttons rise inside it. Nothing slides in from

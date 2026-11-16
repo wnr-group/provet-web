@@ -69,7 +69,7 @@ export default async function About() {
       <VisionMission vision={vision} mission={mission} />
 
       {values.length > 0 && (
-        <section className="container-page py-16 sm:py-24">
+        <section className="container-page py-12 sm:py-16">
           <Reveal className="mx-auto max-w-2xl text-center">
             <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">What We Stand For</h2>
             <span aria-hidden="true" className="mx-auto mt-4 block h-1 w-14 rounded-full bg-accent-400" />
@@ -84,7 +84,7 @@ export default async function About() {
                     {/* 3D card: leans to the pointer, the icon floats in front. */}
                     <Tilt max={10} shadow className="h-full">
                       <div className="card h-full p-7 [transform-style:preserve-3d]">
-                        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-accent-500 text-white shadow-[0_12px_20px_-8px_rgba(72,62,168,0.6)] [transform:translateZ(50px)]">
+                        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 text-white shadow-[0_12px_20px_-8px_rgba(72,62,168,0.6)] [transform:translateZ(50px)]">
                           <Icon size={20} />
                         </span>
                         <h3 className="mt-4 font-display text-lg font-semibold text-ink">{section.title}</h3>

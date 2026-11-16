@@ -30,10 +30,10 @@ function mastheadOf(title) {
 // Cover band tints, cycling through the issues - Propulse's purple and green
 // with Provet's pink.
 const BANDS = [
-  "from-brand-700 to-brand-900",
-  "from-[#1d7a4f] to-[#0f4a31]",
-  "from-accent-600 to-brand-800",
-  "from-brand-600 to-[#2a1f5c]",
+  "from-brand-700 to-brand-700",
+  "from-brand-800 to-brand-800",
+  "from-accent-600 to-accent-600",
+  "from-brand-600 to-brand-600",
 ];
 
 function MagazineCover({ item, index, size = "rack" }) {

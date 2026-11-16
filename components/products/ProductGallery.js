@@ -33,7 +33,7 @@ export default function ProductGallery({ images, name }) {
     <div>
       {/* The image is centred and contained at the same padding whatever its
           proportions. */}
-      <div className="relative aspect-square overflow-hidden rounded-2xl bg-[radial-gradient(circle_at_50%_40%,#ffffff_0%,var(--color-mist-100)_70%,var(--color-brand-100)_100%)]">
+      <div className="relative aspect-square overflow-hidden rounded-2xl bg-mist-50">
         {failed[activeImg] ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 text-ink-soft">
             <ImageOff size={28} />

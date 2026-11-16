@@ -18,14 +18,14 @@ export default function SectionHeading({ eyebrow, title, description, align = 'l
       </h2>
       {animated ? (
         <DrawLine
-          className={clsx('mt-4 block h-1 w-12 rounded-full bg-gradient-to-r from-brand-500 to-accent-500', center && 'mx-auto')}
+          className={clsx('mt-4 block h-1 w-12 rounded-full bg-accent-500', center && 'mx-auto')}
           origin={center ? 'center' : 'left'}
           delay={0.25}
         />
       ) : (
         <span
           aria-hidden="true"
-          className={clsx('mt-4 block h-1 w-12 rounded-full bg-gradient-to-r from-brand-500 to-accent-500', center && 'mx-auto')}
+          className={clsx('mt-4 block h-1 w-12 rounded-full bg-accent-500', center && 'mx-auto')}
         />
       )}
       {description && <p className={clsx('mt-4 max-w-xl leading-relaxed text-ink-soft', center && 'mx-auto')}>{description}</p>}

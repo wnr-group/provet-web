@@ -25,7 +25,7 @@ export default function CategoryGrid({ categories, title = "Solutions by Species
   return (
     // Solid mist-50 (not a translucent tint) so it continues the lower half of
     // the feature strip's background seamlessly.
-    <section className="bg-mist-50 pb-16 pt-14 sm:pb-20 sm:pt-16">
+    <section className="bg-mist-50 pb-12 pt-12 sm:pb-16 sm:pt-14">
       <div className="container-page">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <Reveal>

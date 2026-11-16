@@ -45,11 +45,11 @@ export default function Stats({ section }) {
   if (!section?.title && items.length === 0) return null;
 
   return (
-    <section className="relative isolate overflow-hidden bg-white py-16 sm:py-24">
+    <section className="relative isolate overflow-hidden bg-white py-12 sm:py-16">
       {/* A soft band of brand colour behind the figures. */}
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 h-64 -translate-y-1/4 bg-gradient-to-r from-brand-50 via-accent-50/70 to-brand-50 sm:h-80"
+        className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 h-64 -translate-y-1/4 bg-brand-50 sm:h-80"
       />
 
       <div className="container-page">
@@ -64,7 +64,7 @@ export default function Stats({ section }) {
           )}
           <span
             aria-hidden="true"
-            className="mx-auto mt-5 block h-1 w-14 rounded-full bg-gradient-to-r from-brand-500 to-accent-500"
+            className="mx-auto mt-5 block h-1 w-14 rounded-full bg-accent-500"
           />
           {notes.map((note) => (
             <p
@@ -82,7 +82,7 @@ export default function Stats({ section }) {
           // or three cards fill the row evenly and an odd last card stretches
           // across instead of leaving a hole.
           <RevealGroup
-            className="mt-12 flex flex-wrap justify-center gap-4 sm:mt-14 sm:gap-5"
+            className="mt-8 flex flex-wrap justify-center gap-4 sm:mt-10 sm:gap-5"
             stagger={0.1}
             delay={0.1}
           >
@@ -96,14 +96,14 @@ export default function Stats({ section }) {
                 {/* A brand-colour line that draws across the top on hover. */}
                 <span
                   aria-hidden="true"
-                  className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-gradient-to-r from-brand-500 to-accent-500 transition-transform duration-500 group-hover:scale-x-100"
+                  className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-accent-500 transition-transform duration-500 group-hover:scale-x-100"
                 />
-                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-accent-500 text-white shadow-md shadow-accent-500/25 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
+                <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-brand-600 text-white shadow-md shadow-accent-500/25 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3">
                   <StatIcon label={item.label} size={22} strokeWidth={1.75} />
                 </span>
                 <div>
                   <p className="mt-5 font-display text-3xl font-extrabold leading-none tracking-tight sm:text-4xl">
-                    <span className="bg-gradient-to-r from-brand-600 to-accent-500 bg-clip-text text-transparent">
+                    <span className="text-brand-600">
                       <Counter value={item.value} />
                     </span>
                   </p>
