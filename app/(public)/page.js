@@ -94,7 +94,7 @@ export default async function Home() {
           anywhere among the built-in ones. */}
       {homeLayout(homeSectionOrder(content), added).map((entry) =>
         entry.added ? (
-          <PageSections key={entry.key} sections={[entry.added]} offset={entry.addedIndex} />
+          <PageSections key={entry.key} sections={[entry.added]} offset={entry.addedIndex} flat />
         ) : (
           renderSection(entry.block)
         )

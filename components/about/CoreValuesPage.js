@@ -95,7 +95,7 @@ export default async function CoreValuesPage() {
       )}
 
       {values.length > 0 && (
-        <section className="relative overflow-hidden bg-mist-50 py-12 sm:py-16">
+        <section className="relative overflow-hidden bg-brand-600 py-12 sm:py-16 [&_h2]:text-white">
           <div className="container-page">
             {valuesBlock.title && (
               <Reveal distance={12}>
@@ -140,7 +140,7 @@ export default async function CoreValuesPage() {
         </section>
       )}
 
-      <PageSections sections={[...rest, ...(cta ? [cta] : [])]} />
+      <PageSections navy offset={3} sections={[...rest, ...(cta ? [cta] : [])]} />
     </div>
   );
 }

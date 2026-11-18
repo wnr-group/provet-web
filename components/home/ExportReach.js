@@ -40,7 +40,7 @@ export default function ExportReach({ regions, contacts = [], title = "Exporting
   }));
 
   return (
-    <section className="relative isolate overflow-hidden bg-white py-12 sm:py-16">
+    <section className="relative isolate overflow-hidden bg-brand-100 py-12 sm:py-16">
       <div className="container-page">
         <Reveal>
           <SectionHeading

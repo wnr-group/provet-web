@@ -69,7 +69,8 @@ export default async function About() {
       <VisionMission vision={vision} mission={mission} />
 
       {values.length > 0 && (
-        <section className="container-page py-12 sm:py-16">
+        <section className="bg-brand-600 [&_h2]:text-white">
+         <div className="container-page py-12 sm:py-16">
           <Reveal className="mx-auto max-w-2xl text-center">
             <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">What We Stand For</h2>
             <span aria-hidden="true" className="mx-auto mt-4 block h-1 w-14 rounded-full bg-accent-400" />
@@ -96,13 +97,14 @@ export default async function About() {
               })}
             </RevealGroup>
           </ScrollTilt>
+         </div>
         </section>
       )}
 
       {whyUs && <WhyUs section={whyUs} figure={figure} />}
 
       {/* Sections added in Admin > Website Content > About Us. */}
-      <PageSections sections={added} />
+      <PageSections navy offset={3} sections={added} />
 
       {cta && <CtaBanner title={cta.title || undefined} body={cta.body} />}
     </div>

@@ -15,7 +15,7 @@ export default function FeaturedProducts({
   if (!products?.length) return null;
 
   return (
-    <section className="py-12 sm:py-16">
+    <section className="bg-white py-10 sm:py-12">
       <div className="container-page">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <Reveal>

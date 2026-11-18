@@ -25,13 +25,13 @@ export default function CategoryGrid({ categories, title = "Solutions by Species
   return (
     // Solid mist-50 (not a translucent tint) so it continues the lower half of
     // the feature strip's background seamlessly.
-    <section className="bg-mist-50 pb-12 pt-12 sm:pb-16 sm:pt-14">
+    <section className="bg-brand-600 pb-10 pt-10 sm:pb-12 sm:pt-12">
       <div className="container-page">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <Reveal>
-            <SectionHeading animated eyebrow="Our Portfolio" title={title} description={description || undefined} />
+            <SectionHeading animated tone="light" eyebrow="Our Portfolio" title={title} description={description || undefined} />
           </Reveal>
-          <Link href="/products" className="btn-outline hidden sm:inline-flex">
+          <Link href="/products" className="btn border border-white/40 text-white hover:bg-white/10 hidden sm:inline-flex">
             View Full Portfolio <ArrowRight size={16} />
           </Link>
         </div>
@@ -63,7 +63,7 @@ export default function CategoryGrid({ categories, title = "Solutions by Species
           ))}
         </RevealGroup>
 
-        <Link href="/products" className="btn-outline mt-8 w-full justify-center sm:hidden">
+        <Link href="/products" className="btn border border-white/40 text-white hover:bg-white/10 mt-8 w-full justify-center sm:hidden">
           View Full Portfolio <ArrowRight size={16} />
         </Link>
       </div>

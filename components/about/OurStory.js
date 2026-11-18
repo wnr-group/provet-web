@@ -35,7 +35,7 @@ export default function OurStory({ story }) {
   const rest = split ? split[2] : "";
 
   return (
-    <section className="relative overflow-hidden py-12 sm:py-16">
+    <section className="relative overflow-hidden bg-white py-12 sm:py-16">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -left-40 top-10 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(72,62,168,0.10),transparent_65%)]"

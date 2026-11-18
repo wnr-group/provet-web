@@ -31,7 +31,7 @@ export default function FeatureStrip({ items = DEFAULT_ITEMS, title = "" }) {
   const compact = features.length > 4;
 
   return (
-    <section className="border-b border-brand-100/70 bg-mist-50">
+    <section className="bg-brand-100">
       <div className="container-page py-10 sm:py-12">
         {title && (
           <Reveal className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">

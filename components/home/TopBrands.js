@@ -27,11 +27,7 @@ export default function TopBrands({ brands, title = "Top Brands" }) {
   const slides = hasBovinova ? brands : [...brands, ...BOVINOVA_PLACEHOLDERS].slice(0, Math.max(brands.length + 2, 6));
 
   return (
-    <section className="relative isolate overflow-hidden bg-mist-50 py-12 sm:py-16">
-      <span
-        aria-hidden="true"
-        className="absolute left-1/2 top-0 -z-10 h-72 w-[44rem] -translate-x-1/2 rounded-full bg-brand-200/40 blur-3xl"
-      />
+    <section className="relative isolate overflow-hidden bg-brand-100 py-10 sm:py-12">
       <div className="container-page">
         <Reveal>
           <SectionHeading animated align="center" eyebrow="Flagship Range" title={title} />

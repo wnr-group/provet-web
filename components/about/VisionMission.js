@@ -17,7 +17,7 @@ export default function VisionMission({ vision, mission }) {
   const pair = items.length === 2;
 
   return (
-    <section className="bg-brand-50/60 py-10 sm:py-14">
+    <section className="bg-brand-100 py-10 sm:py-14">
       <div className="container-page">
         <Reveal className="mx-auto max-w-2xl text-center">
           <SplitText as="h2" text="Vision & Mission" className="block font-display text-2xl font-extrabold tracking-tight text-brand-800 sm:text-3xl" />

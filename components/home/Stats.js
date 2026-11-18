@@ -45,20 +45,14 @@ export default function Stats({ section }) {
   if (!section?.title && items.length === 0) return null;
 
   return (
-    <section className="relative isolate overflow-hidden bg-white py-12 sm:py-16">
-      {/* A soft band of brand colour behind the figures. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-1/2 -z-10 h-64 -translate-y-1/4 bg-brand-50 sm:h-80"
-      />
-
+    <section className="relative isolate overflow-hidden bg-brand-800 py-10 text-white sm:py-12">
       <div className="container-page">
         <Reveal className="mx-auto max-w-2xl text-center">
-          <span className="badge bg-accent-100 text-accent-700">
+          <span className="badge bg-white/10 text-accent-200">
             Track Record
           </span>
           {section?.title && (
-            <h2 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl lg:text-5xl">
+            <h2 className="mt-4 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
               {section.title}
             </h2>
           )}
@@ -69,7 +63,7 @@ export default function Stats({ section }) {
           {notes.map((note) => (
             <p
               key={note.label}
-              className="mt-5 leading-relaxed text-ink-soft first-letter:uppercase"
+              className="mt-5 leading-relaxed text-brand-200 first-letter:uppercase"
             >
               {note.label}
             </p>
