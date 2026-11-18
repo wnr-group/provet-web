@@ -57,7 +57,7 @@ function Heading({ title, description, align = "left", className }) {
         aria-hidden="true"
         className={clsx("mt-4 block h-1 w-14 rounded-full bg-accent-400", centered && "mx-auto")}
       />
-      {description && <p className="mt-5 leading-relaxed text-ink-soft">{description}</p>}
+      {description && <p className="band-desc mt-5 leading-relaxed text-ink-soft">{description}</p>}
     </div>
   );
 }
@@ -646,8 +646,34 @@ const TILTED_TYPES = new Set(["cards", "imageCards", "productGrid", "categoryGri
 // `offset`: where these sections fall in the alternation when they are
 // rendered apart from their siblings (the homepage interleaves added sections
 // with its own, one at a time).
-export default function PageSections({ sections, offset = 0 }) {
+// `flat`: single-colour bands (the homepage): light navy tints alternating, no glow.
+// `navy`: a navy-and-white palette (the About pages) - white, light navy,
+// medium navy and deep navy in a cycle. Dark bands only go to the types whose
+// text sits straight on the band (headings over cards); prose in a card and the
+// CTA panel stay on white or light navy.
+const NAVY_CYCLE = ["white", "light", "medium", "white", "light", "deep"];
+const NAVY_DARK_TYPES = new Set(["list", "cards", "imageCards"]);
+const NAVY_CLASS = {
+  white: "bg-white",
+  light: "bg-brand-100",
+  medium: "bg-brand-600 [&_h2]:text-white [&_.band-desc]:text-brand-100",
+  deep: "bg-brand-800 [&_h2]:text-white [&_.band-desc]:text-brand-200",
+};
+
+function navySurfaces(sections, offset) {
+  const out = [];
+  sections.forEach((section, index) => {
+    let surface = NAVY_CYCLE[(index + offset) % NAVY_CYCLE.length];
+    if ((surface === "medium" || surface === "deep") && !NAVY_DARK_TYPES.has(section.type)) surface = "light";
+    if (surface === out[index - 1]) surface = surface === "white" ? "light" : "white";
+    out.push(surface);
+  });
+  return out;
+}
+
+export default function PageSections({ sections, offset = 0, flat = false, navy = false }) {
   if (!sections?.length) return null;
+  const surfaces = navy ? navySurfaces(sections, offset) : [];
 
   // Bands alternate white / tinted so neighbouring sections never merge into
   // one another. Every type takes part, the CTA included - it supplies its
@@ -659,16 +685,19 @@ export default function PageSections({ sections, offset = 0 }) {
         if (!Renderer) return null;
 
         const tinted = (index + offset) % 2 === 1;
+        // The magazine library always sits on plain white.
+        const isMagazine = section.type === "imageCards" && section.config?.imageStyle === "magazine";
 
         return (
           <section
             key={section.key}
             className={clsx(
-              "relative overflow-hidden py-12 sm:py-16",
-              tinted ? "bg-mist-50/60" : "bg-white"
+              "relative overflow-hidden",
+              flat ? "py-10 sm:py-12" : "py-12 sm:py-16",
+              isMagazine ? "bg-white" : navy ? NAVY_CLASS[surfaces[index]] : flat ? (tinted ? "bg-brand-600 [&_h2]:text-white [&_.band-desc]:text-brand-100" : "bg-white") : tinted ? "bg-mist-50/60" : "bg-white"
             )}
           >
-            {tinted && (
+            {tinted && !flat && !navy && (
               // The same soft brand glow the homepage's tinted band uses, so
               // the strip doesn't read as a flat grey box.
               <div
