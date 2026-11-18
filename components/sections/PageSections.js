@@ -15,6 +15,7 @@ import MagazineRack from "@/components/sections/MagazineRack";
 import BookletShelf from "@/components/sections/BookletShelf";
 import ImageAccordion from "@/components/sections/ImageAccordion";
 import { isYouTubeUrl } from "@/lib/youtube";
+import Pic from "@/components/ui/Pic";
 
 // Renders a page's admin-configured sections. One component per type in
 // lib/sectionTypes.js; anything unknown is skipped rather than crashing the
@@ -108,8 +109,7 @@ function ImageText({ section }) {
           delay={0.12}
           className={clsx("aspect-[4/3] overflow-hidden rounded-3xl bg-mist-100", imageLeft && "lg:order-0")}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URL, not a fixed set of remote hosts */}
-          <img src={section.image} alt="" loading="lazy" className="h-full w-full object-cover" />
+          <Pic src={section.image} alt="" sizes="(min-width: 1024px) 560px, 92vw" className="h-full w-full object-cover" />
         </Enter>
       )}
     </div>
@@ -306,11 +306,10 @@ function ImageCards({ section }) {
                     // Phones take a wider crop: a full-width portrait or
                     // square photo made every card most of a screen tall.
                     <div className={clsx("overflow-hidden bg-mist-100 max-sm:aspect-[4/3]", aspect)}>
-                      {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs, not a fixed set of remote hosts */}
-                      <img
+                      <Pic
                         src={item.image}
                         alt={item.title || ""}
-                        loading="lazy"
+                        sizes="(min-width: 1024px) 380px, (min-width: 640px) 45vw, 92vw"
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
                     </div>
@@ -368,8 +367,7 @@ function ImageCards({ section }) {
                         className="absolute inset-0 rounded-3xl bg-accent-400 [transform:translate(8px,8px)]"
                       />
                       <div className="relative h-full w-full overflow-hidden rounded-3xl bg-mist-100 [transform:translateZ(40px)]">
-                        {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs, not a fixed set of remote hosts */}
-                        <img src={item.image} alt={item.title || ""} loading="lazy" className="h-full w-full object-cover" />
+                        <Pic src={item.image} alt={item.title || ""} sizes="(min-width: 1024px) 320px, 70vw" className="h-full w-full object-cover" />
                       </div>
                     </div>
                   )}
@@ -407,8 +405,7 @@ function ImageCards({ section }) {
               )}
             >
               {item.image && (
-                /* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs, not a fixed set of remote hosts */
-                <img src={item.image} alt={item.title || ""} loading="lazy" className="h-full w-full object-cover" />
+                <Pic src={item.image} alt={item.title || ""} sizes="(min-width: 1024px) 320px, 70vw" className="h-full w-full object-cover" />
               )}
               {/* Spine shading, and a sheen that sweeps across on hover. */}
               <span aria-hidden="true" className="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/25 to-transparent" />

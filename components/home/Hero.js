@@ -245,6 +245,14 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
   // without restarting. A video that fails mid-slide changes the key, and
   // its layer crossfades to the poster-only one.
   const layerKey = wantsVideo ? `video:${slide.video}` : slide.id ?? slide.image;
+  // The slide showing when the page first renders. Its photo is the largest
+  // paint on the home page, so its entrance (a fade, then the slow push-in) is
+  // a CSS animation (.hero-intro in globals.css) that starts with the first
+  // frame. A framer entrance is server-rendered at opacity 0 and stays that way
+  // until the whole script has hydrated, which held the page's biggest image
+  // back by seconds on a phone. Later slides use framer as before.
+  const [introKey] = useState(layerKey);
+  const isIntro = layerKey === introKey;
   const loopsVideo = slides.length <= 1 || continues;
   const showsToggle = !reduced && (slides.length > 1 || mountsVideo);
 
@@ -269,11 +277,11 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
             // for the whole time the slide holds (a slow "Ken Burns" push),
             // so the hero is never a still image. A video slide brings its
             // own movement, so it only fades.
-            initial={{ opacity: 0, scale: wantsVideo ? 1 : 1.12 }}
+            initial={isIntro ? false : { opacity: 0, scale: wantsVideo ? 1 : 1.12 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ opacity: { duration: 1.1, ease: EASE }, scale: { duration: 7.5, ease: "linear" } }}
-            className="absolute inset-0"
+            className={clsx("absolute inset-0", isIntro && (slide.video ? "hero-intro-fade" : "hero-intro"))}
           >
             {/* Site-hosted photos (/content/hero/...) go through Next's image
                 optimizer, so each screen gets a WebP at its own width rather

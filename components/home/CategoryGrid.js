@@ -5,6 +5,7 @@ import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 import { Parallax, Tilt } from "@/components/motion/effects";
 import { categoryTheme } from "@/lib/categoryTheme";
 import RangeLogo from "@/components/ui/RangeLogo";
+import Pic from "@/components/ui/Pic";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1589922583749-6b8473a85048?auto=format&fit=crop&w=1200&h=900&q=80";
@@ -89,11 +90,10 @@ function RangePanel({ category }) {
           it reads as a window onto the scene rather than a flat card. It is
           taller than the card, so the drift never shows an edge. */}
       <Parallax distance={22} className="absolute -inset-y-8 inset-x-0 -z-10">
-        {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded/external URLs */}
-        <img
+        <Pic
           src={category.image || FALLBACK_IMG}
           alt=""
-          loading="lazy"
+          sizes="(min-width: 1024px) 380px, (min-width: 640px) 48vw, 92vw"
           className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
         />
       </Parallax>

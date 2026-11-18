@@ -1,8 +1,9 @@
 import Image from "next/image";
+import { canOptimize } from "@/components/ui/Pic";
 
 // An image that fills its (positioned, fixed-ratio) container.
 //
-// Pictures stored on this site - /content and admin uploads under /uploads -
+// Pictures stored on this site - /content, and admin uploads in Supabase Storage -
 // go through Next's image optimizer: resized to the width the layout actually
 // shows (`sizes`), converted to WebP/AVIF and lazy-loaded. That matters most
 // for admin uploads, which can be multi-megabyte photos shown in a small card,
@@ -30,12 +31,8 @@ export default function SiteImage({ src, alt = "", sizes, className, eager = fal
   );
 }
 
+// Pictures stored on this site (/content, /uploads) and in Supabase Storage
+// (everything the admin uploads) - see canOptimize in Pic.js.
 function optimizable(src) {
-  return (
-    typeof src === "string" &&
-    src.startsWith("/") &&
-    !src.startsWith("//") &&
-    !src.includes("?") &&
-    !/\.(svg|gif)$/i.test(src)
-  );
+  return canOptimize(src);
 }

@@ -353,3 +353,76 @@ button.card {
   transition-duration: 700ms;
   transition-timing-function: ease-out;
 }
+
+/* Above-the-fold entrances (Reveal and SplitText with mode="mount").
+   CSS animations, so the page's headline paints with the first frame instead of
+   waiting for the JavaScript to hydrate. The travel comes in as --rx/--ry from
+   the component and is clamped on phones, as the old media query did. With no
+   end keyframe the animation settles on the element's own style. */
+@keyframes reveal-in {
+  from { opacity: 0; transform: translate(var(--rx, 0px), var(--ry, 0px)) scale(var(--rs, 1)); }
+}
+@keyframes reveal-in-small {
+  from {
+    opacity: 0;
+    transform: translate(clamp(-14px, var(--rx, 0px), 14px), clamp(-14px, var(--ry, 0px), 14px)) scale(var(--rs, 1));
+  }
+}
+@keyframes split-rise {
+  from { transform: translateY(110%); }
+}
+.reveal-mount {
+  animation: reveal-in var(--rd, 0.55s) cubic-bezier(0.22, 1, 0.36, 1) var(--rdelay, 0s) both;
+}
+@media (max-width: 767px) {
+  .reveal-mount { animation-name: reveal-in-small; }
+}
+.split-word {
+  display: inline-block;
+  animation: split-rise var(--sdur, 0.7s) cubic-bezier(0.22, 1, 0.36, 1) var(--sdelay, 0s) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal-mount, .split-word { animation: none; }
+}
+
+/* The home hero's first photo: fades in over 1.1s and eases back from a slight
+   zoom for 7.5s (a slow push-in) - the same motion the slider gives every later
+   slide, but as CSS so it starts at first paint (see components/home/Hero.js).
+   A video slide only fades; reduced motion drops the zoom. */
+@keyframes hero-fade {
+  from { opacity: 0; }
+}
+@keyframes hero-push {
+  from { transform: scale(1.12); }
+}
+.hero-intro {
+  animation: hero-fade 1.1s cubic-bezier(0.22, 1, 0.36, 1) both, hero-push 7.5s linear both;
+}
+.hero-intro-fade {
+  animation: hero-fade 1.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-intro { animation: hero-fade 1.1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+}
+
+/* MaskReveal with mode="mount": a banner photo wiped in by a travelling
+   clip-path, with the picture settling back from a slight zoom. "backwards"
+   fill holds the clipped start through the delay and then lets go - the element
+   returns to having no clip at all, as the JavaScript version also does once
+   finished (an overhanging child would otherwise stay sliced off). */
+@keyframes mask-wipe {
+  from { clip-path: var(--mfrom); }
+  to { clip-path: var(--mto); }
+}
+@keyframes mask-zoom {
+  from { transform: scale(1.14); }
+}
+.mask-mount {
+  animation: mask-wipe var(--mdur, 0.9s) cubic-bezier(0.22, 1, 0.36, 1) var(--mdelay, 0s) backwards;
+}
+.mask-mount-zoom {
+  animation: mask-zoom 1.1s cubic-bezier(0.22, 1, 0.36, 1) var(--mdelay, 0s) backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mask-mount, .mask-mount-zoom { animation: none; }
+}

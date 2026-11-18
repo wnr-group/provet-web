@@ -8,6 +8,7 @@ import { Search, X, Package, LayoutGrid, FileText, CornerDownLeft, Loader2 } fro
 import clsx from "clsx";
 import Highlight from "@/components/search/Highlight";
 import { MIN_QUERY_LENGTH } from "@/lib/search";
+import Pic from "@/components/ui/Pic";
 
 const DEBOUNCE_MS = 220;
 const PREVIEW_LIMIT = 5;
@@ -289,11 +290,11 @@ export default function GlobalSearch({ onOpen }) {
                                   )}
                                 >
                                   {item.image ? (
-                                    // eslint-disable-next-line @next/next/no-img-element -- uploaded/external product URLs, not a fixed set of remote hosts
-                                    <img
+                                    <Pic
                                       src={item.image}
                                       alt=""
-                                      loading="lazy"
+                                      sizes="40px"
+                                      widths={[96, 128, 256]}
                                       className="h-10 w-10 shrink-0 rounded-lg object-cover"
                                     />
                                   ) : (

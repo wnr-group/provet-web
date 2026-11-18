@@ -2,6 +2,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { ArrowRight, FileText } from "lucide-react";
 import { EnterGroup, EnterItem } from "@/components/sections/entrances";
+import Pic from "@/components/ui/Pic";
 
 // Technical booklets, presented as the printed reference brochures they are -
 // deliberately not like the magazine rack (components/sections/MagazineRack).
@@ -52,8 +53,7 @@ function Booklet({ item, index }) {
       {/* Cover, hinged on the staples */}
       <div className="relative origin-left transition-transform duration-700 ease-out [transform-style:preserve-3d] motion-safe:group-hover:[transform:rotateY(-58deg)]">
         <div className="relative flex aspect-[3/4] flex-col overflow-hidden rounded-[2px_8px_8px_2px] bg-[#fbfaf6] shadow-[0_18px_34px_-18px_rgba(21,18,48,0.5)] ring-1 ring-black/10">
-          {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded cover */}
-          <img src={item.image} alt={item.title || ""} loading="lazy" className="aspect-[4/3] w-full object-cover object-top" />
+          <Pic src={item.image} alt={item.title || ""} sizes="(min-width: 1024px) 18vw, 42vw" widths={[256, 384, 640, 750]} className="aspect-[4/3] w-full object-cover object-top" />
           <div className="relative flex flex-1 flex-col justify-between border-t border-black/5 bg-[#fbfaf6] p-4">
             {/* Faint paper grain */}
             <span aria-hidden="true" className="bg-dots pointer-events-none absolute inset-0 text-brand-900/[0.04]" />

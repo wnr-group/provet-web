@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ImageOff } from "lucide-react";
 import clsx from "clsx";
+import Pic from "@/components/ui/Pic";
 
 // The product page's image on a single square stage, contained and never
 // cropped (the shots are label artwork with the name printed on them), with a
@@ -40,10 +41,11 @@ export default function ProductGallery({ images, name }) {
             <span className="text-sm">Image unavailable</span>
           </div>
         ) : (
-          /* eslint-disable-next-line @next/next/no-img-element -- arbitrary external/uploaded URLs, not a fixed set of remote hosts */
-          <img
+          <Pic
             key={images[activeImg]}
             src={images[activeImg]}
+            priority
+            sizes="(min-width: 1024px) 560px, 92vw"
             alt={`${name}${hasMultiple ? ` - view ${activeImg + 1} of ${images.length}` : ""}`}
             onError={() => markFailed(activeImg)}
             className="absolute inset-0 h-full w-full object-contain p-[3%]"
@@ -81,8 +83,7 @@ export default function ProductGallery({ images, name }) {
                   <ImageOff size={14} />
                 </span>
               ) : (
-                /* eslint-disable-next-line @next/next/no-img-element -- see above */
-                <img src={img} alt="" loading="lazy" onError={() => markFailed(i)} className="h-full w-full object-contain" />
+                <Pic src={img} alt="" sizes="96px" widths={[96, 128, 256]} onError={() => markFailed(i)} className="h-full w-full object-contain" />
               )}
             </button>
           ))}

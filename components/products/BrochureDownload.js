@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, CheckCircle2, FileText } from "lucide-react";
 import Modal from "@/components/admin/Modal";
-import { brochureLeadSchema, firstFieldErrors } from "@/lib/brochureLeadSchema";
+import { checkBrochureLead } from "@/lib/brochureLeadRules";
 
 const FIELDS = [
   { name: "name", label: "Full Name", placeholder: "Jane Doe", required: true, type: "text", autoComplete: "name" },
@@ -62,10 +62,11 @@ export default function BrochureDownload({ label = "Download Brochure", fileUrl:
     e.preventDefault();
     if (status === "submitting") return;
 
-    // Same schema the server uses, so messages match exactly.
-    const parsed = brochureLeadSchema.safeParse(form);
-    if (!parsed.success) {
-      setErrors(firstFieldErrors(parsed.error));
+    // The server's rules and messages, without shipping Zod to the browser
+    // (lib/brochureLeadRules.js - kept identical by its test).
+    const parsed = checkBrochureLead(form);
+    if (parsed.errors) {
+      setErrors(parsed.errors);
       setFormError("");
       return;
     }

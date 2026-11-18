@@ -6,6 +6,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
 import { Archive, ArrowRight, BookOpen, CalendarDays, CalendarX, Download } from "lucide-react";
+import Pic from "@/components/ui/Pic";
 
 // The Propulse magazine library: Recent Editions and a year-by-year Archives,
 // both worked out from the issues the admin lists in this section (cover,
@@ -115,12 +116,12 @@ function MagazineCover({ item, index, size = "rack" }) {
         />
         <div className="relative flex aspect-[3/4] flex-col overflow-hidden rounded-[3px_10px_10px_3px] bg-white shadow-[0_22px_40px_-20px_rgba(21,18,48,0.55)] ring-1 ring-black/5">
           {item.image && (
-            // eslint-disable-next-line @next/next/no-img-element -- admin-uploaded cover
-            <img
+            <Pic
               src={item.image}
               alt={`${item.title || "Magazine"} cover`}
-              loading={large ? "eager" : "lazy"}
-              decoding="async"
+              priority={large}
+              sizes={large ? "320px" : "(min-width: 1024px) 20vw, (min-width: 640px) 30vw, 46vw"}
+              widths={[256, 384, 640, 750]}
               className="aspect-[4/3] w-full object-cover object-top"
             />
           )}
