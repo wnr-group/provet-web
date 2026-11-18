@@ -275,8 +275,8 @@ function ImageCards({ section }) {
   }
 
   // Magazine issues: the latest featured, the rest on a rack.
-  if (section.config.imageStyle === "magazine" && items.some((it) => it.image)) {
-    return <MagazineRack section={section} items={items.filter((it) => it.image)} columns={columns} />;
+  if (section.config.imageStyle === "magazine") {
+    return <MagazineRack section={section} items={items} columns={columns} />;
   }
 
   // Technical booklets: numbered, stapled reference volumes.

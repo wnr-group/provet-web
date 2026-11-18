@@ -266,6 +266,13 @@ function ConfigFields({ section, categories, onConfig }) {
 
         <div>
           <label className="label">{type === "carousel" ? "Slides" : "Cards"}</label>
+          {config.imageStyle === "magazine" && (
+            <p className="mb-2 text-xs text-ink-soft">
+              One card per issue. Write the heading with its month and year, e.g. &ldquo;Propulse March 2024&rdquo; - the Magazine page
+              reads the date from it to sort issues, split Recent Editions from the Archives and build the year filter.
+              Put the PDF address in Link to show Read and Download.
+            </p>
+          )}
           <RowsTable
             columns={[
               { key: "image", label: "Image", type: "image", width: "5.5rem" },
@@ -278,7 +285,7 @@ function ConfigFields({ section, categories, onConfig }) {
             newRow={{ image: "", title: "", text: "", href: "" }}
             addLabel={type === "carousel" ? "Add slide" : "Add card"}
             itemLabel={type === "carousel" ? "slide" : "card"}
-            max={12}
+            max={config.imageStyle === "magazine" ? 200 : 12}
             emptyText={type === "carousel" ? "No slides yet." : "No cards yet."}
           />
         </div>
