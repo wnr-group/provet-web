@@ -276,7 +276,7 @@ function ImageCards({ section }) {
 
   // Magazine issues: the latest featured, the rest on a rack.
   if (section.config.imageStyle === "magazine") {
-    return <MagazineRack section={section} items={items} columns={columns} />;
+    return <MagazineRack section={section} items={items} columns={columns} settings={section.magazineSettings} recentYears={section.magazineRecentYears} />;
   }
 
   // Technical booklets: numbered, stapled reference volumes.

@@ -265,29 +265,31 @@ function ConfigFields({ section, categories, onConfig }) {
         )}
 
         <div>
-          <label className="label">{type === "carousel" ? "Slides" : "Cards"}</label>
+          {config.imageStyle !== "magazine" && <label className="label">{type === "carousel" ? "Slides" : "Cards"}</label>}
           {config.imageStyle === "magazine" && (
-            <p className="mb-2 text-xs text-ink-soft">
-              One card per issue. Write the heading with its month and year, e.g. &ldquo;Propulse March 2024&rdquo; - the Magazine page
-              reads the date from it to sort issues, split Recent Editions from the Archives and build the year filter.
-              Put the PDF address in Link to show Read and Download.
+            <p className="mb-2 rounded-lg bg-brand-50 px-3 py-2 text-xs text-ink-soft">
+              The issues, their dates and PDFs, publishing and the page&rsquo;s settings are all managed in{" "}
+              <a href="/admin/magazines" className="font-semibold text-brand-700 hover:underline">Admin &gt; Magazine</a>. This section is
+              the frame the library sits in: its heading and the covers per row are set here.
             </p>
           )}
-          <RowsTable
-            columns={[
-              { key: "image", label: "Image", type: "image", width: "5.5rem" },
-              { key: "title", label: "Heading", placeholder: "Heading", width: "24%" },
-              { key: "text", label: "Text", type: "textarea", placeholder: "Text (optional)" },
-              { key: "href", label: "Link", placeholder: "/products or https://...", width: "22%" },
-            ]}
-            rows={items}
-            onChange={(next) => onConfig({ items: next })}
-            newRow={{ image: "", title: "", text: "", href: "" }}
-            addLabel={type === "carousel" ? "Add slide" : "Add card"}
-            itemLabel={type === "carousel" ? "slide" : "card"}
-            max={config.imageStyle === "magazine" ? 200 : 12}
-            emptyText={type === "carousel" ? "No slides yet." : "No cards yet."}
-          />
+          {config.imageStyle !== "magazine" && (
+            <RowsTable
+              columns={[
+                { key: "image", label: "Image", type: "image", width: "5.5rem" },
+                { key: "title", label: "Heading", placeholder: "Heading", width: "24%" },
+                { key: "text", label: "Text", type: "textarea", placeholder: "Text (optional)" },
+                { key: "href", label: "Link", placeholder: "/products or https://...", width: "22%" },
+              ]}
+              rows={items}
+              onChange={(next) => onConfig({ items: next })}
+              newRow={{ image: "", title: "", text: "", href: "" }}
+              addLabel={type === "carousel" ? "Add slide" : "Add card"}
+              itemLabel={type === "carousel" ? "slide" : "card"}
+              max={12}
+              emptyText={type === "carousel" ? "No slides yet." : "No cards yet."}
+            />
+          )}
         </div>
       </div>
     );

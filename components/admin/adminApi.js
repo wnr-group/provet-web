@@ -83,6 +83,23 @@ export const adminGetBrochure = () => apiFetch("/admin/brochure");
 export const adminUpdateBrochure = (settings) =>
   apiFetch("/admin/brochure", { method: "PUT", body: JSON.stringify(settings) });
 
+// ---- Admin: Magazine ----
+export const adminGetMagazines = () => apiFetch("/admin/magazines");
+export const adminCreateMagazine = (payload) =>
+  apiFetch("/admin/magazines", { method: "POST", body: JSON.stringify(payload) });
+export const adminUpdateMagazine = (id, payload) =>
+  apiFetch(`/admin/magazines/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+export const adminDeleteMagazine = (id) => apiFetch(`/admin/magazines/${id}`, { method: "DELETE" });
+export const adminGetMagazineYears = () => apiFetch("/admin/magazine-years");
+export const adminCreateMagazineYear = (payload) =>
+  apiFetch("/admin/magazine-years", { method: "POST", body: JSON.stringify(payload) });
+export const adminUpdateMagazineYear = (id, payload) =>
+  apiFetch(`/admin/magazine-years/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+export const adminDeleteMagazineYear = (id) => apiFetch(`/admin/magazine-years/${id}`, { method: "DELETE" });
+export const adminGetMagazineSettings = () => apiFetch("/admin/magazine-settings");
+export const adminUpdateMagazineSettings = (settings) =>
+  apiFetch("/admin/magazine-settings", { method: "PUT", body: JSON.stringify(settings) });
+
 // ---- Admin: Feedback ----
 export const adminGetFeedbackConfig = () => apiFetch("/admin/feedback-config");
 export const adminUpdateFeedbackConfig = (payload) =>
