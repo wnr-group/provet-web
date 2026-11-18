@@ -7,7 +7,6 @@
 // editing this file and re-seeding) once real copy is available.
 
 require("dotenv").config();
-const bcrypt = require("bcryptjs");
 const prisma = require("../lib/prisma");
 const { PLATFORMS } = require("../lib/socialSchema");
 const { DEFAULT_FEEDBACK_CONFIG, DEFAULT_FEEDBACK_FIELDS } = require("../lib/feedbackSchema");
@@ -179,19 +178,10 @@ async function main() {
   console.log("Seeding database...");
   const refreshed = { categories: 0, products: 0, banners: 0, pages: 0 };
 
-  // --- Admin user -----------------------------------------------------
-  const passwordHash = await bcrypt.hash("Admin@123", 10);
-  await prisma.adminUser.upsert({
-    where: { email: "admin@provet.in" },
-    update: {},
-    create: {
-      name: "Admin",
-      email: "admin@provet.in",
-      passwordHash,
-      role: "admin",
-    },
-  });
-  console.log("Created admin user: admin@provet.in / Admin@123");
+  // --- Admin user ---------------------------------------------------------
+  // Deliberately not seeded. Administrators sign in with Supabase Auth and are
+  // created with `node scripts/create-admin.js`, which asks for a password
+  // instead of shipping one in the source.
 
   // --- Categories + products -------------------------------------------
   //

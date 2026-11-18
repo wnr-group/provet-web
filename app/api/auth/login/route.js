@@ -1,13 +1,13 @@
-const { z } = require("zod");
-const { cookies } = require("next/headers");
 const prisma = require("../../../../lib/prisma");
-const { COOKIE_NAME, verifyPassword, signAdminToken } = require("../../../../lib/auth");
+const { createSupabaseServerClient } = require("../../../../lib/supabase/server");
+const { loginSchema, isAdminRecord, adminSession } = require("../../../../lib/adminAccess");
 
-const loginSchema = z.object({
-  email: z.string().trim().email("A valid email is required"),
-  password: z.string().min(1, "Password is required"),
-});
+// One answer for every way a sign-in can fail - wrong password, no such user,
+// a real user who is not an administrator - so the form never tells a stranger
+// which emails exist or which have admin access.
+const REFUSED = () => Response.json({ error: "Invalid email or password" }, { status: 401 });
 
+// POST /api/auth/login { email, password }
 export async function POST(request) {
   const body = await request.json().catch(() => null);
   const parsed = loginSchema.safeParse(body);
@@ -15,26 +15,19 @@ export async function POST(request) {
     return Response.json({ error: parsed.error.issues[0]?.message || "Invalid input" }, { status: 400 });
   }
 
-  const { email, password } = parsed.data;
-  const admin = await prisma.adminUser.findUnique({ where: { email } });
-  if (!admin) {
-    return Response.json({ error: "Invalid email or password" }, { status: 401 });
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.auth.signInWithPassword(parsed.data);
+  if (error || !data?.user) return REFUSED();
+
+  // Signed in with Supabase is not the same as being an administrator. Anyone
+  // who is not in the AdminUser table (an account made some other way) is
+  // signed straight back out and refused.
+  const row = await prisma.adminUser.findUnique({ where: { authUserId: data.user.id } });
+  if (!isAdminRecord(row, data.user.id)) {
+    await supabase.auth.signOut();
+    return REFUSED();
   }
 
-  const valid = await verifyPassword(password, admin.passwordHash);
-  if (!valid) {
-    return Response.json({ error: "Invalid email or password" }, { status: 401 });
-  }
-
-  const token = await signAdminToken(admin);
-  const cookieStore = await cookies();
-  cookieStore.set(COOKIE_NAME, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7,
-  });
-
-  return Response.json({ id: admin.id, name: admin.name, email: admin.email, role: admin.role });
+  const { sub, name, email, role } = adminSession(row);
+  return Response.json({ id: sub, name, email, role });
 }

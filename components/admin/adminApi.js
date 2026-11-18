@@ -1,6 +1,6 @@
 // Thin fetch wrapper for the admin dashboard's client components. Auth rides
 // along automatically via the httpOnly session cookie (same-origin, no
-// manual Authorization header needed) - see lib/auth.js / proxy.js.
+// manual Authorization header needed) - see proxy.js / lib/requireAdmin.js.
 async function apiFetch(path, options = {}) {
   const res = await fetch(`/api${path}`, {
     ...options,
@@ -27,6 +27,10 @@ export const login = (email, password) =>
   apiFetch("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
 export const logout = () => apiFetch("/auth/logout", { method: "POST" });
 export const getMe = () => apiFetch("/auth/me");
+export const forgotPassword = (email) =>
+  apiFetch("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) });
+export const resetPassword = (password) =>
+  apiFetch("/auth/reset-password", { method: "POST", body: JSON.stringify({ password }) });
 
 // ---- Admin: Products ----
 export const adminGetProducts = (params = {}) => apiFetch(withQuery("/admin/products", params));

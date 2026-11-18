@@ -20,12 +20,55 @@ and magenta `#E5097F`.
 - **Styling**: Tailwind CSS v4
 - **Animation**: Framer Motion
 - **Database**: Prisma ORM on **Postgres** (Supabase, via `@prisma/adapter-pg`)
-- **Auth**: JWT in an httpOnly cookie (`lib/auth.js`), verified both in
-  `proxy.js` (redirects unauthenticated `/admin/*` page visits — a UX
-  convenience) and inside every `/api/admin/*` route handler (the actual
-  security boundary — see `lib/requireAdmin.js`)
+- **Auth**: Supabase Auth (email + password) for admins only, with the
+  session in httpOnly cookies via `@supabase/ssr`. `proxy.js` refreshes the
+  session and redirects signed-out `/admin/*` visits (a UX convenience);
+  `lib/requireAdmin.js` — called by every admin page and `/api/admin/*`
+  route — is the actual security boundary. See "Admin authentication" below.
 - **File uploads**: native `request.formData()`, saved to `public/uploads/`
   via `lib/storage.js` (swap this one file for S3/Cloudinary later)
+
+## Admin authentication
+
+Only administrators sign in; customers never do (the catalogue, enquiries and
+the brochure need no account).
+
+- **Who is an admin** is decided by the `AdminUser` table, not by Supabase:
+  a Supabase user is an admin only while an active `AdminUser` row points at
+  them (`authUserId`) with an allowed role. User metadata, the email address
+  and any "role" claim are never trusted. No route writes to the table.
+- **Creating an admin** is a server-side script, the only way to do it:
+  `node scripts/create-admin.js --email you@provet.in --name "Full Name"`
+  (asks for the password hidden; needs `SUPABASE_SERVICE_ROLE_KEY`). It also
+  moves a pre-Supabase admin over and clears their old password hash.
+- **Every admin request** is checked on the server (`lib/requireAdmin.js`):
+  Supabase verifies the session, then the AdminUser row is checked. Cross-site
+  POST/PUT/DELETE requests are refused in `proxy.js`.
+- **Row Level Security** is on for every table, with no policies, and the
+  `anon`/`authenticated` roles have no privileges: the REST API with the
+  public key reads and writes nothing. The app connects as the database owner
+  and is unaffected. A table added later needs `ENABLE ROW LEVEL SECURITY`
+  in its migration.
+- **Password reset**: `/admin/forgot-password` emails a link (admins only; the
+  reply is the same for every address) that lands on `/auth/confirm`.
+
+### Supabase dashboard settings this relies on
+
+1. **Authentication > Sign In / Providers > Email**: turn **off** "Allow new
+   users to sign up" (admins are created with the script). Keep email
+   confirmation on.
+2. **Authentication > URL Configuration**: Site URL = the production address;
+   add `<SITE_URL>/auth/confirm` (and the local one) to Redirect URLs.
+3. **Authentication > Email Templates > Reset Password**: link to
+   `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery`
+   (works when the email is opened on another device).
+4. **Authentication > SMTP**: set up a real SMTP provider; the built-in mailer
+   is limited to a few emails an hour.
+5. **Authentication > Sessions** (and JWT expiry): access tokens last an hour
+   and refresh on use; cookies are capped at 7 days. Where the plan allows,
+   enable "time-box user sessions" and an inactivity timeout.
+6. **Authentication > Rate Limits / Attack Protection**: keep the sign-in
+   limits and enable CAPTCHA if the login page is attacked.
 
 ### Prisma 7 note
 

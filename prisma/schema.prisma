@@ -13,12 +13,23 @@ datasource db {
   provider = "postgresql"
 }
 
+// Who may use the admin. Signing in is Supabase Auth's job; this table is the
+// authorisation record: a Supabase user is an administrator only while a row
+// here points at them (authUserId), is active and has an allowed role (see
+// lib/adminAccess.js). Nothing from the Supabase user - its metadata, even its
+// email - grants access, and no route writes to this table: rows are made by
+// scripts/create-admin.js with the server-side key.
+//
+// passwordHash is the old, pre-Supabase login, kept only until each admin has
+// been moved over; scripts/create-admin.js clears it.
 model AdminUser {
   id           String   @id @default(cuid())
   name         String
   email        String   @unique
-  passwordHash String
+  authUserId   String?  @unique // auth.users.id in Supabase
+  passwordHash String?
   role         String   @default("admin")
+  isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
 }
 

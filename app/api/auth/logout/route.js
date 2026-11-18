@@ -1,8 +1,9 @@
-const { cookies } = require("next/headers");
-const { COOKIE_NAME } = require("../../../../lib/auth");
+const { createSupabaseServerClient } = require("../../../../lib/supabase/server");
 
+// POST /api/auth/logout - ends this session at Supabase (the refresh token is
+// revoked, not just forgotten) and clears the cookies.
 export async function POST() {
-  const cookieStore = await cookies();
-  cookieStore.delete(COOKIE_NAME);
+  const supabase = await createSupabaseServerClient();
+  await supabase.auth.signOut();
   return Response.json({ success: true });
 }
