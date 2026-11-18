@@ -77,7 +77,7 @@ export default async function Contact({ searchParams }) {
   const detailLines = parseDetailLines(details?.body);
 
   return (
-    <div className="bg-mist-50/40">
+    <div className="bg-white">
       <PageBanner
         variant="panel"
         eyebrow="Contact"
@@ -92,6 +92,7 @@ export default async function Contact({ searchParams }) {
         }
       />
 
+      <div className="bg-white">
       <div className="container-page grid gap-8 py-12 sm:py-16 lg:grid-cols-[1fr_1.3fr]">
         <RevealGroup mode="mount" className="space-y-4">
           {detailLines.map(({ label, value }) => {
@@ -123,6 +124,7 @@ export default async function Contact({ searchParams }) {
         <Reveal direction="left" delay={0.1} mode="mount" className="card p-6 sm:p-8">
           <ContactForm productName={productName} />
         </Reveal>
+      </div>
       </div>
 
       {branches?.config.items?.length > 0 && (
