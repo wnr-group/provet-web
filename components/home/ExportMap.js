@@ -4,19 +4,19 @@ import { useRef, useState } from "react";
 import clsx from "clsx";
 import { ChevronDown, Mail, MapPin, Phone, Globe2 } from "lucide-react";
 import { MAP_WIDTH, MAP_HEIGHT } from "@/lib/mapSize";
-import { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 
-// The world map with the countries we export to filled in, and a card per
-// region naming them. Hovering a region (its button or its card) lights it on
-// the map. A country that has a distributor contact opens when clicked, showing
-// the distributor's name, address, phone and email, and is marked on the map.
+// The world map with the countries we export to filled in, and a plain list of
+// their names (no regions). A country that has a distributor contact opens when
+// clicked, showing the distributor's name, address, phone and email, and is
+// marked on the map.
 export default function ExportMap({ outlines, dots, regions }) {
-  const [active, setActive] = useState(null);
-  // The first card's first country with a contact starts open, so the page
-  // shows what clicking a country does.
-  const [open, setOpen] = useState(() => regions[0]?.countries.find((c) => c.contact)?.key ?? null);
-  const lit = (region) => region && (!active || active === region);
-  const total = regions.reduce((n, r) => n + r.countries.length, 0);
+  // The regions are only how the admin groups the countries; visitors see one
+  // list, each country once.
+  const countries = [...new Map(regions.flatMap((r) => r.countries).map((c) => [c.key, c])).values()];
+  // The first country with a contact starts open, so the page shows what
+  // clicking a country does.
+  const [open, setOpen] = useState(() => countries.find((c) => c.contact)?.key ?? null);
+  const total = countries.length;
 
   // The country under the pointer (any country, not only the ones we export
   // to): it grows out of the map and a label with its name follows the cursor.
@@ -24,7 +24,7 @@ export default function ExportMap({ outlines, dots, regions }) {
   // admin's spelling for our countries, the map's own name for the rest.
   const wrapRef = useRef(null);
   const [hover, setHover] = useState(null);
-  const names = new Map(regions.flatMap((r) => r.countries.map((c) => [c.key, c.name])));
+  const names = new Map(countries.map((c) => [c.key, c.name]));
   const track = (e, key, name, region) => {
     const box = wrapRef.current?.getBoundingClientRect();
     if (!box) return;
@@ -50,7 +50,7 @@ export default function ExportMap({ outlines, dots, regions }) {
             className={clsx(
               "transition-colors duration-300",
               o.region ? "cursor-pointer stroke-white" : "stroke-white",
-              o.key === open || (o.region && lit(o.region)) ? "fill-accent-500" : o.region ? "fill-accent-500/40" : "fill-brand-600"
+              o.region ? "fill-accent-500" : "fill-brand-600"
             )}
             strokeWidth={0.6}
             {...(o.region ? hoverHandlers(o.key, o.name, o.region) : {})}
@@ -81,7 +81,7 @@ export default function ExportMap({ outlines, dots, regions }) {
             cx={d.x}
             cy={d.y}
             r={hover?.key === d.key ? 9 : d.key === open ? 6.5 : 4.5}
-            className={clsx("cursor-pointer stroke-white transition-all duration-300", d.key === open || hover?.key === d.key || lit(d.region) ? "fill-accent-500" : "fill-accent-500/40")}
+            className={clsx("cursor-pointer stroke-white transition-all duration-300", "fill-accent-500")}
             strokeWidth={1.2}
             {...hoverHandlers(d.key, names.get(d.key) || d.key, d.region)}
           />
@@ -103,76 +103,28 @@ export default function ExportMap({ outlines, dots, regions }) {
             <Globe2 size={14} className="text-accent-500" />
             {hover.name}
           </span>
-          {hover.region && <span className="block text-[11px] font-medium text-ink-soft">{hover.region}</span>}
         </div>
       )}
       </div>
 
-      <div className="mt-6 flex flex-wrap justify-center gap-2" onMouseLeave={() => setActive(null)}>
-        {regions.map((r) => (
-          <button
-            key={r.name}
-            type="button"
-            onMouseEnter={() => setActive(r.name)}
-            onFocus={() => setActive(r.name)}
-            onBlur={() => setActive(null)}
-            onClick={() => setActive(active === r.name ? null : r.name)}
-            aria-pressed={active === r.name}
-            className={clsx(
-              "rounded-full px-4 py-1.5 text-sm font-semibold ring-1 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent-500",
-              active === r.name ? "bg-brand-600 text-white ring-brand-600" : "bg-white text-ink ring-brand-200 hover:bg-mist-50"
-            )}
-          >
-            {r.name} <span className="opacity-70">· {r.countries.length}</span>
-          </button>
-        ))}
-      </div>
-
-      <RevealGroup className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4" stagger={0.1}>
-        {regions.map((r, i) => (
-          <RevealItem key={r.name} direction="up" distance={26} className="h-full">
-            <article
-              onMouseEnter={() => setActive(r.name)}
-              onMouseLeave={() => setActive(null)}
-              className="group relative flex h-full flex-col overflow-hidden rounded-2xl bg-white p-6 shadow-soft ring-1 ring-brand-100/70 transition duration-300 ease-out hover:-translate-y-1.5 hover:shadow-hover hover:ring-brand-300"
-            >
-              <span
-                aria-hidden="true"
-                className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-accent-500 transition-transform duration-300 group-hover:scale-x-100"
+      <ul className="mx-auto mt-8 grid max-w-5xl items-start gap-x-6 gap-y-1 rounded-2xl bg-white p-5 shadow-soft ring-1 ring-brand-100/70 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
+        {countries.map((country) => (
+          <li key={country.key}>
+            {country.contact ? (
+              <CountryContact
+                country={country}
+                isOpen={open === country.key}
+                onToggle={() => setOpen(open === country.key ? null : country.key)}
               />
-              <div className="flex items-start justify-between gap-3">
-                <span className="font-display text-3xl font-extrabold leading-none text-brand-200 transition-colors duration-300 group-hover:text-accent-500">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span className="rounded-full bg-accent-100 px-2.5 py-0.5 text-xs font-semibold text-accent-700">
-                  {r.countries.length} {r.countries.length === 1 ? "country" : "countries"}
-                </span>
-              </div>
-              <h3 className="mt-4 font-display text-lg font-bold leading-snug text-ink transition-colors duration-300 group-hover:text-brand-600">
-                {r.name}
-              </h3>
-              <ul className="mt-3 space-y-1 border-t border-brand-100 pt-3">
-                {r.countries.map((country) => (
-                  <li key={country.key}>
-                    {country.contact ? (
-                      <CountryContact
-                        country={country}
-                        isOpen={open === country.key}
-                        onToggle={() => setOpen(open === country.key ? null : country.key)}
-                      />
-                    ) : (
-                      <span className="flex items-center gap-2 py-1 text-sm text-ink-soft">
-                        <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent-500" />
-                        {country.name}
-                      </span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </article>
-          </RevealItem>
+            ) : (
+              <span className="flex items-center gap-2 py-1 text-sm text-ink-soft">
+                <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent-500" />
+                {country.name}
+              </span>
+            )}
+          </li>
         ))}
-      </RevealGroup>
+      </ul>
     </div>
   );
 }

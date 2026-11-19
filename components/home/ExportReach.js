@@ -48,7 +48,7 @@ export default function ExportReach({ regions, contacts = [], title = "Exporting
             align="center"
             eyebrow="International Coverage"
             title={title}
-            description={`${total} ${total === 1 ? "country" : "countries"} across ${rows.length} ${rows.length === 1 ? "region" : "regions"} trust Provet for animal health.`}
+            description={`${total} ${total === 1 ? "country" : "countries"} trust Provet for animal health.`}
           />
         </Reveal>
 
