@@ -1,5 +1,6 @@
 import Image from "next/image";
 import clsx from "clsx";
+import Pic from "@/components/ui/Pic";
 
 // A product range's wordmark (Avinova, Blunova) from its theme's `logo`
 // (lib/categoryTheme.js). Set the height with a class (`h-9`); the width
@@ -9,6 +10,13 @@ import clsx from "clsx";
 // sized for it rather than the 800px original.
 export default function RangeLogo({ logo, alt, sizes = "240px", eager = false, className }) {
   if (!logo) return null;
+  // A logo uploaded in the admin has no known size: a plain <img> sized by the
+  // height class, its width following the picture.
+  if (!logo.width || !logo.height) {
+    return (
+      <Pic src={logo.src} alt={alt} sizes={sizes} loading={eager ? "eager" : "lazy"} className={clsx("block w-auto max-w-full", className)} />
+    );
+  }
   return (
     <Image
       src={logo.src}
