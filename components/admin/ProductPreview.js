@@ -172,7 +172,7 @@ export function ListingChecklist({ product }) {
       </div>
       <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-mist-100">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-brand-500 to-accent-500 transition-[width] duration-500"
+          className="h-full rounded-full bg-accent-500 transition-[width] duration-500"
           style={{ width: `${pct}%` }}
         />
       </div>

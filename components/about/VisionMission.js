@@ -17,7 +17,7 @@ export default function VisionMission({ vision, mission }) {
   const pair = items.length === 2;
 
   return (
-    <section className="bg-brand-50/60 py-10 sm:py-14">
+    <section className="bg-brand-100 py-10 sm:py-14">
       <div className="container-page">
         <Reveal className="mx-auto max-w-2xl text-center">
           <SplitText as="h2" text="Vision & Mission" className="block font-display text-2xl font-extrabold tracking-tight text-brand-800 sm:text-3xl" />
@@ -32,7 +32,7 @@ export default function VisionMission({ vision, mission }) {
                 <div
                   className={clsx(
                     "relative flex items-center gap-4 overflow-hidden px-7 py-6 text-white sm:px-10",
-                    item.dark ? "bg-gradient-to-r from-brand-700 to-brand-500" : "bg-gradient-to-r from-accent-600 to-accent-400"
+                    item.dark ? "bg-brand-600" : "bg-accent-500"
                   )}
                 >
                   <item.icon aria-hidden="true" size={120} strokeWidth={1} className="pointer-events-none absolute -right-4 -top-4 text-white/15 transition-transform duration-700 ease-out group-hover:rotate-12 group-hover:scale-110" />

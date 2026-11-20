@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import clsx from "clsx";
 import { useMotionEnv } from "@/components/motion/MotionProvider";
 
 // Entrance travel is capped hard on small screens. A 40px slide is a tenth of
@@ -38,6 +39,14 @@ function offsetFor(direction, distance = DEFAULT_DISTANCE) {
 // immediately and deterministically rather than waiting on an
 // IntersectionObserver callback that may lag on first paint; reserve the
 // default mode="inView" scroll-reveal for content further down the page.
+//
+// mount mode is a CSS animation (.reveal-mount in globals.css), not a framer
+// one. A framer entrance is server-rendered at opacity:0 and only revealed once
+// the script has downloaded and hydrated, so the page's headline - usually its
+// largest paint - could not appear until all of that JavaScript had run (on a
+// phone, seconds). A CSS animation starts at first paint with the same travel,
+// delay, duration and easing. The travel is clamped on small screens in CSS, so
+// nothing depends on a JavaScript media query either.
 // `scale` is optional and off by default: passing e.g. 0.96 makes the child
 // grow into place as well as fade, which is what distinguishes a panel that
 // arrives as one piece from the plain slide every other section uses. Left
@@ -56,10 +65,31 @@ export default function Reveal({
 }) {
   const offset = offsetFor(direction, useTravel(distance));
   const settled = { opacity: 1, x: 0, y: 0, ...(scale ? { scale: 1 } : {}) };
-  const trigger =
-    mode === "mount"
-      ? { animate: settled }
-      : { whileInView: settled, viewport: { once: true, margin: "-60px" } };
+
+  if (mode === "mount") {
+    const travel = offsetFor(direction, distance ?? DEFAULT_DISTANCE);
+    const { style, ...rest } = props;
+    return (
+      <Component
+        className={clsx("reveal-mount", className)}
+        style={{
+          "--rx": `${travel.x}px`,
+          "--ry": `${travel.y}px`,
+          "--rs": scale ?? 1,
+          "--rd": `${duration}s`,
+          "--rdelay": `${delay}s`,
+          ...style,
+        }}
+        // Already in its settled state: the CSS animation does the entrance, so
+        // framer must neither hide it before hydration nor replay it after.
+        initial={false}
+        animate={settled}
+        {...rest}
+      >
+        {children}
+      </Component>
+    );
+  }
 
   return (
     <Component
@@ -67,7 +97,8 @@ export default function Reveal({
       className={className}
       initial={{ opacity: 0, ...offset, ...(scale ? { scale } : {}) }}
       transition={{ duration, delay, ease: [0.22, 1, 0.36, 1] }}
-      {...trigger}
+      whileInView={settled}
+      viewport={{ once: true, margin: "-60px" }}
       {...props}
     >
       {children}

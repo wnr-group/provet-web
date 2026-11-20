@@ -245,6 +245,14 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
   // without restarting. A video that fails mid-slide changes the key, and
   // its layer crossfades to the poster-only one.
   const layerKey = wantsVideo ? `video:${slide.video}` : slide.id ?? slide.image;
+  // The slide showing when the page first renders. Its photo is the largest
+  // paint on the home page, so its entrance (a fade, then the slow push-in) is
+  // a CSS animation (.hero-intro in globals.css) that starts with the first
+  // frame. A framer entrance is server-rendered at opacity 0 and stays that way
+  // until the whole script has hydrated, which held the page's biggest image
+  // back by seconds on a phone. Later slides use framer as before.
+  const [introKey] = useState(layerKey);
+  const isIntro = layerKey === introKey;
   const loopsVideo = slides.length <= 1 || continues;
   const showsToggle = !reduced && (slides.length > 1 || mountsVideo);
 
@@ -269,11 +277,11 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
             // for the whole time the slide holds (a slow "Ken Burns" push),
             // so the hero is never a still image. A video slide brings its
             // own movement, so it only fades.
-            initial={{ opacity: 0, scale: wantsVideo ? 1 : 1.12 }}
+            initial={isIntro ? false : { opacity: 0, scale: wantsVideo ? 1 : 1.12 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ opacity: { duration: 1.1, ease: EASE }, scale: { duration: 7.5, ease: "linear" } }}
-            className="absolute inset-0"
+            className={clsx("absolute inset-0", isIntro && (slide.video ? "hero-intro-fade" : "hero-intro"))}
           >
             {/* Site-hosted photos (/content/hero/...) go through Next's image
                 optimizer, so each screen gets a WebP at its own width rather
@@ -360,7 +368,7 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
                 // over-long one can't stretch the hero.
                 className="mt-5 line-clamp-3 max-w-2xl font-display text-3xl font-extrabold leading-[1.1] text-white [text-shadow:0_2px_16px_rgba(10,8,30,0.45)] sm:text-4xl"
               >
-                {slide.title}
+                <Typewriter text={slide.title} instant={reduced} />
               </motion.h1>
             </AnimatePresence>
 
@@ -465,6 +473,39 @@ export default function Hero({ banners = [], badge = "Trusted by veterinarians n
         </div>
       )}
     </section>
+  );
+}
+
+// Types the headline out one character at a time. The untyped remainder is
+// rendered transparent in the same flow, so the lines wrap exactly as the
+// finished headline will and nothing jumps while it types. The full text is
+// the accessible name, so a screen reader doesn't hear it letter by letter.
+const TYPE_DELAY = 38;
+const TYPE_START = 250;
+function Typewriter({ text = "", instant = false }) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (instant) return;
+    let i = 0;
+    let timer;
+    const step = () => {
+      i += 1;
+      setCount(i);
+      if (i < text.length) timer = setTimeout(step, TYPE_DELAY);
+    };
+    timer = setTimeout(step, TYPE_START);
+    return () => clearTimeout(timer);
+  }, [text, instant]);
+
+  if (instant) return text;
+  return (
+    <>
+      <span className="sr-only">{text}</span>
+      <span aria-hidden="true">
+        {text.slice(0, count)}
+        <span className="opacity-0">{text.slice(count)}</span>
+      </span>
+    </>
   );
 }
 

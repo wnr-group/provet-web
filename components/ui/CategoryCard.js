@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import Pic from "@/components/ui/Pic";
 
 const ICON_FALLBACK =
   "https://images.unsplash.com/photo-1598016717029-026340d417d4?auto=format&fit=crop&w=300&h=300&q=80";
@@ -15,18 +16,18 @@ export default function CategoryCard({ category }) {
           gradients can't be transitioned directly. */}
       <span
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-b from-white via-white to-accent-50 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        className="absolute inset-0 -z-10 bg-accent-50 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
       />
 
       {/* The thumbnail zooms inside its own rounded frame while the card
           lifts - two speeds in one gesture, which is what stops a grid of six
           identical tiles feeling flat on hover. */}
       <div className="h-[72px] w-[72px] shrink-0 overflow-hidden rounded-2xl bg-mist-100 ring-4 ring-mist-50 transition duration-300 group-hover:ring-accent-100">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Pic
           src={category.image || ICON_FALLBACK}
           alt=""
-          loading="lazy"
+          sizes="72px"
+          widths={[96, 128, 256]}
           className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110"
         />
       </div>

@@ -323,6 +323,8 @@ function summarize(section, format) {
     return [body.trim(), buttons.length ? `Buttons: ${buttons.join(", ")}` : null].filter(Boolean).join(" · ") || "Empty";
   }
 
+  if (type === "richText" && format === "species") return body.trim() || "Range cards from Categories";
+
   if (format) {
     const rows = bodyToRows(format, body);
     if (!rows.length) return "Empty";

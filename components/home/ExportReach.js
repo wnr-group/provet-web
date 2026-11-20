@@ -40,7 +40,7 @@ export default function ExportReach({ regions, contacts = [], title = "Exporting
   }));
 
   return (
-    <section className="relative isolate overflow-hidden bg-white py-16 sm:py-20">
+    <section className="relative isolate overflow-hidden bg-brand-100 py-12 sm:py-16">
       <div className="container-page">
         <Reveal>
           <SectionHeading
@@ -48,11 +48,11 @@ export default function ExportReach({ regions, contacts = [], title = "Exporting
             align="center"
             eyebrow="International Coverage"
             title={title}
-            description={`${total} ${total === 1 ? "country" : "countries"} across ${rows.length} ${rows.length === 1 ? "region" : "regions"} trust Provet for animal health.`}
+            description={`${total} ${total === 1 ? "country" : "countries"} trust Provet for animal health.`}
           />
         </Reveal>
 
-        <Reveal delay={0.1} className="mx-auto mt-10 max-w-6xl">
+        <Reveal delay={0.1} className="mx-auto mt-8 max-w-7xl">
           <ExportMap outlines={outlines} dots={dots} regions={view} />
         </Reveal>
       </div>

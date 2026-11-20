@@ -1,10 +1,10 @@
-/* eslint-disable @next/next/no-img-element -- admin-uploaded/external URLs */
 import clsx from "clsx";
 import PageBanner from "@/components/ui/PageBanner";
 import { MaskReveal, Tilt } from "@/components/motion/effects";
 import { Enter } from "@/components/sections/entrances";
 import { CATEGORY_THEMES, DEFAULT_THEME } from "@/lib/categoryTheme";
 import SiteImage from "@/components/ui/SiteImage";
+import Pic from "@/components/ui/Pic";
 
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1630090374791-c9eb7bab3935?auto=format&fit=crop&w=1200&h=900&q=80";
@@ -43,12 +43,14 @@ export default function CatalogueHero({ title, description, crumbs, count, produ
     <div className="relative h-[17rem] sm:h-[22rem]">
       {/* The range photo panel, right-aligned behind the fan. */}
       <div className="absolute inset-y-0 right-0 w-[72%] overflow-hidden rounded-[2rem] shadow-card">
-        <MaskReveal direction="right" wrapperClassName="h-full" className="relative h-full w-full">
+        <MaskReveal mode="mount" direction="right" wrapperClassName="h-full" className="relative h-full w-full">
         {LAYERS.map((key) => (
-          <img
+          <Pic
             key={key}
             src={BANNER_IMAGES[key] || images[key] || DEFAULT_IMAGE}
             alt=""
+            sizes="(min-width: 1024px) 560px, 72vw"
+            priority={key === themeKey}
             data-banner-layer={key}
             className={clsx(
               "absolute inset-0 h-full w-full object-cover transition-opacity duration-700 ease-out",

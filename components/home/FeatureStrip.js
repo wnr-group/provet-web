@@ -31,8 +31,8 @@ export default function FeatureStrip({ items = DEFAULT_ITEMS, title = "" }) {
   const compact = features.length > 4;
 
   return (
-    <section className="border-b border-brand-100/70 bg-mist-50">
-      <div className="container-page py-12 sm:py-16">
+    <section className="bg-brand-100">
+      <div className="container-page py-10 sm:py-12">
         {title && (
           <Reveal className="mx-auto mb-8 max-w-2xl text-center sm:mb-10">
             <h2 className="font-display text-2xl font-extrabold tracking-tight text-brand-800 sm:text-3xl">{title}</h2>
@@ -65,7 +65,7 @@ export default function FeatureStrip({ items = DEFAULT_ITEMS, title = "" }) {
                 <div className="flex h-full items-start gap-4">
                   <span
                     aria-hidden="true"
-                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-accent-50 to-brand-100 text-brand-700 transition-all duration-300 group-hover:rotate-3 group-hover:scale-110 group-hover:from-brand-600 group-hover:to-brand-500 group-hover:text-white"
+                    className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-100 text-brand-700 transition-all duration-300 group-hover:rotate-3 group-hover:scale-110 group-hover:bg-brand-600 group-hover:text-white"
                   >
                     <Icon size={24} strokeWidth={1.6} absoluteStrokeWidth />
                   </span>
@@ -83,7 +83,7 @@ export default function FeatureStrip({ items = DEFAULT_ITEMS, title = "" }) {
                   <span
                     className="absolute left-0 top-1.5 h-10 w-10 rounded-full transition-transform duration-500 ease-out group-hover:scale-110 motion-safe:animate-float"
                     style={{
-                      background: "radial-gradient(circle at 35% 35%, var(--color-accent-50), var(--color-brand-100) 75%)",
+                      background: "var(--color-brand-100)",
                       animationDelay: `${i * 0.7}s`,
                     }}
                   />

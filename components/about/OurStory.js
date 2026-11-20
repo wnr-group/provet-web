@@ -35,19 +35,19 @@ export default function OurStory({ story }) {
   const rest = split ? split[2] : "";
 
   return (
-    <section className="relative overflow-hidden py-16 sm:py-24">
+    <section className="relative overflow-hidden bg-white py-12 sm:py-16">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -left-40 top-10 h-96 w-96 rounded-full bg-[radial-gradient(circle,rgba(72,62,168,0.10),transparent_65%)]"
       />
-      <div className="container-page grid items-center gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
+      <div className="container-page grid items-center gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:gap-14">
         <Reveal direction="right">
           <Tilt max={6} lift={1.02} shadow className="mx-auto w-full max-w-xl">
             <figure className="group relative pb-10 pr-8 [transform-style:preserve-3d] sm:pb-12 sm:pr-14">
               {/* Plate set back behind the photo. */}
               <div
                 aria-hidden="true"
-                className="absolute inset-0 bottom-10 right-8 translate-x-5 translate-y-5 rounded-[2rem] bg-gradient-to-br from-brand-500 via-brand-600 to-accent-500 opacity-90 [transform:translateZ(-40px)] sm:bottom-12 sm:right-14 sm:translate-x-7 sm:translate-y-7"
+                className="absolute inset-0 bottom-10 right-8 translate-x-5 translate-y-5 rounded-[2rem] bg-brand-600 opacity-90 [transform:translateZ(-40px)] sm:bottom-12 sm:right-14 sm:translate-x-7 sm:translate-y-7"
               />
               <div
                 aria-hidden="true"

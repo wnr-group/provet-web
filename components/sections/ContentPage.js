@@ -84,7 +84,7 @@ export default async function ContentPage({ pageKey }) {
         image={framedImage(page.heroImage || DEFAULT_HERO, bannerFor(pageKey).variant)}
       />
 
-      <PageSections sections={sections} />
+      <PageSections sections={sections} navy />
     </div>
   );
 }

@@ -77,7 +77,7 @@ export default async function Contact({ searchParams }) {
   const detailLines = parseDetailLines(details?.body);
 
   return (
-    <div className="bg-mist-50/40">
+    <div className="bg-white">
       <PageBanner
         variant="panel"
         eyebrow="Contact"
@@ -92,7 +92,8 @@ export default async function Contact({ searchParams }) {
         }
       />
 
-      <div className="container-page grid gap-8 py-14 sm:py-20 lg:grid-cols-[1fr_1.3fr]">
+      <div className="bg-white">
+      <div className="container-page grid gap-8 py-12 sm:py-16 lg:grid-cols-[1fr_1.3fr]">
         <RevealGroup mode="mount" className="space-y-4">
           {detailLines.map(({ label, value }) => {
             const Icon = detailIcon(label);
@@ -124,11 +125,12 @@ export default async function Contact({ searchParams }) {
           <ContactForm productName={productName} />
         </Reveal>
       </div>
+      </div>
 
       {branches?.config.items?.length > 0 && (
         <section className="border-t border-brand-100 bg-white">
-          <div className="container-page py-14 sm:py-20">
-            <Reveal className="mx-auto mb-10 max-w-2xl text-center">
+          <div className="container-page py-12 sm:py-16">
+            <Reveal className="mx-auto mb-8 max-w-2xl text-center">
               <span className="badge bg-accent-100 text-accent-700">Across India</span>
               {branches.title && (
                 <h2 className="mt-4 font-display text-2xl font-extrabold text-ink sm:text-3xl">{branches.title}</h2>
@@ -144,7 +146,7 @@ export default async function Contact({ searchParams }) {
           reply, feedback doesn't. Hidden entirely when the admin disables it. */}
       {feedback.config.isEnabled && feedback.fields.length > 0 && (
         <div className="border-t border-brand-100 bg-white">
-          <div className="container-page py-14 sm:py-20">
+          <div className="container-page py-12 sm:py-16">
             <Reveal className="mx-auto max-w-2xl">
               <div className="text-center">
                 <span className="badge bg-accent-100 text-accent-700">Feedback</span>

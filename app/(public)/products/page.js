@@ -120,7 +120,7 @@ export default async function Products({ searchParams }) {
       <RangeTabs ranges={tree} activeId={activeCategory?.id} />
 
       <CatalogueNavigationProvider>
-        <div className="container-wide grid gap-5 pb-16 pt-6 sm:pb-20 sm:pt-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-10">
+        <div className="container-wide grid gap-5 pb-12 pt-6 sm:pb-14 sm:pt-8 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-10">
           <ProductsFilters
             tree={navCategoryTree(tree)}
             activeCategoryId={activeCategory?.id}

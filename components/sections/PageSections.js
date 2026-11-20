@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { CheckCircle2, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import clsx from "clsx";
+import PointIcon from "@/components/sections/PointIcon";
 import { splitItems } from "@/lib/contentFormat";
 import CategoryCard from "@/components/ui/CategoryCard";
 import { Enter, EnterGroup, EnterItem } from "@/components/sections/entrances";
@@ -14,6 +15,7 @@ import MagazineRack from "@/components/sections/MagazineRack";
 import BookletShelf from "@/components/sections/BookletShelf";
 import ImageAccordion from "@/components/sections/ImageAccordion";
 import { isYouTubeUrl } from "@/lib/youtube";
+import Pic from "@/components/ui/Pic";
 
 // Renders a page's admin-configured sections. One component per type in
 // lib/sectionTypes.js; anything unknown is skipped rather than crashing the
@@ -56,7 +58,7 @@ function Heading({ title, description, align = "left", className }) {
         aria-hidden="true"
         className={clsx("mt-4 block h-1 w-14 rounded-full bg-accent-400", centered && "mx-auto")}
       />
-      {description && <p className="mt-5 leading-relaxed text-ink-soft">{description}</p>}
+      {description && <p className="band-desc mt-5 leading-relaxed text-ink-soft">{description}</p>}
     </div>
   );
 }
@@ -78,7 +80,7 @@ function RichText({ section }) {
     >
       <span
         aria-hidden="true"
-        className="absolute inset-x-8 top-0 h-1 rounded-b-full bg-gradient-to-r from-brand-500 via-accent-500 to-brand-500"
+        className="absolute inset-x-8 top-0 h-1 rounded-b-full bg-accent-500"
       />
       <div className={clsx("grid gap-6", section.title && "lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-10")}>
         {section.title && (
@@ -107,8 +109,7 @@ function ImageText({ section }) {
           delay={0.12}
           className={clsx("aspect-[4/3] overflow-hidden rounded-3xl bg-mist-100", imageLeft && "lg:order-0")}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URL, not a fixed set of remote hosts */}
-          <img src={section.image} alt="" loading="lazy" className="h-full w-full object-cover" />
+          <Pic src={section.image} alt="" sizes="(min-width: 1024px) 560px, 92vw" className="h-full w-full object-cover" />
         </Enter>
       )}
     </div>
@@ -119,19 +120,25 @@ function BulletList({ section }) {
   const items = splitItems(section.body);
   if (!items.length) return null;
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-6xl">
       <Enter preset="drop">
         <Heading title={section.title} align="center" />
       </Enter>
-      <EnterGroup className="grid gap-4 sm:grid-cols-2" stagger={0.08}>
+      <EnterGroup className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" stagger={0.08}>
         {items.map((item, i) => (
           <EnterItem key={i} preset="wipe" className="h-full">
             {/* Each point lifts and leans a little under the pointer; the
                 tick floats in front of its card. */}
             <Tilt max={8} lift={1.03} className="h-full">
-              <div className="flex h-full items-start gap-3 rounded-2xl bg-white p-4 shadow-soft ring-1 ring-brand-100/70 transition hover:shadow-card [transform-style:preserve-3d]">
-                <CheckCircle2 size={20} className="mt-0.5 shrink-0 text-accent-500 [transform:translateZ(30px)]" />
-                <span className="leading-relaxed text-ink-soft">{item}</span>
+              <div className="group relative flex h-full flex-col items-start gap-4 overflow-hidden rounded-2xl bg-white p-6 shadow-soft ring-1 ring-brand-100/70 transition hover:shadow-card hover:ring-brand-200 [transform-style:preserve-3d]">
+                <span
+                  aria-hidden="true"
+                  className="absolute inset-x-0 top-0 h-1 origin-left scale-x-0 bg-accent-500 transition-transform duration-500 group-hover:scale-x-100"
+                />
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white shadow-[0_12px_20px_-8px_rgba(57,49,133,0.55)] transition-colors duration-300 group-hover:bg-accent-500 [transform:translateZ(30px)]">
+                  <PointIcon text={item} />
+                </span>
+                <span className="font-display text-lg font-semibold leading-snug text-ink">{item}</span>
               </div>
             </Tilt>
           </EnterItem>
@@ -176,7 +183,7 @@ function Cards({ section }) {
                     aria-hidden="true"
                     className="absolute left-6 top-0 h-1 w-1/4 rounded-b-full bg-accent-400 transition-all duration-300 group-hover:w-[calc(100%-3rem)]"
                   />
-                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-600 to-accent-500 font-display text-sm font-bold text-white shadow-[0_12px_20px_-8px_rgba(72,62,168,0.6)] [transform:translateZ(50px)]">
+                  <span className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-brand-600 font-display text-sm font-bold text-white shadow-[0_12px_20px_-8px_rgba(72,62,168,0.6)] [transform:translateZ(50px)]">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <h3 className="mt-4 font-display text-lg font-semibold text-ink [transform:translateZ(20px)]">{heading}</h3>
@@ -199,7 +206,7 @@ function NumberedRows({ section }) {
   if (!items.length) return null;
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="mx-auto max-w-5xl">
       <Enter preset="drop">
         <Heading title={section.title} align="center" />
       </Enter>
@@ -268,8 +275,8 @@ function ImageCards({ section }) {
   }
 
   // Magazine issues: the latest featured, the rest on a rack.
-  if (section.config.imageStyle === "magazine" && items.some((it) => it.image)) {
-    return <MagazineRack section={section} items={items.filter((it) => it.image)} columns={columns} />;
+  if (section.config.imageStyle === "magazine") {
+    return <MagazineRack section={section} items={items} columns={columns} settings={section.magazineSettings} recentYears={section.magazineRecentYears} />;
   }
 
   // Technical booklets: numbered, stapled reference volumes.
@@ -299,18 +306,17 @@ function ImageCards({ section }) {
                     // Phones take a wider crop: a full-width portrait or
                     // square photo made every card most of a screen tall.
                     <div className={clsx("overflow-hidden bg-mist-100 max-sm:aspect-[4/3]", aspect)}>
-                      {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs, not a fixed set of remote hosts */}
-                      <img
+                      <Pic
                         src={item.image}
                         alt={item.title || ""}
-                        loading="lazy"
+                        sizes="(min-width: 1024px) 380px, (min-width: 640px) 45vw, 92vw"
                         className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                       />
                     </div>
                   )}
                   {(item.title || item.text) && (
                     <div className="flex flex-1 flex-col p-5 sm:p-6">
-                      <span aria-hidden="true" className="mb-3 block h-1 w-10 rounded-full bg-gradient-to-r from-brand-500 to-accent-500" />
+                      <span aria-hidden="true" className="mb-3 block h-1 w-10 rounded-full bg-accent-500" />
                       {item.title && <h3 className="font-display text-lg font-bold text-ink group-hover:text-brand-700">{item.title}</h3>}
                       {item.text && <p className="mt-2 text-sm leading-relaxed text-ink-soft">{item.text}</p>}
                     </div>
@@ -358,11 +364,10 @@ function ImageCards({ section }) {
                     <div className="relative h-28 w-28 shrink-0 [transform-style:preserve-3d]">
                       <span
                         aria-hidden="true"
-                        className="absolute inset-0 rounded-3xl bg-gradient-to-br from-brand-400 to-accent-400 [transform:translate(8px,8px)]"
+                        className="absolute inset-0 rounded-3xl bg-accent-400 [transform:translate(8px,8px)]"
                       />
                       <div className="relative h-full w-full overflow-hidden rounded-3xl bg-mist-100 [transform:translateZ(40px)]">
-                        {/* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs, not a fixed set of remote hosts */}
-                        <img src={item.image} alt={item.title || ""} loading="lazy" className="h-full w-full object-cover" />
+                        <Pic src={item.image} alt={item.title || ""} sizes="(min-width: 1024px) 320px, 70vw" className="h-full w-full object-cover" />
                       </div>
                     </div>
                   )}
@@ -400,8 +405,7 @@ function ImageCards({ section }) {
               )}
             >
               {item.image && (
-                /* eslint-disable-next-line @next/next/no-img-element -- uploaded/external URLs, not a fixed set of remote hosts */
-                <img src={item.image} alt={item.title || ""} loading="lazy" className="h-full w-full object-cover" />
+                <Pic src={item.image} alt={item.title || ""} sizes="(min-width: 1024px) 320px, 70vw" className="h-full w-full object-cover" />
               )}
               {/* Spine shading, and a sheen that sweeps across on hover. */}
               <span aria-hidden="true" className="absolute inset-y-0 left-0 w-3 bg-gradient-to-r from-black/25 to-transparent" />
@@ -576,7 +580,7 @@ function Cta({ section }) {
     // btn-accent and btn-outline all work exactly as labelled.
     <Enter
       preset="zoom"
-      className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-brand-100 bg-gradient-to-br from-brand-50 to-accent-50 px-6 py-12 text-center shadow-card sm:px-12"
+      className="relative mx-auto max-w-4xl overflow-hidden rounded-3xl border border-brand-100 bg-brand-50 px-6 py-12 text-center shadow-card sm:px-12"
     >
       {/* The same soft discs the homepage CTA uses, so the panel still reads
           as a distinct object on a tinted band rather than a pale rectangle. */}
@@ -639,8 +643,34 @@ const TILTED_TYPES = new Set(["cards", "imageCards", "productGrid", "categoryGri
 // `offset`: where these sections fall in the alternation when they are
 // rendered apart from their siblings (the homepage interleaves added sections
 // with its own, one at a time).
-export default function PageSections({ sections, offset = 0 }) {
+// `flat`: single-colour bands (the homepage): light navy tints alternating, no glow.
+// `navy`: a navy-and-white palette (the About pages) - white, light navy,
+// medium navy and deep navy in a cycle. Dark bands only go to the types whose
+// text sits straight on the band (headings over cards); prose in a card and the
+// CTA panel stay on white or light navy.
+const NAVY_CYCLE = ["white", "light", "medium", "white", "light", "deep"];
+const NAVY_DARK_TYPES = new Set(["list", "cards", "imageCards"]);
+const NAVY_CLASS = {
+  white: "bg-white",
+  light: "bg-brand-100",
+  medium: "bg-brand-600 [&_h2]:text-white [&_.band-desc]:text-brand-100",
+  deep: "bg-brand-800 [&_h2]:text-white [&_.band-desc]:text-brand-200",
+};
+
+function navySurfaces(sections, offset) {
+  const out = [];
+  sections.forEach((section, index) => {
+    let surface = NAVY_CYCLE[(index + offset) % NAVY_CYCLE.length];
+    if ((surface === "medium" || surface === "deep") && !NAVY_DARK_TYPES.has(section.type)) surface = "light";
+    if (surface === out[index - 1]) surface = surface === "white" ? "light" : "white";
+    out.push(surface);
+  });
+  return out;
+}
+
+export default function PageSections({ sections, offset = 0, flat = false, navy = false }) {
   if (!sections?.length) return null;
+  const surfaces = navy ? navySurfaces(sections, offset) : [];
 
   // Bands alternate white / tinted so neighbouring sections never merge into
   // one another. Every type takes part, the CTA included - it supplies its
@@ -652,16 +682,19 @@ export default function PageSections({ sections, offset = 0 }) {
         if (!Renderer) return null;
 
         const tinted = (index + offset) % 2 === 1;
+        // The magazine library always sits on plain white.
+        const isMagazine = section.type === "imageCards" && section.config?.imageStyle === "magazine";
 
         return (
           <section
             key={section.key}
             className={clsx(
-              "relative overflow-hidden py-14 sm:py-20",
-              tinted ? "bg-mist-50/60" : "bg-white"
+              "relative overflow-hidden",
+              flat ? "py-10 sm:py-12" : "py-12 sm:py-16",
+              isMagazine ? "bg-white" : navy ? NAVY_CLASS[surfaces[index]] : flat ? (tinted ? "bg-brand-600 [&_h2]:text-white [&_.band-desc]:text-brand-100" : "bg-white") : tinted ? "bg-mist-50/60" : "bg-white"
             )}
           >
-            {tinted && (
+            {tinted && !flat && !navy && (
               // The same soft brand glow the homepage's tinted band uses, so
               // the strip doesn't read as a flat grey box.
               <div

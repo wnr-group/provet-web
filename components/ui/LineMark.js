@@ -11,7 +11,7 @@ export default function LineMark({ icon: Icon, companion: Companion, backdrop = 
     <span aria-hidden="true" className="relative block h-16 w-20">
       <span
         className="absolute left-0 top-2 h-12 w-12 rounded-full transition-transform duration-500 ease-out group-hover:scale-110"
-        style={{ background: "radial-gradient(circle at 35% 35%, var(--color-accent-50), var(--color-brand-100) 75%)" }}
+        style={{ background: "var(--color-brand-100)" }}
       />
       <Icon size={48} strokeWidth={1} absoluteStrokeWidth className="absolute left-3 top-0 text-brand-800" />
       {Companion && (

@@ -68,7 +68,7 @@ export default async function Home() {
       case "feature-strip":
         return <FeatureStrip key={b.key} items={parseHeadedItems(b.body)} title={b.title} />;
       case "species":
-        return <CategoryGrid key={b.key} categories={categories} title={b.title || undefined} description={b.body} />;
+        return <CategoryGrid key={b.key} categories={categories} title={b.title || undefined} description={b.body} config={b.config} />;
       case "featured":
         return <FeaturedProducts key={b.key} products={featured} title={b.title || undefined} description={b.body} />;
       case "top-brands":
@@ -94,7 +94,7 @@ export default async function Home() {
           anywhere among the built-in ones. */}
       {homeLayout(homeSectionOrder(content), added).map((entry) =>
         entry.added ? (
-          <PageSections key={entry.key} sections={[entry.added]} offset={entry.addedIndex} />
+          <PageSections key={entry.key} sections={[entry.added]} offset={entry.addedIndex} flat />
         ) : (
           renderSection(entry.block)
         )

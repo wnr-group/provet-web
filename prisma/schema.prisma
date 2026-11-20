@@ -13,12 +13,23 @@ datasource db {
   provider = "postgresql"
 }
 
+// Who may use the admin. Signing in is Supabase Auth's job; this table is the
+// authorisation record: a Supabase user is an administrator only while a row
+// here points at them (authUserId), is active and has an allowed role (see
+// lib/adminAccess.js). Nothing from the Supabase user - its metadata, even its
+// email - grants access, and no route writes to this table: rows are made by
+// scripts/create-admin.js with the server-side key.
+//
+// passwordHash is the old, pre-Supabase login, kept only until each admin has
+// been moved over; scripts/create-admin.js clears it.
 model AdminUser {
   id           String   @id @default(cuid())
   name         String
   email        String   @unique
-  passwordHash String
+  authUserId   String?  @unique // auth.users.id in Supabase
+  passwordHash String?
   role         String   @default("admin")
+  isActive     Boolean  @default(true)
   createdAt    DateTime @default(now())
 }
 
@@ -256,4 +267,62 @@ model BrochureLead {
   company   String
   city      String?
   createdAt DateTime @default(now())
+}
+
+// One issue of the Propulse magazine (Admin > Magazine). It belongs to the year
+// and month of `publishedAt` (always the 1st of the month, midnight UTC), and a
+// year is either shown under Recent Editions or is an Archive year - see
+// MagazineYear. An unpublished issue is never read by the public site.
+model Magazine {
+  id          String   @id @default(cuid())
+  title       String
+  issueNumber String? // free text: "Issue 36", "Vol. 3 No. 8"
+  publishedAt DateTime // the publication date; month and year come from it
+  coverImage  String?
+  // "portrait": the image is a whole cover. "crop": a landscape crop of a
+  // cover's top half, shown above a printed cover band.
+  coverLayout String   @default("portrait")
+  pdfUrl      String?
+  pdfFileName String?
+  summary     String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isPublished, publishedAt])
+}
+
+// The magazine page's wording (Admin > Magazine > Wording). A singleton keyed
+// like BrochureSetting. A null label shows its default text
+// (DEFAULT_MAGAZINE_SETTINGS in lib/magazineLibrary.js).
+model MagazineSetting {
+  id                  String   @id @default(cuid())
+  key                 String   @unique @default("default")
+  // Retired: the page used to count the last N months as recent. Recent
+  // Editions are now the years marked so in MagazineYear; nothing reads these.
+  recentMonths        Int      @default(12)
+  defaultYear         String   @default("latest")
+  recentTabLabel      String?
+  archivesTabLabel    String?
+  latestLabel         String?
+  readLabel           String?
+  downloadLabel       String?
+  otherMagazinesLabel String?
+  archivesHeading     String?
+  archivesIntro       String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+// A year in the magazine library, added by the admin (Admin > Magazine > Add a
+// year) before magazines are put in it. `isRecent` years are shown under Recent
+// Editions; every other year is an Archive year with its own button on the page.
+// With no year marked, the newest year with issues is the recent one
+// (lib/magazineLibrary.js).
+model MagazineYear {
+  id        String   @id @default(cuid())
+  year      Int      @unique
+  isRecent  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

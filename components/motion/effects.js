@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import {
   motion,
   useInView,
@@ -37,6 +37,30 @@ export function SplitText({ text, as: Tag = "span", className, delay = 0, stagge
     return <Tag className={className}>{text}</Tag>;
   }
 
+  // At the top of a page the reveal is pure CSS (.split-word in globals.css):
+  // the words are laid out visible-in-place and each rises on its own delay from
+  // first paint. The framer version below is server-rendered with every word
+  // pushed out of its mask and stays that way until the script has hydrated, so
+  // the page heading - normally its largest paint - waited on all the
+  // JavaScript. Same rise, order, timing and easing.
+  if (mode === "mount") {
+    return (
+      <Tag key={text} className={className} aria-label={text}>
+        {words.map((word, i) => (
+          <Fragment key={`${word}-${i}`}>
+            <span aria-hidden="true" className="-mb-[0.2em] inline-block overflow-hidden pb-[0.2em] align-bottom">
+              <span className="split-word" style={{ "--sdelay": `${delay + i * stagger}s`, "--sdur": `${DURATION.base}s` }}>
+                {word}
+              </span>
+            </span>
+            {/* The space sits between the word boxes, where it cannot collapse. */}
+            {i < words.length - 1 ? " " : null}
+          </Fragment>
+        ))}
+      </Tag>
+    );
+  }
+
   const MotionTag = motion[Tag] || motion.span;
 
   return (
@@ -50,7 +74,8 @@ export function SplitText({ text, as: Tag = "span", className, delay = 0, stagge
       className={className}
       aria-label={text}
       initial="hidden"
-      {...(mode === "mount" ? { animate: "show" } : { whileInView: "show", viewport: VIEWPORT })}
+      whileInView="show"
+      viewport={VIEWPORT}
       variants={{ hidden: {}, show: { transition: { staggerChildren: stagger, delayChildren: delay } } }}
     >
       {words.map((word, i) => (
@@ -93,7 +118,12 @@ export function SplitText({ text, as: Tag = "span", className, delay = 0, stagge
    wiped into view, while the image itself drifts back from a slight overscale.
    Two properties, both compositor-friendly.
 --------------------------------------------------------------------------- */
-export function MaskReveal({ children, className, wrapperClassName, direction = "up", delay = 0 }) {
+// `mode="mount"`: for photos at the top of a page (the banners). The wipe is a
+// CSS animation (.mask-mount in globals.css) that starts with the first frame;
+// the default waits for the script to hydrate and an observer to report the
+// photo in view, which held the page's largest image back. Same wipe, zoom,
+// timing and easing - and, as below, no clip left behind once it has run.
+export function MaskReveal({ children, className, wrapperClassName, direction = "up", delay = 0, mode = "inView" }) {
   const { reduced } = useMotionEnv();
   // Visibility is watched on an unclipped wrapper, never on the masked
   // element itself. At rest that element is clipped to nothing, and browsers
@@ -127,6 +157,21 @@ export function MaskReveal({ children, className, wrapperClassName, direction = 
     return (
       <div className={wrapperClassName}>
         <div className={className}>{children}</div>
+      </div>
+    );
+  }
+
+  if (mode === "mount") {
+    return (
+      <div className={wrapperClassName}>
+        <div
+          className={clsx("mask-mount", className)}
+          style={{ "--mfrom": from, "--mto": to, "--mdur": `${DURATION.slow}s`, "--mdelay": `${delay}s` }}
+        >
+          <div className="mask-mount-zoom h-full w-full" style={{ "--mdelay": `${delay}s` }}>
+            {children}
+          </div>
+        </div>
       </div>
     );
   }

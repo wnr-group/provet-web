@@ -1,6 +1,6 @@
 // Thin fetch wrapper for the admin dashboard's client components. Auth rides
 // along automatically via the httpOnly session cookie (same-origin, no
-// manual Authorization header needed) - see lib/auth.js / proxy.js.
+// manual Authorization header needed) - see proxy.js / lib/requireAdmin.js.
 async function apiFetch(path, options = {}) {
   const res = await fetch(`/api${path}`, {
     ...options,
@@ -27,6 +27,10 @@ export const login = (email, password) =>
   apiFetch("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) });
 export const logout = () => apiFetch("/auth/logout", { method: "POST" });
 export const getMe = () => apiFetch("/auth/me");
+export const forgotPassword = (email) =>
+  apiFetch("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) });
+export const resetPassword = (password) =>
+  apiFetch("/auth/reset-password", { method: "POST", body: JSON.stringify({ password }) });
 
 // ---- Admin: Products ----
 export const adminGetProducts = (params = {}) => apiFetch(withQuery("/admin/products", params));
@@ -78,6 +82,23 @@ export const adminUpdateSocialLinks = (links) =>
 export const adminGetBrochure = () => apiFetch("/admin/brochure");
 export const adminUpdateBrochure = (settings) =>
   apiFetch("/admin/brochure", { method: "PUT", body: JSON.stringify(settings) });
+
+// ---- Admin: Magazine ----
+export const adminGetMagazines = () => apiFetch("/admin/magazines");
+export const adminCreateMagazine = (payload) =>
+  apiFetch("/admin/magazines", { method: "POST", body: JSON.stringify(payload) });
+export const adminUpdateMagazine = (id, payload) =>
+  apiFetch(`/admin/magazines/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+export const adminDeleteMagazine = (id) => apiFetch(`/admin/magazines/${id}`, { method: "DELETE" });
+export const adminGetMagazineYears = () => apiFetch("/admin/magazine-years");
+export const adminCreateMagazineYear = (payload) =>
+  apiFetch("/admin/magazine-years", { method: "POST", body: JSON.stringify(payload) });
+export const adminUpdateMagazineYear = (id, payload) =>
+  apiFetch(`/admin/magazine-years/${id}`, { method: "PUT", body: JSON.stringify(payload) });
+export const adminDeleteMagazineYear = (id) => apiFetch(`/admin/magazine-years/${id}`, { method: "DELETE" });
+export const adminGetMagazineSettings = () => apiFetch("/admin/magazine-settings");
+export const adminUpdateMagazineSettings = (settings) =>
+  apiFetch("/admin/magazine-settings", { method: "PUT", body: JSON.stringify(settings) });
 
 // ---- Admin: Feedback ----
 export const adminGetFeedbackConfig = () => apiFetch("/admin/feedback-config");

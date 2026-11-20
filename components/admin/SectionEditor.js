@@ -5,10 +5,11 @@ import { ChevronUp, ChevronDown, Trash2, Plus, CheckCircle2, AlertCircle, PlayCi
 import clsx from "clsx";
 import { ImagePicker } from "@/components/admin/ImagePicker";
 import RowsTable from "@/components/admin/RowsTable";
-import { adminUploadFile } from "@/components/admin/adminApi";
+import { adminUploadFile, adminCreateCategory } from "@/components/admin/adminApi";
 import { bodyToRows, rowsToBody } from "@/lib/contentFormat";
 import { SECTION_TYPES, SECTION_TYPE_KEYS } from "@/lib/sectionTypes";
 import { buildCategoryTree } from "@/lib/categoryTree";
+import { CATEGORY_THEMES } from "@/lib/categoryTheme";
 import { parseYouTubeUrl, youTubeThumbnailUrl } from "@/lib/youtube";
 
 // The fields for one configurable section, shown in the Website Content
@@ -30,6 +31,152 @@ const BODY_HINT = {
 // "feature-strip" block): one row per point, matched to the strip's own rows
 // by heading. Links are one "Label | address" per line; a PDF can be uploaded
 // here to get an address for it.
+// The homepage "Solutions by Species" block: the tag and button text, and one
+// card per top-level category (Admin > Categories) with its own photo, label,
+// name and wordmark. Overrides are saved in config.ranges by category slug; an
+// empty field keeps the range's own value.
+function SpeciesEditor({ config, categories = [], onConfig, onCategoriesChange }) {
+  const ranges = config.ranges || [];
+  // The "Add category" form: a new range (top-level category), created right
+  // away; its label and logo are saved with the rest of the block.
+  const [adding, setAdding] = useState(null);
+  const [creating, setCreating] = useState(false);
+  const [addError, setAddError] = useState("");
+  const create = async () => {
+    const name = adding.name.trim();
+    if (!name) return setAddError("Give the category a name.");
+    setCreating(true);
+    setAddError("");
+    try {
+      const made = await adminCreateCategory({ name, image: adding.image || null, parentId: null });
+      const override = { slug: made.slug };
+      if (adding.label.trim()) override.label = adding.label.trim();
+      if (adding.logo) override.logo = adding.logo;
+      if (Object.keys(override).length > 1) onConfig({ ranges: [...ranges.filter((r) => r.slug !== made.slug), override] });
+      await onCategoriesChange?.();
+      setAdding(null);
+    } catch (err) {
+      setAddError(err.message || "Could not create the category.");
+    } finally {
+      setCreating(false);
+    }
+  };
+  const tops = categories.filter((c) => !c.parentId).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  const get = (slug) => ranges.find((r) => r.slug === slug) || { slug };
+  // What the card shows when nothing is overridden: the range's own name and
+  // photo, and its built-in label and wordmark. The form is filled with these,
+  // so it shows what is live; a value left equal to its built-in is not saved
+  // as an override.
+  const defaultsOf = (c) => {
+    const theme = CATEGORY_THEMES[c.slug];
+    return { name: c.name, label: theme?.label || "", logo: theme?.logo?.src || "", image: c.image || "" };
+  };
+  const setRange = (c, patch) => {
+    const base = defaultsOf(c);
+    const next = { ...get(c.slug), ...patch };
+    for (const key of ["name", "label", "logo", "image"]) {
+      // Logo and photo can't be blank (clearing them returns to the built-in).
+      if (next[key] === base[key] || (next[key] === "" && (key === "logo" || key === "image"))) delete next[key];
+    }
+    const rest = ranges.filter((r) => r.slug !== c.slug);
+    onConfig({ ranges: Object.keys(next).length > 1 ? [...rest, next] : rest });
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="label">Small tag over the heading</label>
+          <input className="input" maxLength={60} value={config.eyebrow ?? "Our Portfolio"} onChange={(e) => onConfig({ eyebrow: e.target.value })} />
+        </div>
+        <div>
+          <label className="label">Button text</label>
+          <input className="input" maxLength={40} value={config.buttonLabel ?? "View Full Portfolio"} onChange={(e) => onConfig({ buttonLabel: e.target.value })} />
+        </div>
+      </div>
+
+      <div>
+        <label className="label">Range cards</label>
+        <p className="mb-3 text-xs text-ink-soft">
+          One card per range, showing what is on the site now. Change a field to override it; clearing a label goes back to the built-in one. Add or reorder ranges in Categories.
+        </p>
+        {tops.length === 0 && <p className="text-sm text-ink-soft">No ranges yet - add a top-level category first.</p>}
+        <div className="space-y-4">
+          {tops.map((c) => {
+            const r = get(c.slug);
+            const base = defaultsOf(c);
+            return (
+              <div key={c.id} className="rounded-xl border border-brand-100 p-4">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">{c.name}</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="label">Label</label>
+                    <input className="input" placeholder="e.g. Poultry" maxLength={40} value={r.label ?? base.label} onChange={(e) => setRange(c, { label: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="label">Name (shown when there is no logo)</label>
+                    <input className="input" maxLength={60} value={r.name ?? base.name} onChange={(e) => setRange(c, { name: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="label">Logo</label>
+                    <ImagePicker value={r.logo || base.logo} onChange={(logo) => setRange(c, { logo })} />
+                  </div>
+                  <div>
+                    <label className="label">Photo</label>
+                    <ImagePicker value={r.image || base.image} onChange={(image) => setRange(c, { image })} />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {adding ? (
+          <div className="mt-4 rounded-xl border border-dashed border-brand-300 bg-brand-50/30 p-4">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">New category</p>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="label">Name</label>
+                <input className="input" maxLength={60} placeholder="e.g. Swine" value={adding.name} onChange={(e) => setAdding({ ...adding, name: e.target.value })} />
+              </div>
+              <div>
+                <label className="label">Label <span className="font-normal text-ink-soft">(optional)</span></label>
+                <input className="input" maxLength={40} placeholder="e.g. Swine" value={adding.label} onChange={(e) => setAdding({ ...adding, label: e.target.value })} />
+              </div>
+              <div>
+                <label className="label">Logo <span className="font-normal text-ink-soft">(optional)</span></label>
+                <ImagePicker value={adding.logo} onChange={(logo) => setAdding({ ...adding, logo })} />
+              </div>
+              <div>
+                <label className="label">Photo <span className="font-normal text-ink-soft">(optional)</span></label>
+                <ImagePicker value={adding.image} onChange={(image) => setAdding({ ...adding, image })} />
+              </div>
+            </div>
+            {addError && (
+              <p role="alert" className="mt-3 flex items-center gap-2 text-sm text-red-700">
+                <AlertCircle size={14} className="shrink-0" /> {addError}
+              </p>
+            )}
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <button type="button" className="btn-ghost text-sm" onClick={() => { setAdding(null); setAddError(""); }}>
+                Cancel
+              </button>
+              <button type="button" className="btn-primary text-sm" disabled={creating} onClick={create}>
+                {creating ? "Creating..." : "Create category"}
+              </button>
+            </div>
+            <p className="mt-2 text-xs text-ink-soft">The category is created straight away; its label and logo go live with Save changes.</p>
+          </div>
+        ) : (
+          <button type="button" className="btn-outline mt-4 text-sm" onClick={() => setAdding({ name: "", label: "", logo: "", image: "" })}>
+            <Plus size={15} /> Add category
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function FeatureDetailsEditor({ config, onConfig }) {
   const details = config.details || [];
   return (
@@ -265,22 +412,31 @@ function ConfigFields({ section, categories, onConfig }) {
         )}
 
         <div>
-          <label className="label">{type === "carousel" ? "Slides" : "Cards"}</label>
-          <RowsTable
-            columns={[
-              { key: "image", label: "Image", type: "image", width: "5.5rem" },
-              { key: "title", label: "Heading", placeholder: "Heading", width: "24%" },
-              { key: "text", label: "Text", type: "textarea", placeholder: "Text (optional)" },
-              { key: "href", label: "Link", placeholder: "/products or https://...", width: "22%" },
-            ]}
-            rows={items}
-            onChange={(next) => onConfig({ items: next })}
-            newRow={{ image: "", title: "", text: "", href: "" }}
-            addLabel={type === "carousel" ? "Add slide" : "Add card"}
-            itemLabel={type === "carousel" ? "slide" : "card"}
-            max={12}
-            emptyText={type === "carousel" ? "No slides yet." : "No cards yet."}
-          />
+          {config.imageStyle !== "magazine" && <label className="label">{type === "carousel" ? "Slides" : "Cards"}</label>}
+          {config.imageStyle === "magazine" && (
+            <p className="mb-2 rounded-lg bg-brand-50 px-3 py-2 text-xs text-ink-soft">
+              The issues, their dates and PDFs, publishing and the page&rsquo;s settings are all managed in{" "}
+              <a href="/admin/magazines" className="font-semibold text-brand-700 hover:underline">Admin &gt; Magazine</a>. This section is
+              the frame the library sits in: its heading and the covers per row are set here.
+            </p>
+          )}
+          {config.imageStyle !== "magazine" && (
+            <RowsTable
+              columns={[
+                { key: "image", label: "Image", type: "image", width: "5.5rem" },
+                { key: "title", label: "Heading", placeholder: "Heading", width: "24%" },
+                { key: "text", label: "Text", type: "textarea", placeholder: "Text (optional)" },
+                { key: "href", label: "Link", placeholder: "/products or https://...", width: "22%" },
+              ]}
+              rows={items}
+              onChange={(next) => onConfig({ items: next })}
+              newRow={{ image: "", title: "", text: "", href: "" }}
+              addLabel={type === "carousel" ? "Add slide" : "Add card"}
+              itemLabel={type === "carousel" ? "slide" : "card"}
+              max={12}
+              emptyText={type === "carousel" ? "No slides yet." : "No cards yet."}
+            />
+          )}
         </div>
       </div>
     );
@@ -536,7 +692,7 @@ export function bodyFormatFor(section, override) {
 // `hint` / `hideConfig` / `bodyFormat` are per-block overrides from a fixed
 // page (FIXED_PAGE_DEFAULTS in the content admin): what the block does on its
 // page, type settings its layout ignores, and how its body is structured.
-export function SectionFields({ section, categories, products, editable, hint, hideConfig = false, bodyFormat, onChange }) {
+export function SectionFields({ section, categories, products, editable, hint, hideConfig = false, bodyFormat, onCategoriesChange, onChange }) {
   const definition = SECTION_TYPES[section.type] || SECTION_TYPES.richText;
   const fields = definition.fields;
   const set = (patch) => onChange({ ...section, ...patch });
@@ -569,7 +725,12 @@ export function SectionFields({ section, categories, products, editable, hint, h
       )}
 
       {fields.includes("body") &&
-        (format ? (
+        (format === "species" ? (
+          <div>
+            <label className="label">Line under the heading</label>
+            <textarea rows={2} className="input resize-y" placeholder="Optional" value={section.body || ""} onChange={(e) => set({ body: e.target.value })} />
+          </div>
+        ) : format ? (
           <div>
             <label className="label">
               {format === "stats" ? "Figures" : format === "lines" ? "Items" : format === "brands" ? "Brands" : format === "regions" ? "Regions" : format === "distributors" ? "Countries" : "Rows"}
@@ -601,6 +762,8 @@ export function SectionFields({ section, categories, products, editable, hint, h
           <ImagePicker value={section.image || ""} onChange={(image) => set({ image })} />
         </div>
       )}
+
+      {format === "species" && <SpeciesEditor config={section.config || {}} categories={categories} onConfig={onConfig} onCategoriesChange={onCategoriesChange} />}
 
       {!hideConfig && <ConfigFields section={section} categories={categories} onConfig={onConfig} />}
     </div>

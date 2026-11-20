@@ -452,6 +452,7 @@ export default function ContentAdmin() {
                 hint={pageMeta?.[editingSection.key]?.hint}
                 hideConfig={pageMeta?.[editingSection.key]?.hideConfig}
                 bodyFormat={pageMeta?.[editingSection.key]?.bodyFormat}
+                onCategoriesChange={() => adminGetCategories().then(setCategories).catch(() => {})}
                 onChange={(next) => updateSection(editingIndex, next)}
               />
             </Modal>

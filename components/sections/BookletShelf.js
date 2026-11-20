@@ -2,6 +2,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { ArrowRight, FileText } from "lucide-react";
 import { EnterGroup, EnterItem } from "@/components/sections/entrances";
+import Pic from "@/components/ui/Pic";
 
 // Technical booklets, presented as the printed reference brochures they are -
 // deliberately not like the magazine rack (components/sections/MagazineRack).
@@ -52,8 +53,7 @@ function Booklet({ item, index }) {
       {/* Cover, hinged on the staples */}
       <div className="relative origin-left transition-transform duration-700 ease-out [transform-style:preserve-3d] motion-safe:group-hover:[transform:rotateY(-58deg)]">
         <div className="relative flex aspect-[3/4] flex-col overflow-hidden rounded-[2px_8px_8px_2px] bg-[#fbfaf6] shadow-[0_18px_34px_-18px_rgba(21,18,48,0.5)] ring-1 ring-black/10">
-          {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded cover */}
-          <img src={item.image} alt={item.title || ""} loading="lazy" className="aspect-[4/3] w-full object-cover object-top" />
+          <Pic src={item.image} alt={item.title || ""} sizes="(min-width: 1024px) 18vw, 42vw" widths={[256, 384, 640, 750]} className="aspect-[4/3] w-full object-cover object-top" />
           <div className="relative flex flex-1 flex-col justify-between border-t border-black/5 bg-[#fbfaf6] p-4">
             {/* Faint paper grain */}
             <span aria-hidden="true" className="bg-dots pointer-events-none absolute inset-0 text-brand-900/[0.04]" />
@@ -93,14 +93,14 @@ export default function BookletShelf({ section, items, columns = 3 }) {
   return (
     <div>
       {section.title && (
-        <div className="mb-12 flex items-end justify-between gap-4 border-b border-brand-900/10 pb-3">
+        <div className="mb-8 flex items-end justify-between gap-4 border-b border-brand-900/10 pb-3">
           <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{section.title}</h2>
           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-soft">
             {items.length} {items.length === 1 ? "volume" : "volumes"}
           </span>
         </div>
       )}
-      {section.body && <p className="-mt-6 mb-12 max-w-2xl leading-relaxed text-ink-soft">{section.body}</p>}
+      {section.body && <p className="-mt-4 mb-8 max-w-2xl leading-relaxed text-ink-soft">{section.body}</p>}
 
       <EnterGroup className={clsx("grid gap-x-8 gap-y-14 sm:grid-cols-2", COLUMNS[columns] || COLUMNS[3])} stagger={0.1}>
         {items.map((item, i) => (

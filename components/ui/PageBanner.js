@@ -1,10 +1,10 @@
-/* eslint-disable @next/next/no-img-element -- admin-uploaded or fixed photos, not a fixed set of remote hosts */
 import Link from "next/link";
 import clsx from "clsx";
 import { ChevronRight } from "lucide-react";
 import Reveal from "@/components/motion/Reveal";
 import { DrawLine, MaskReveal, Parallax, ScrollDrift, SplitText, Tilt } from "@/components/motion/effects";
 import { Enter } from "@/components/sections/entrances";
+import Pic from "@/components/ui/Pic";
 
 // The banner for every page except the homepage (which keeps its own hero).
 //
@@ -103,7 +103,7 @@ function DualGlow() {
 
 // The short accent rule, blue into pink.
 const DualRule = ({ className }) => (
-  <span aria-hidden="true" className={clsx("block h-1 w-14 rounded-full bg-gradient-to-r from-brand-500 to-accent-500", className)} />
+  <span aria-hidden="true" className={clsx("block h-1 w-14 rounded-full bg-accent-500", className)} />
 );
 
 function Actions({ children }) {
@@ -111,19 +111,30 @@ function Actions({ children }) {
   return <div className="mt-7 flex flex-wrap items-center gap-3">{children}</div>;
 }
 
-const Photo = ({ src, alt = "", className }) =>
-  src ? <img src={src} alt={alt} className={clsx("h-full w-full object-cover", className)} /> : null;
+// The banner's photos. The main one is the largest thing on screen when the
+// page opens, so it is fetched first (priority); the small inset photo of the
+// layered compositions is not.
+const Photo = ({ src, alt = "", className, secondary = false }) =>
+  src ? (
+    <Pic
+      src={src}
+      alt={alt}
+      priority={!secondary}
+      sizes={secondary ? "(min-width: 1024px) 320px, 45vw" : "(min-width: 1024px) 50vw, 100vw"}
+      className={clsx("h-full w-full object-cover", className)}
+    />
+  ) : null;
 
 // ---- layered: About Us -------------------------------------------------------
 
 function Layered({ crumb, title, description, image, imageAlt, secondaryImage, chip, children }) {
   return (
-    <section className="relative isolate overflow-hidden bg-[linear-gradient(115deg,#3f3790_0%,#5b41a8_50%,#c2217f_100%)] text-white">
+    <section className="relative isolate overflow-hidden bg-brand-600 text-white">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -right-40 top-0 -z-10 h-[36rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.14),transparent_65%)]"
       />
-      <div className="container-page grid items-center gap-12 py-16 sm:py-20 lg:grid-cols-2">
+      <div className="container-page grid items-center gap-10 py-12 sm:py-14 lg:grid-cols-2">
         {/* Motion: the headline rises word by word; on scroll the copy lifts
             away faster than the picture beside it. */}
         <ScrollDrift y={-50} fade={0.4}>
@@ -150,7 +161,7 @@ function Layered({ crumb, title, description, image, imageAlt, secondaryImage, c
               {secondaryImage && (
                 <div className="absolute right-0 top-0 h-[68%] w-[58%] [transform:translateZ(-40px)]">
                   <Enter preset="depth" delay={0.1} className="h-full w-full overflow-hidden rounded-3xl opacity-90 ring-1 ring-white/10">
-                    <Photo src={secondaryImage} />
+                    <Photo src={secondaryImage} secondary />
                   </Enter>
                 </div>
               )}
@@ -185,7 +196,7 @@ function Asymmetric({ crumb, title, description, image, imageAlt, secondaryImage
   return (
     <section className="relative isolate overflow-hidden bg-mist-50">
       <DualGlow />
-      <div className="container-page grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-12">
+      <div className="container-page grid items-center gap-10 py-10 sm:py-14 lg:grid-cols-12">
         {/* Motion: the headline rises word by word, then the rest follows. */}
         <div className="lg:col-span-5">
           <Reveal mode="mount" distance={10}>{crumb("light")}</Reveal>
@@ -211,7 +222,7 @@ function Asymmetric({ crumb, title, description, image, imageAlt, secondaryImage
             <div className="relative h-[16rem] sm:h-[24rem] lg:h-[28rem]">
               <span aria-hidden="true" className="absolute -bottom-6 right-[8%] -z-10 h-40 w-40 rounded-full bg-accent-100/70 blur-2xl" />
               <div className={clsx("absolute right-0 top-0 h-full overflow-hidden rounded-[2rem] shadow-card", secondaryImage ? "w-full sm:w-[80%]" : "w-full")}>
-                <MaskReveal direction="right" wrapperClassName="h-full" className="h-full w-full">
+                <MaskReveal mode="mount" direction="right" wrapperClassName="h-full" className="h-full w-full">
                   <Parallax distance={16} className="h-[115%] -translate-y-[7%]">
                     <Photo src={image} alt={imageAlt} />
                   </Parallax>
@@ -220,8 +231,8 @@ function Asymmetric({ crumb, title, description, image, imageAlt, secondaryImage
               {secondaryImage && (
                 <Parallax distance={-18} className="absolute -bottom-6 left-0 hidden aspect-[4/3] w-[40%] sm:block">
                   <div className="h-full w-full overflow-hidden rounded-2xl shadow-[0_30px_50px_-24px_rgba(21,18,48,0.55)] ring-8 ring-mist-50">
-                    <MaskReveal direction="circle" delay={0.45} wrapperClassName="h-full" className="h-full w-full">
-                      <Photo src={secondaryImage} />
+                    <MaskReveal mode="mount" direction="circle" delay={0.45} wrapperClassName="h-full" className="h-full w-full">
+                      <Photo src={secondaryImage} secondary />
                     </MaskReveal>
                   </div>
                 </Parallax>
@@ -240,7 +251,7 @@ function Editorial({ crumb, title, description, image, imageAlt, chip, children 
   return (
     <section className="relative isolate overflow-hidden border-b border-brand-100 bg-white">
       <DualGlow />
-      <div className="container-page pb-12 pt-12 sm:pb-14 sm:pt-16">
+      <div className="container-page pb-10 pt-10 sm:pb-12 sm:pt-12">
         {/* Motion: the big headline rises word by word, then eases back a
             touch as the page scrolls on; the hairline draws across from the
             left; the photo strip is unveiled upward. */}
@@ -266,7 +277,7 @@ function Editorial({ crumb, title, description, image, imageAlt, chip, children 
           {image && (
             <div className="md:col-span-7">
               <div className="aspect-[21/9] overflow-hidden rounded-2xl">
-                <MaskReveal direction="up" delay={0.25} wrapperClassName="h-full" className="h-full w-full">
+                <MaskReveal mode="mount" direction="up" delay={0.25} wrapperClassName="h-full" className="h-full w-full">
                   <Parallax distance={14} className="h-[120%] -translate-y-[8%]">
                     <Photo src={image} alt={imageAlt} />
                   </Parallax>
@@ -289,15 +300,15 @@ function Oversized({ crumb, title, description, image, chip, children }) {
       {image && (
         <>
           <Parallax distance={50} className="absolute inset-x-0 -top-[10%] -z-20 h-[120%]">
-            <img src={image} alt="" aria-hidden="true" className="h-full w-full object-cover opacity-60" />
+            <Pic src={image} alt="" aria-hidden="true" sizes="100vw" className="h-full w-full object-cover opacity-60" />
           </Parallax>
           <div
             aria-hidden="true"
-            className="absolute inset-0 -z-10 bg-[linear-gradient(100deg,rgba(57,49,133,0.9)_0%,rgba(91,65,168,0.62)_50%,rgba(229,9,127,0.4)_100%)]"
+            className="absolute inset-0 -z-10 bg-brand-600/70"
           />
         </>
       )}
-      <div className="container-page pb-12 pt-14 sm:pb-16 sm:pt-20">
+      <div className="container-page pb-10 pt-12 sm:pb-12 sm:pt-14">
         <Reveal mode="mount" distance={10}>{crumb("dark")}</Reveal>
         {/* Motion: the giant headline is wiped in left to right, then shrinks
             and lifts a little as the page scrolls on - the one piece of type
@@ -352,7 +363,7 @@ function Immersive({ crumb, title, description, image, imageAlt, chip, children 
       )}
       <div
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(57,49,133,0.85)_0%,rgba(91,65,168,0.35)_45%,rgba(229,9,127,0.14)_100%)]"
+        className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(57,49,133,0.85)_0%,rgba(57,49,133,0.35)_45%,rgba(57,49,133,0.1)_100%)]"
       />
       {/* Motion: the headline rises word by word; on scroll the copy lifts
           and fades faster than the photo drifts, so the two separate. */}
@@ -380,18 +391,18 @@ function Immersive({ crumb, title, description, image, imageAlt, chip, children 
 
 function Panel({ crumb, title, description, image, imageAlt, chip, children }) {
   return (
-    <section className="relative isolate bg-white pb-10">
+    <section className="relative isolate bg-white pb-6">
       {/* Motion: the photo band is unveiled downward, then the panel arrives
           from depth over its edge - quiet, as a contact page should be. */}
-      <div className="relative h-[16rem] overflow-hidden bg-brand-100 sm:h-[22rem]">
-        <MaskReveal direction="down" wrapperClassName="h-full" className="h-full w-full">
+      <div className="relative h-[13rem] overflow-hidden bg-brand-100 sm:h-[17rem]">
+        <MaskReveal mode="mount" direction="down" wrapperClassName="h-full" className="h-full w-full">
           <Parallax distance={24} className="h-[120%] -translate-y-[8%]">
             <Photo src={image} alt={imageAlt} />
           </Parallax>
         </MaskReveal>
-        <div aria-hidden="true" className="absolute inset-0 bg-[linear-gradient(120deg,rgba(57,49,133,0.22),rgba(229,9,127,0.16))]" />
+        <div aria-hidden="true" className="absolute inset-0 bg-brand-600/20" />
       </div>
-      <div className="container-page relative -mt-28 sm:-mt-36">
+      <div className="container-page relative -mt-24 sm:-mt-28">
         <Enter preset="depth" delay={0.35}>
           <div className="max-w-2xl rounded-3xl bg-white p-7 shadow-[0_40px_80px_-40px_rgba(21,18,48,0.45)] ring-1 ring-brand-100 sm:p-10">
             {crumb("light")}

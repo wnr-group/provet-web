@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ImageOff } from "lucide-react";
 import clsx from "clsx";
+import Pic from "@/components/ui/Pic";
 
 // The product page's image on a single square stage, contained and never
 // cropped (the shots are label artwork with the name printed on them), with a
@@ -33,17 +34,18 @@ export default function ProductGallery({ images, name }) {
     <div>
       {/* The image is centred and contained at the same padding whatever its
           proportions. */}
-      <div className="relative aspect-square overflow-hidden rounded-2xl bg-[radial-gradient(circle_at_50%_40%,#ffffff_0%,var(--color-mist-100)_70%,var(--color-brand-100)_100%)]">
+      <div className="relative aspect-square overflow-hidden rounded-2xl bg-mist-50">
         {failed[activeImg] ? (
           <div className="flex h-full flex-col items-center justify-center gap-2 text-ink-soft">
             <ImageOff size={28} />
             <span className="text-sm">Image unavailable</span>
           </div>
         ) : (
-          /* eslint-disable-next-line @next/next/no-img-element -- arbitrary external/uploaded URLs, not a fixed set of remote hosts */
-          <img
+          <Pic
             key={images[activeImg]}
             src={images[activeImg]}
+            priority
+            sizes="(min-width: 1024px) 560px, 92vw"
             alt={`${name}${hasMultiple ? ` - view ${activeImg + 1} of ${images.length}` : ""}`}
             onError={() => markFailed(activeImg)}
             className="absolute inset-0 h-full w-full object-contain p-[3%]"
@@ -81,8 +83,7 @@ export default function ProductGallery({ images, name }) {
                   <ImageOff size={14} />
                 </span>
               ) : (
-                /* eslint-disable-next-line @next/next/no-img-element -- see above */
-                <img src={img} alt="" loading="lazy" onError={() => markFailed(i)} className="h-full w-full object-contain" />
+                <Pic src={img} alt="" sizes="96px" widths={[96, 128, 256]} onError={() => markFailed(i)} className="h-full w-full object-contain" />
               )}
             </button>
           ))}
