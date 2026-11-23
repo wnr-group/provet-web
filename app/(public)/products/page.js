@@ -1,4 +1,5 @@
-import { getCategoryTree, getProducts, getPublicBrochureSettings } from "@/lib/data";
+import { getCategoryTree, getProducts, getPublicBrochureSettings, getContentSections } from "@/lib/data";
+import { withHomeDefaults } from "@/lib/homeContent";
 import { resolveCategorySlug, navCategoryTree } from "@/lib/categoryTree";
 import { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 import CatalogueCard from "@/components/catalogue/CatalogueCard";
@@ -53,11 +54,21 @@ export default async function Products({ searchParams }) {
   const sort = SORTS.includes(params.sort) ? params.sort : "newest";
   const view = params.view === "list" ? "list" : "grid";
 
-  const [tree, result, brochure] = await Promise.all([
+  const [baseTree, result, brochure, homeContent] = await Promise.all([
     getCategoryTree(),
     getProducts({ category, search, page, limit: LIMIT, sort, prefixFirst: true }),
     getPublicBrochureSettings(),
+    getContentSections("home"),
   ]);
+
+  // The range photos set in Admin > Website Content > Homepage > Solutions by
+  // Species also lead the catalogue (the range tiles and the header banner),
+  // so a range looks the same on the homepage and here.
+  const speciesRanges = withHomeDefaults(homeContent).find((b) => b.key === "species")?.config?.ranges || [];
+  const tree = baseTree.map((r) => {
+    const image = speciesRanges.find((o) => o.slug === r.slug)?.image;
+    return image ? { ...r, image } : r;
+  });
 
   const totalPages = Math.max(1, Math.ceil(result.total / LIMIT));
   // `?category=` names either level: a category (everything in its
