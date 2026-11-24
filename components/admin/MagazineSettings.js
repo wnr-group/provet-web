@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import clsx from "clsx";
-import { AlertCircle, Archive, ArrowRight, BookOpen, CheckCircle2, Download, RotateCcw, Save } from "lucide-react";
+import { AlertCircle, Archive, ArrowRight, BookOpen, CheckCircle2, RotateCcw, Save } from "lucide-react";
 import { adminUpdateMagazineSettings } from "@/components/admin/adminApi";
 import { DEFAULT_MAGAZINE_SETTINGS, organise } from "@/lib/magazineLibrary";
 
@@ -27,8 +27,7 @@ const WORDING = [
     title: "The latest edition",
     fields: [
       ["latestLabel", "Small tag above the month", 40],
-      ["readLabel", "Button that opens the PDF", 30],
-      ["downloadLabel", "Button that downloads the PDF", 30],
+      ["readLabel", "Button that opens the PDF in a new tab", 30],
     ],
   },
   {
@@ -190,9 +189,6 @@ export default function MagazineSettings({ settings, items, years, onSaved }) {
                 <div className="flex flex-wrap gap-1.5 pt-1">
                   <Spot k="readLabel" active={active} onPick={focusField} className="inline-flex items-center gap-1 rounded-full bg-brand-600 px-2.5 py-1 text-[11px] font-semibold text-white">
                     {form.readLabel || DEFAULT_MAGAZINE_SETTINGS.readLabel} <ArrowRight size={10} />
-                  </Spot>
-                  <Spot k="downloadLabel" active={active} onPick={focusField} className="inline-flex items-center gap-1 rounded-full border border-brand-200 px-2.5 py-1 text-[11px] font-semibold text-brand-700">
-                    <Download size={10} /> {form.downloadLabel || DEFAULT_MAGAZINE_SETTINGS.downloadLabel}
                   </Spot>
                 </div>
                 <Spot k="otherMagazinesLabel" active={active} onPick={focusField} className="inline-flex items-center gap-1 rounded-full bg-accent-500 px-3 py-1 text-[11px] font-semibold text-white ring-2 ring-accent-100">

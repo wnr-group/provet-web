@@ -1,11 +1,14 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Pic from "@/components/ui/Pic";
+import RangeLogo from "@/components/ui/RangeLogo";
+import { categoryTheme } from "@/lib/categoryTheme";
 
 const ICON_FALLBACK =
   "https://images.unsplash.com/photo-1598016717029-026340d417d4?auto=format&fit=crop&w=300&h=300&q=80";
 
 export default function CategoryCard({ category }) {
+  const logo = category.logo || categoryTheme(category).logo;
   return (
     <Link
       href={`/products?category=${category.slug}`}
@@ -37,8 +40,9 @@ export default function CategoryCard({ category }) {
           the same card height instead of the grid row stretching to the
           longest label. */}
       <div className="flex w-full flex-1 flex-col items-center justify-center">
-        <h3 className="line-clamp-2 min-h-10 text-sm font-semibold leading-5 text-ink transition-colors group-hover:text-brand-700">
-          {category.name}
+        <h3 className="line-clamp-2 flex min-h-10 items-center justify-center text-sm font-semibold leading-5 text-ink transition-colors group-hover:text-brand-700">
+          {/* A range with its own wordmark shows it in place of its name. */}
+          {logo ? <RangeLogo logo={logo} alt={category.name} sizes="160px" className="h-6" /> : category.name}
         </h3>
         <p className="mt-1.5 min-h-5">
           {typeof category.productCount === "number" && (

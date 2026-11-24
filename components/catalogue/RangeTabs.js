@@ -2,6 +2,7 @@ import Link from "next/link";
 import clsx from "clsx";
 import { Check } from "lucide-react";
 import SiteImage from "@/components/ui/SiteImage";
+import RangeLogo from "@/components/ui/RangeLogo";
 import { categoryTheme, rangeThemeVars } from "@/lib/categoryTheme";
 
 // The ranges as a row of photo tiles across the top of the catalogue - the
@@ -47,7 +48,7 @@ export default function RangeTabs({ ranges, activeId }) {
   return (
     <nav aria-label="Product ranges" className="border-b border-brand-100 bg-white">
       <ul className="container-wide flex gap-3 overflow-x-auto py-5 [scrollbar-width:none] sm:gap-4 [&::-webkit-scrollbar]:hidden">
-        {tiles.map(({ id, name, label, count, href, image, theme }) => {
+        {tiles.map(({ id, name, label, href, image, theme }) => {
           const active = id === (activeId || null);
           return (
             <li key={id || "all"} className="min-w-[14rem] flex-1 sm:min-w-0">
@@ -83,15 +84,27 @@ export default function RangeTabs({ ranges, activeId }) {
                 )}
 
                 <span className="flex items-center gap-1.5">
-                  <span className="truncate font-display text-lg font-bold leading-tight [text-shadow:0_1px_8px_rgba(10,8,30,0.5)]">
-                    {name}
-                  </span>
+                  {/* A range with its own wordmark shows that instead of its
+                      name (the logo's alt text keeps the name for readers). */}
+                  {theme.logo ? (
+                    <RangeLogo
+                      logo={theme.logo}
+                      alt={name}
+                      sizes="160px"
+                      className="h-6 drop-shadow-[0_2px_8px_rgba(10,8,30,0.5)]"
+                    />
+                  ) : (
+                    <span className="truncate font-display text-lg font-bold leading-tight [text-shadow:0_1px_8px_rgba(10,8,30,0.5)]">
+                      {name}
+                    </span>
+                  )}
                   {active && <Check size={16} aria-label="Selected" className="shrink-0" />}
                 </span>
-                <span className="mt-0.5 block truncate text-xs text-white/85 [text-shadow:0_1px_6px_rgba(10,8,30,0.5)]">
-                  {label && <>{label} · </>}
-                  <span className="font-semibold tabular-nums text-white">{count}</span> {count === 1 ? "product" : "products"}
-                </span>
+                {label && (
+                  <span className="mt-0.5 block truncate text-xs text-white/85 [text-shadow:0_1px_6px_rgba(10,8,30,0.5)]">
+                    {label}
+                  </span>
+                )}
               </Link>
             </li>
           );

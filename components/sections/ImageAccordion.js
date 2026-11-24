@@ -67,24 +67,20 @@ export default function ImageAccordion({ section, items }) {
                   alt=""
                   sizes="(min-width: 1024px) 55vw, 100vw"
                   className={clsx(
-                    "absolute inset-0 h-full w-full object-cover transition-[opacity,transform] duration-[900ms] ease-out group-hover:scale-105",
+                    "absolute inset-0 h-full w-full object-cover object-[50%_35%] transition-[opacity,transform] duration-[900ms] ease-out group-hover:scale-105",
                     i === active ? "scale-100 opacity-100" : "scale-110 opacity-0"
                   )}
                 />
               ) : null
             )}
-            {/* Frosted caption card over the photo. */}
-            <div className="absolute inset-x-4 bottom-4 rounded-2xl bg-white/85 p-6 shadow-soft ring-1 ring-white/60 backdrop-blur-md">
-              <div key={active} className="reel-caption" style={{ animation: "reel-caption 0.5s ease-out" }}>
-                <div className="flex items-center gap-3">
-                  <span className="font-display text-sm font-bold tabular-nums tracking-[0.16em] text-accent-600">
-                    {String(active + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="font-display text-xl font-bold tracking-tight text-ink">{current.title}</h3>
-                </div>
-                {current.text && <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-soft">{current.text}</p>}
+            {/* The title and the way in sit on a soft dark gradient along the
+                foot of the photo - no box over it, so the picture stays
+                visible. The description is in the list beside it. */}
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-900/85 via-brand-900/45 to-transparent px-6 pb-5 pt-16">
+              <div key={active} className="reel-caption flex items-center gap-3" style={{ animation: "reel-caption 0.5s ease-out" }}>
+                <h3 className="min-w-0 flex-1 truncate font-display text-xl font-bold tracking-tight text-white">{current.title}</h3>
                 {current.href && (
-                  <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition group-hover:bg-accent-500">
+                  <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-accent-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_16px_-8px_rgba(0,0,0,0.5)] transition group-hover:bg-accent-400">
                     Explore <ArrowUpRight size={15} className="transition-transform duration-300 group-hover:rotate-45" />
                   </span>
                 )}
@@ -109,17 +105,17 @@ export default function ImageAccordion({ section, items }) {
                     isActive ? "bg-white shadow-lift ring-accent-300" : "bg-white/60 ring-brand-100/70 hover:bg-white hover:ring-brand-200"
                   )}
                 >
+                  {/* A short accent bar marks the chosen row. */}
                   <span
+                    aria-hidden="true"
                     className={clsx(
-                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl font-display text-sm font-bold tabular-nums transition-colors duration-300",
-                      isActive ? "bg-brand-600 text-white" : "bg-brand-50 text-brand-700"
+                      "absolute inset-y-4 left-0 w-1 rounded-r-full bg-accent-500 transition-opacity duration-300",
+                      isActive ? "opacity-100" : "opacity-0"
                     )}
-                  >
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span className="min-w-0 flex-1">
+                  />
+                  <span className="min-w-0 flex-1 pl-1">
                     <span className="block font-display text-base font-bold tracking-tight text-ink">{item.title}</span>
-                    {item.text && <span className="mt-0.5 line-clamp-1 text-sm text-ink-soft">{item.text}</span>}
+                    {item.text && <span className="mt-0.5 line-clamp-2 text-sm leading-snug text-ink-soft">{item.text}</span>}
                   </span>
                   <ArrowRight
                     size={18}
@@ -149,16 +145,11 @@ export default function ImageAccordion({ section, items }) {
             <div className="overflow-hidden rounded-3xl bg-white shadow-card ring-1 ring-brand-100/70">
               {item.image && (
                 <div className="relative aspect-[16/10] bg-mist-100">
-                  <SiteImage src={item.image} alt="" sizes="(min-width: 640px) 50vw, 100vw" className="h-full w-full object-cover" />
+                  <SiteImage src={item.image} alt="" sizes="(min-width: 640px) 50vw, 100vw" className="h-full w-full object-cover object-[50%_35%]" />
                 </div>
               )}
               <div className="p-5">
-                <div className="flex items-center gap-3">
-                  <span className="font-display text-sm font-bold tabular-nums tracking-[0.16em] text-accent-600">
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <h3 className="font-display text-lg font-bold tracking-tight text-ink">{item.title}</h3>
-                </div>
+                <h3 className="font-display text-lg font-bold tracking-tight text-ink">{item.title}</h3>
                 {item.text && <p className="mt-2 text-sm leading-relaxed text-ink-soft">{item.text}</p>}
                 {item.href && (
                   <span className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-600">

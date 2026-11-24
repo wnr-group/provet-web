@@ -491,7 +491,7 @@ function IssueModal({ editing, initial, years, onClose, onSaved }) {
               </button>
             </div>
           ) : (
-            <p className="text-sm text-ink-soft">No PDF. The magazine shows without Read and Download buttons.</p>
+            <p className="text-sm text-ink-soft">No PDF. The magazine shows without a Read now button.</p>
           )}
           <input ref={pdfInput} type="file" accept="application/pdf,.pdf" className="hidden" onChange={onPickPdf} />
           <button type="button" onClick={() => pdfInput.current?.click()} disabled={uploadingPdf} className="btn-outline mt-2 text-sm">

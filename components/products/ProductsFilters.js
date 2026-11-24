@@ -5,6 +5,8 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useCatalogueNavigation } from "@/components/catalogue/CatalogueNavigation";
 import { Search, SlidersHorizontal, X, Check } from "lucide-react";
 import clsx from "clsx";
+import RangeLogo from "@/components/ui/RangeLogo";
+import { categoryTheme, rangeThemeVars } from "@/lib/categoryTheme";
 
 // The search box searches as you type once this many letters are in, after a
 // short pause - each search reloads the product grid, so it waits for the
@@ -215,10 +217,26 @@ export default function ProductsFilters({ tree = [], activeCategoryId, activeSub
               : ""}
           </p>
 
-          {/* Product groups, under their range. */}
-          {sections.map((r) => (
-            <div key={r.id} className="mt-3 border-t border-brand-100/80 pt-4">
-              <SectionLabel>{range ? "Product group" : r.name}</SectionLabel>
+          {/* Product groups, under their range. Each range is set apart in its
+              own colours (lib/categoryTheme.js): a tinted header with its
+              logo, and hover and selected states in the same colour - the section's wrapper sets the
+              --range-* variables the options read, so the page's own colour
+              does not override them. A range with no theme (one just added in
+              the admin) takes the Provet purple and shows its name. */}
+          {sections.map((r) => {
+            const theme = categoryTheme(r);
+            return (
+            <div key={r.id} style={rangeThemeVars(theme)} className="mt-4 first:mt-3">
+              <div className="flex items-center justify-between gap-3 rounded-lg bg-(--range-soft) py-2.5 pl-4 pr-3 shadow-[inset_4px_0_0_var(--range-accent)]">
+                {theme.logo ? (
+                  <RangeLogo logo={theme.logo} alt={r.name} sizes="140px" className="h-[18px]" />
+                ) : (
+                  <span className="min-w-0 truncate font-display text-sm font-extrabold uppercase tracking-wide text-(--range-text)">{r.name}</span>
+                )}
+                <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-(--range-text)">
+                  {theme.label || (range ? "Product group" : "")}
+                </span>
+              </div>
               <ul className="mt-2 space-y-0.5">
                 {range && (
                   <li>
@@ -248,7 +266,8 @@ export default function ProductsFilters({ tree = [], activeCategoryId, activeSub
                 )}
               </ul>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Drawer footer: back to the results. */}
@@ -286,7 +305,7 @@ function OptionButton({ active, onClick, count, disabled = false, children }) {
         "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition disabled:cursor-not-allowed disabled:opacity-40 lg:py-1.5 lg:text-[13px]",
         active
           ? "bg-(--range-soft) font-semibold text-(--range-text) shadow-[inset_3px_0_0_var(--range-accent)]"
-          : "text-ink-soft enabled:hover:bg-mist-50 enabled:hover:text-ink"
+          : "text-ink-soft enabled:hover:bg-(--range-soft)/60 enabled:hover:text-(--range-text)"
       )}
     >
       <span className="min-w-0 flex-1 truncate">{children}</span>

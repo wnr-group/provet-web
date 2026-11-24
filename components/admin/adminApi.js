@@ -138,9 +138,16 @@ async function uploadDirect(file) {
   if (!res.ok) throw Object.assign(new Error(data?.error || "Upload failed"), { data, status: res.status });
   if (!data.direct) return null;
 
+  // Storage keeps the type the file arrives with and serves it back as the
+  // Content-Type. Some browsers report none for a PDF (or a generic type), and a
+  // PDF served as application/octet-stream is downloaded by every browser
+  // instead of opened - so a PDF is always sent as application/pdf.
+  const isPdf = /\.pdf$/i.test(file.name || "") || file.type === "application/pdf";
+  const body = isPdf && file.type !== "application/pdf" ? new File([file], file.name, { type: "application/pdf" }) : file;
+
   const form = new FormData();
   form.append("cacheControl", "31536000");
-  form.append("", file);
+  form.append("", body);
   const put = await fetch(data.uploadUrl, { method: "PUT", body: form });
   if (!put.ok) throw Object.assign(new Error("Upload failed"), { status: put.status });
   return { url: data.url };

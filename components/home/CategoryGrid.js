@@ -92,7 +92,7 @@ function RangePanel({ category, override = {} }) {
     <Link
       href={href}
       aria-label={`${name}: ${category.productCount} products`}
-      className="group relative isolate flex h-full min-h-[15rem] flex-col justify-end overflow-hidden rounded-3xl text-white shadow-card focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-500 sm:min-h-[18rem]"
+      className="group relative isolate flex h-full min-h-[15rem] flex-col justify-end overflow-hidden rounded-3xl text-white shadow-[0_24px_48px_-20px_rgba(8,6,30,0.75)] ring-1 ring-white/25 transition-shadow duration-300 hover:ring-2 hover:ring-white/60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent-500 sm:min-h-[18rem]"
     >
       {/* The photo drifts more slowly than the page as it scrolls past, so
           it reads as a window onto the scene rather than a flat card. It is
@@ -102,12 +102,12 @@ function RangePanel({ category, override = {} }) {
           src={override.image || category.image || FALLBACK_IMG}
           alt=""
           sizes="(min-width: 1024px) 380px, (min-width: 640px) 48vw, 92vw"
-          className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
+          className="h-full w-full object-cover brightness-105 saturate-110 transition-transform duration-1000 ease-out group-hover:scale-105"
         />
       </Parallax>
       <span
         aria-hidden="true"
-        className="absolute inset-0 -z-10 bg-gradient-to-t from-brand-900/95 via-brand-900/60 to-brand-900/5"
+        className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(12,10,28,0.88)_0%,rgba(12,10,28,0.55)_34%,rgba(12,10,28,0)_62%)]"
       />
 
       <div className="p-5 sm:p-6">

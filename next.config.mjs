@@ -36,7 +36,21 @@ const nextConfig = {
     minimumCacheTTL: 60 * 60 * 24 * 31,
   },
   async headers() {
-    return publicAssets;
+    return [
+      ...publicAssets,
+      // A PDF held on this site is shown, not saved: the right type, and
+      // `inline` (never `attachment`), so every browser opens it in its own PDF
+      // viewer. PDFs kept in Supabase Storage are served by Storage with the
+      // type they were uploaded with - see contentTypeFor in lib/storage.js.
+      {
+        source: "/:path*.pdf",
+        headers: [
+          { key: "Content-Type", value: "application/pdf" },
+          { key: "Content-Disposition", value: "inline" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+        ],
+      },
+    ];
   },
 };
 
