@@ -14,6 +14,7 @@ import YouTubePlayer from "@/components/sections/YouTubePlayer";
 import MagazineRack from "@/components/sections/MagazineRack";
 import BookletShelf from "@/components/sections/BookletShelf";
 import ImageAccordion from "@/components/sections/ImageAccordion";
+import JobPosters from "@/components/sections/JobPosters";
 import { isYouTubeUrl } from "@/lib/youtube";
 import Pic from "@/components/ui/Pic";
 import { categoryTheme, rangeThemeVars } from "@/lib/categoryTheme";
@@ -716,6 +717,9 @@ const SHELF_WIDTH = { 2: "lg:w-[calc(50%-0.7rem)]", 3: "lg:w-[calc(33.333%-0.9re
 //     pointer, the photo floating in front of the card.
 function ImageCards({ section }) {
   const items = (section.config.items || []).filter((it) => it && (it.image || it.title));
+  // Job posters answer an empty list themselves: with no job posted, a form to
+  // ask about vacancies (components/sections/JobPosters).
+  if (!items.length && section.config.imageStyle === "poster") return <JobPosters section={section} items={items} />;
   if (!items.length) return null;
   if (section.config.layout === "people") return <PeopleRow section={section} items={items} />;
   if (section.config.layout === "zigzag") return <EventZigzag section={section} items={items} />;
@@ -731,6 +735,11 @@ function ImageCards({ section }) {
   // Tall photo panels that open out on hover, on a light background.
   if (section.config.imageStyle === "accordion" && items.some((it) => it.image)) {
     return <ImageAccordion section={section} items={items} />;
+  }
+
+  // Job posters: each opening is an uploaded poster, shown whole.
+  if (section.config.imageStyle === "poster") {
+    return <JobPosters section={section} items={items} />;
   }
 
   // Magazine issues: the latest featured, the rest on a rack.
@@ -1218,6 +1227,9 @@ export default function PageSections({ sections, offset = 0, flat = false, navy 
         const tinted = (index + offset) % 2 === 1;
         // The magazine library always sits on plain white.
         const isMagazine = section.type === "imageCards" && section.config?.imageStyle === "magazine";
+        // Job posters do not lean in either: with the Careers intro hidden they are
+        // the first thing under the banner, and the lean left that space empty.
+        const isPosters = section.type === "imageCards" && section.config?.imageStyle === "poster";
         // Open layouts chosen in ContentPage: a list on a white/tinted band, a
         // closing call to action on a full-width purple band.
         const isList = section.type === "cards" && section.config?.layout === "list";
@@ -1253,7 +1265,7 @@ export default function PageSections({ sections, offset = 0, flat = false, navy 
               {/* The magazine library does not lean in: the lean shifts a band
                   down until it scrolls into view, which left a wide empty gap
                   between the page's opening note and the library. */}
-              {TILTED_TYPES.has(section.type) && !isMagazine && !isList && !openBand ? (
+              {TILTED_TYPES.has(section.type) && !isMagazine && !isPosters && !isList && !openBand ? (
                 <ScrollTilt amount={12}>
                   <Renderer section={section} />
                 </ScrollTilt>
