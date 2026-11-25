@@ -27,7 +27,7 @@ export default function YouTubePlayer({ url, title, showTitle = false }) {
   const label = title || "YouTube video";
 
   return (
-    <div className="relative aspect-video overflow-hidden rounded-2xl bg-brand-900 shadow-card ring-1 ring-brand-100/70">
+    <div className="relative aspect-video overflow-hidden rounded-2xl bg-white shadow-[0_18px_40px_-18px_rgba(10,8,30,0.55)] ring-1 ring-white/40">
       {playing ? (
         <iframe
           src={youTubeEmbedUrl(video.id, { start: video.start, autoplay: true })}
@@ -49,9 +49,13 @@ export default function YouTubePlayer({ url, title, showTitle = false }) {
             src={youTubeThumbnailUrl(video.id)}
             alt=""
             loading="lazy"
-            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+            className="h-full w-full object-cover brightness-[1.08] saturate-[1.12] transition duration-700 ease-out group-hover:scale-105 group-hover:brightness-[1.14]"
           />
-          <span aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-brand-900/70 via-brand-900/10 to-brand-900/20" />
+          {/* No tint over the picture, so the video stays bright; only a video with
+              its title printed over it gets a soft fade at the foot to read against. */}
+          {title && showTitle && (
+            <span aria-hidden="true" className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-brand-900/70 to-transparent" />
+          )}
           <span
             aria-hidden="true"
             className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-accent-500 text-white shadow-[0_12px_30px_-8px_rgba(229,9,127,0.6)] ring-4 ring-white/25 transition duration-300 group-hover:scale-110 group-hover:bg-accent-600 sm:h-16 sm:w-16"
