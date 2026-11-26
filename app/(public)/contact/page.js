@@ -7,7 +7,7 @@ import LocationCards from "@/components/sections/LocationCards";
 import PageBanner from "@/components/ui/PageBanner";
 import { getActiveSocialLinks, getContentSections, getFeedbackForm, getAddedSections } from "@/lib/data";
 import PageSections from "@/components/sections/PageSections";
-import { withContactDefaults, parseDetailLines } from "@/lib/contactContent";
+import { withContactDefaults, parseDetailLines, addressLines } from "@/lib/contactContent";
 
 // Rendered per request, like the other content pages: everything here comes
 // from Admin > Website Content > Contact Us, and nothing on the page (no
@@ -30,6 +30,8 @@ function detailIcon(label) {
   if (/hour|time|open/.test(text)) return Clock;
   return Info;
 }
+
+const isAddress = (label) => /visit|address|office|location/i.test(label);
 
 // A value that is a phone number or an email address becomes a link. Phone
 // values may hold several numbers ("+91 44 2244 2124 / +91 44 2244 2127"),
@@ -104,9 +106,19 @@ export default async function Contact({ searchParams }) {
                 </span>
                 <div className="min-w-0">
                   {label && <p className="text-sm font-semibold text-ink">{label}</p>}
-                  <p className="break-words text-sm text-ink-soft">
-                    <DetailValue label={label} value={value} />
-                  </p>
+                  {isAddress(label) ? (
+                    <address className="text-sm not-italic leading-relaxed text-ink-soft">
+                      {addressLines(value).map((line) => (
+                        <span key={line} className="block">
+                          {line}
+                        </span>
+                      ))}
+                    </address>
+                  ) : (
+                    <p className="break-words text-sm text-ink-soft">
+                      <DetailValue label={label} value={value} />
+                    </p>
+                  )}
                 </div>
               </RevealItem>
             );

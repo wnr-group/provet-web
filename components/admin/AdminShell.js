@@ -55,9 +55,8 @@ export default function AdminShell({ admin, children }) {
           flex row stretching it to the content's height, which is what made
           it scroll away before. */}
       <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col self-start border-r border-brand-100 bg-white lg:flex">
-        <div className="flex h-16 items-center gap-2 border-b border-brand-100 px-5">
-          <Image src="/logo-mark.png" alt="" width={32} height={32} className="h-8 w-8" />
-          <span className="font-display text-lg font-extrabold text-ink">Provet</span>
+        <div className="flex h-16 items-center border-b border-brand-100 px-5">
+          <Image src="/logo-full.png" alt="Provet" width={894} height={331} className="h-11 w-auto" />
         </div>
         {/* Scrolls on its own if the links ever outgrow a short screen, keeping
             the account footer pinned at the bottom. */}

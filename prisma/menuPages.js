@@ -491,6 +491,41 @@ const menuPages = [
         body: "We're not advertising any openings right now. If you'd like to be considered for a future role, get in touch and tell us about yourself.",
       },
       {
+        // Openings are posted by the admin as posters (Admin > Website Content >
+        // Careers > Current openings > "Post a job"). One sample poster to
+        // start with - replace or delete it once real openings are ready.
+        key: "openings",
+        type: "imageCards",
+        title: "Current openings",
+        body: "Click a poster to read it in full, then apply using the details on it.",
+        config: {
+          imageStyle: "poster",
+          columns: 4,
+          items: [
+            {
+              image: "/content/careers/sample-job-poster.png",
+              title: "Territory Sales Executive (sample)",
+              text: "Animal Health & Aquaculture. A sample poster - replace it with a real opening.",
+            },
+            {
+              image: "/content/careers/sample-job-poster-aqua-service.png",
+              title: "Aqua Technical Service Officer (sample)",
+              text: "Aquaculture Health Team. A sample poster - replace it with a real opening.",
+            },
+            {
+              image: "/content/careers/sample-job-poster-qc-chemist.png",
+              title: "Quality Control Chemist (sample)",
+              text: "Laboratory & Quality Assurance. A sample poster - replace it with a real opening.",
+            },
+            {
+              image: "/content/careers/sample-job-poster-field-sales.png",
+              title: "Field Sales Officer (sample)",
+              text: "Poultry Health Range. A sample poster - replace it with a real opening.",
+            },
+          ],
+        },
+      },
+      {
         key: "cta",
         type: "cta",
         title: "Interested in joining us?",

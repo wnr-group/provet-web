@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import clsx from "clsx";
-import { Archive, ArrowRight, BookOpen, CalendarDays, CalendarX, Download } from "lucide-react";
+import { Archive, ArrowRight, BookOpen, CalendarDays, CalendarX } from "lucide-react";
 import Pic from "@/components/ui/Pic";
 import { organise, pickYear, resolveMagazineSettings } from "@/lib/magazineLibrary";
 
@@ -109,6 +109,19 @@ function MagazineCover({ item, index, size = "rack" }) {
 // A link when the issue has one (a PDF, an article), otherwise just the cover.
 function MaybeLink({ href, className, children, ...rest }) {
   if (!href) return <div className={className}>{children}</div>;
+  // A PDF opens in a new tab, straight from its own address, for the browser's
+  // own PDF viewer to show. A plain anchor, deliberately: no `download`
+  // attribute (that forces a save in every browser), and not Next's Link, whose
+  // client-side navigation is meant for pages - for a PDF held on this site it
+  // would also open in the same tab. `noopener` keeps the new tab from reaching
+  // back to this one.
+  if (isPdf(href)) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={className} {...rest}>
+        {children}
+      </a>
+    );
+  }
   const external = /^https?:\/\//.test(href);
   return (
     <Link href={href} className={className} {...(external ? { target: "_blank", rel: "noreferrer" } : {})} {...rest}>
@@ -143,11 +156,6 @@ function IssueShelf({ issues, columns, startIndex = 0 }) {
                 <MaybeLink href={item.href} className="inline-flex items-center gap-1 text-brand-700 hover:text-accent-600">
                   Read <ArrowRight size={12} aria-hidden="true" />
                 </MaybeLink>
-                {isPdf(item.href) && (
-                  <a href={item.href} download className="inline-flex items-center gap-1 text-ink-soft hover:text-accent-600">
-                    <Download size={12} aria-hidden="true" /> PDF
-                  </a>
-                )}
               </div>
             )}
           </div>
@@ -293,11 +301,6 @@ function Recent({ section, issues, columns, cfg, onArchives }) {
               <MaybeLink href={latest.href} className="btn-primary">
                 {cfg.readLabel} <ArrowRight size={16} />
               </MaybeLink>
-              {isPdf(latest.href) && (
-                <a href={latest.href} download className="btn-outline">
-                  <Download size={16} /> {cfg.downloadLabel}
-                </a>
-              )}
             </div>
           ) : (
             <p className="mt-6 text-sm text-ink-soft">This edition isn&rsquo;t available to read online yet.</p>

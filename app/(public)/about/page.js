@@ -5,8 +5,8 @@ import { withAboutDefaults } from "@/lib/aboutContent";
 import PageSections from "@/components/sections/PageSections";
 import CtaBanner from "@/components/home/CtaBanner";
 import Reveal, { RevealGroup, RevealItem } from "@/components/motion/Reveal";
-import { Tilt, ScrollTilt } from "@/components/motion/effects";
 import PageBanner from "@/components/ui/PageBanner";
+import Pic from "@/components/ui/Pic";
 import OurStory from "@/components/about/OurStory";
 import VisionMission from "@/components/about/VisionMission";
 import WhyUs from "@/components/home/WhyUs";
@@ -69,35 +69,41 @@ export default async function About() {
       <VisionMission vision={vision} mission={mission} />
 
       {values.length > 0 && (
-        <section className="bg-brand-600 [&_h2]:text-white">
-         <div className="container-page py-12 sm:py-16">
-          <Reveal className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">What We Stand For</h2>
-            <span aria-hidden="true" className="mx-auto mt-4 block h-1 w-14 rounded-full bg-accent-400" />
-          </Reveal>
-          {/* The grid stands up from a slight lean as it scrolls in. */}
-          <ScrollTilt amount={10} className="mt-10">
-            <RevealGroup className="grid gap-6 md:grid-cols-2">
-              {values.map((section) => {
-                const Icon = ICONS[section.key] || Microscope;
-                return (
-                  <RevealItem key={section.key} className="h-full">
-                    {/* 3D card: leans to the pointer, the icon floats in front. */}
-                    <Tilt max={10} shadow className="h-full">
-                      <div className="card h-full p-7 [transform-style:preserve-3d]">
-                        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-600 text-white shadow-[0_12px_20px_-8px_rgba(72,62,168,0.6)] [transform:translateZ(50px)]">
-                          <Icon size={20} />
+        <section className="bg-white">
+          {/* Open, not boxed: the title and a picture on the left, the two values
+              on the right as soft-tinted rows - the same arrangement as the
+              Trial Reports lists. A light band, so the copy leads rather than a
+              heavy background. */}
+          <div className="container-page py-10 sm:py-14">
+            <div className="grid items-center gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(0,5fr)] lg:gap-16">
+              <Reveal className="text-center">
+                <h2 className="font-display text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">What We Stand For</h2>
+                <span aria-hidden="true" className="mx-auto mt-4 block h-1.5 w-14 rounded-full bg-accent-500" />
+                <div className="relative mx-auto mt-6 aspect-[16/9] max-w-xs overflow-hidden rounded-3xl shadow-lift">
+                  <Pic src="/content/hero/05-farm-animals.jpg" alt="" sizes="(min-width: 1024px) 320px, 92vw" className="h-full w-full object-cover" />
+                </div>
+              </Reveal>
+
+              <RevealGroup className="space-y-3" stagger={0.1}>
+                {values.map((section) => {
+                  const Icon = ICONS[section.key] || Microscope;
+                  return (
+                    <RevealItem key={section.key}>
+                      <article className="group flex gap-5 rounded-2xl bg-brand-50 p-5 transition-colors duration-300 hover:bg-brand-100/70 sm:p-6">
+                        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-accent-500 to-accent-400 text-white shadow-[0_10px_22px_-8px_rgba(229,9,127,0.6)] transition-transform duration-300 group-hover:scale-110 motion-reduce:transition-none">
+                          <Icon size={24} aria-hidden="true" />
                         </span>
-                        <h3 className="mt-4 font-display text-lg font-semibold text-ink">{section.title}</h3>
-                        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink-soft">{section.body}</p>
-                      </div>
-                    </Tilt>
-                  </RevealItem>
-                );
-              })}
-            </RevealGroup>
-          </ScrollTilt>
-         </div>
+                        <div className="min-w-0">
+                          <h3 className="font-display text-xl font-bold tracking-tight text-brand-600 sm:text-2xl">{section.title}</h3>
+                          <p className="mt-2 whitespace-pre-line text-base leading-relaxed text-ink-soft sm:text-lg">{section.body}</p>
+                        </div>
+                      </article>
+                    </RevealItem>
+                  );
+                })}
+              </RevealGroup>
+            </div>
+          </div>
         </section>
       )}
 

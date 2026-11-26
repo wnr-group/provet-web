@@ -3,7 +3,7 @@ import Image from "next/image";
 import { MapPin, Phone, Mail } from "lucide-react";
 import SocialLinks from "@/components/ui/SocialLinks";
 import { getActiveSocialLinks, getContentSections } from "@/lib/data";
-import { contactInfo, telHref } from "@/lib/contactContent";
+import { contactInfo, telHref, addressLines } from "@/lib/contactContent";
 import { FOOTER_NAV } from "@/lib/navigation";
 import { RevealGroup, RevealItem } from "@/components/motion/Reveal";
 
@@ -43,9 +43,8 @@ export default async function Footer() {
           className="col-span-2 md:col-span-3 md:flex md:items-end md:justify-between md:gap-8 lg:col-span-1 lg:block"
         >
           <div>
-            <Link href="/" className="flex items-center gap-2.5">
-              <Image src="/logo-mark.png" alt="" width={36} height={36} className="h-9 w-9" />
-              <span className="font-display text-xl font-extrabold text-white">Provet</span>
+            <Link href="/" aria-label="Provet - home" className="inline-block rounded-xl bg-white px-3 py-2">
+              <Image src="/logo-full.png" alt="Provet - Excellence through Innovation" width={894} height={331} className="h-14 w-auto" />
             </Link>
             {info.tagline && (
               <p className="mt-4 max-w-xs text-sm leading-relaxed text-brand-200 md:max-w-md lg:max-w-xs">{info.tagline}</p>
@@ -84,7 +83,13 @@ export default async function Footer() {
             {info.address && (
               <li className="flex items-start gap-2.5">
                 <MapPin size={16} className="mt-0.5 shrink-0 text-accent-300" />
-                <span>{info.address}</span>
+                <address className="not-italic leading-relaxed">
+                  {addressLines(info.address).map((line) => (
+                    <span key={line} className="block">
+                      {line}
+                    </span>
+                  ))}
+                </address>
               </li>
             )}
             {info.phones.length > 0 && (

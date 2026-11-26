@@ -33,6 +33,56 @@ function framedImage(url, variant) {
   return url.replace(/([?&])w=\d+/, "$1w=1200").replace(/([?&])h=\d+/, "$1h=1000");
 }
 
+// Per-page layout choices for sections that are drawn in an open, editorial way
+// instead of the default boxes (components/sections/PageSections): page key ->
+// section key -> config to merge in. Only how a section is laid out is chosen
+// here; its title, copy and links stay the admin's.
+//   layout "editorial": a page's opening note (EditorialIntro; `photos` is the
+//     round pictures above it - a list of site image paths, or false for none)
+//   layout "list":      a titled list of reports as open rows (ReportList;
+//     `listImage` is the picture under its title)
+//   layout "band":      a closing call to action as a full-width band
+// The Who We Are page gives each section its own open layout: "statement" (an
+// opening statement), "journey" (cards as steps along a dashed line), "strip"
+// (a list as one row of ticked phrases), "people" (avatar cards as open
+// profiles) and "bar" (a call to action as one row, text left, button right).
+// The Events page shows its events as a "zigzag": big photos alternating sides,
+// the date and story opposite.
+const PAGE_LAYOUTS = {
+  "resources/magazine": { intro: { layout: "editorial" } },
+  "about/who-we-are": {
+    intro: { layout: "statement" },
+    reach: { layout: "journey" },
+    differentiators: { layout: "strip" },
+    "management-team": { layout: "people" },
+    cta: { layout: "bar" },
+  },
+  "media/news": {
+    items: { layout: "newsroom" },
+  },
+  "media/events": {
+    items: { layout: "zigzag" },
+    cta: { layout: "bar" },
+  },
+  "resources/technical-articles": {
+    streams: { layout: "streams" },
+    "poultry-articles": { layout: "articles" },
+    "aqua-articles": { layout: "articles" },
+  },
+  "resources/trial-reports": {
+    intro: { layout: "editorial", photos: false },
+    "poultry-reports": { layout: "list", listImage: "/content/hero/01-poultry-house.jpg" },
+    "aqua-reports": { layout: "list", listImage: "/content/ranges/blunova-shrimp.jpg" },
+    cta: { layout: "band" },
+  },
+};
+
+function withPageLayouts(pageKey, sections) {
+  const patches = PAGE_LAYOUTS[pageKey];
+  if (!patches) return sections;
+  return sections.map((s) => (patches[s.key] ? { ...s, config: { ...(s.config || {}), ...patches[s.key] } } : s));
+}
+
 export function bannerFor(pageKey) {
   return BANNERS[pageKey] || BANNERS_BY_SECTION[pageKey.split("/")[0]] || { variant: "asymmetric" };
 }
@@ -84,7 +134,7 @@ export default async function ContentPage({ pageKey }) {
         image={framedImage(page.heroImage || DEFAULT_HERO, bannerFor(pageKey).variant)}
       />
 
-      <PageSections sections={sections} navy />
+      <PageSections sections={withPageLayouts(pageKey, sections)} navy />
     </div>
   );
 }

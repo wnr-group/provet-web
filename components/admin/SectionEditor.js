@@ -361,11 +361,13 @@ function ConfigFields({ section, categories, onConfig }) {
                   ? "Back issues per row on the rack"
                   : config.imageStyle === "booklet"
                     ? "Booklets per row"
-                    : "Cards per row"}
+                    : config.imageStyle === "poster"
+                      ? "Posters per row"
+                      : "Cards per row"}
             </label>
             <select
               className="input"
-              value={config.columns || 3}
+              value={config.columns || (config.imageStyle === "poster" ? 4 : 3)}
               onChange={(e) => onConfig({ columns: Number(e.target.value) })}
             >
               {[2, 3, 4].map((n) => (
@@ -388,6 +390,7 @@ function ConfigFields({ section, categories, onConfig }) {
               <option value="card">Photo cards in a grid (events, news)</option>
               <option value="avatar">Portrait cards (people)</option>
               <option value="accordion">Expanding image panels (open on hover)</option>
+              <option value="poster">Job posters (Careers: one poster image per opening)</option>
             </select>
           </div>
           </>
@@ -396,7 +399,7 @@ function ConfigFields({ section, categories, onConfig }) {
 
         {/* The crop only applies to the large image-card style - an avatar is
             always a circle, and a carousel sets its shape above. */}
-        {type === "imageCards" && config.imageStyle !== "avatar" && (
+        {type === "imageCards" && config.imageStyle !== "avatar" && config.imageStyle !== "poster" && (
           <div className="sm:w-1/2">
             <label className="label">Image shape</label>
             <select
@@ -412,7 +415,7 @@ function ConfigFields({ section, categories, onConfig }) {
         )}
 
         <div>
-          {config.imageStyle !== "magazine" && <label className="label">{type === "carousel" ? "Slides" : "Cards"}</label>}
+          {config.imageStyle !== "magazine" && <label className="label">{type === "carousel" ? "Slides" : config.imageStyle === "poster" ? "Job posters" : "Cards"}</label>}
           {config.imageStyle === "magazine" && (
             <p className="mb-2 rounded-lg bg-brand-50 px-3 py-2 text-xs text-ink-soft">
               The issues, their dates and PDFs, publishing and the page&rsquo;s settings are all managed in{" "}
@@ -420,21 +423,53 @@ function ConfigFields({ section, categories, onConfig }) {
               the frame the library sits in: its heading and the covers per row are set here.
             </p>
           )}
+          {config.imageStyle === "poster" && (
+            <p className="mb-2 rounded-lg bg-brand-50 px-3 py-2 text-xs text-ink-soft">
+              Upload each opening as a poster image (portrait works best). It appears on the Careers page whole, and opens full size
+              when clicked. The job title (also the position on the application) and a line of details are optional. &ldquo;Apply
+              now&rdquo; opens an application form, and what the applicant fills in is emailed to HR. Delete a row to take a job down;
+              with no posters the section is hidden.
+            </p>
+          )}
+          {config.imageStyle === "poster" && (
+            <div className="mb-3 sm:w-2/3">
+              <label className="label">Send applications to (HR email)</label>
+              <input
+                type="email"
+                className="input"
+                value={config.applyEmail || ""}
+                onChange={(e) => onConfig({ applyEmail: e.target.value })}
+                placeholder="hr@provet.in"
+              />
+              <p className="mt-1 text-xs text-ink-soft">
+                Every application from the &ldquo;Apply now&rdquo; form, with the resume attached, is emailed here. Leave it blank to use the
+                site&rsquo;s default address.
+              </p>
+            </div>
+          )}
           {config.imageStyle !== "magazine" && (
             <RowsTable
-              columns={[
-                { key: "image", label: "Image", type: "image", width: "5.5rem" },
-                { key: "title", label: "Heading", placeholder: "Heading", width: "24%" },
-                { key: "text", label: "Text", type: "textarea", placeholder: "Text (optional)" },
-                { key: "href", label: "Link", placeholder: "/products or https://...", width: "22%" },
-              ]}
+              columns={
+                config.imageStyle === "poster"
+                  ? [
+                      { key: "image", label: "Poster", type: "image", width: "6.5rem" },
+                      { key: "title", label: "Job title", placeholder: "Sales Executive", width: "24%" },
+                      { key: "text", label: "Details", type: "textarea", placeholder: "Location, last date to apply (optional)" },
+                    ]
+                  : [
+                      { key: "image", label: "Image", type: "image", width: "5.5rem" },
+                      { key: "title", label: "Heading", placeholder: "Heading", width: "24%" },
+                      { key: "text", label: "Text", type: "textarea", placeholder: "Text (optional)" },
+                      { key: "href", label: "Link", placeholder: "/products or https://...", width: "22%" },
+                    ]
+              }
               rows={items}
               onChange={(next) => onConfig({ items: next })}
               newRow={{ image: "", title: "", text: "", href: "" }}
-              addLabel={type === "carousel" ? "Add slide" : "Add card"}
-              itemLabel={type === "carousel" ? "slide" : "card"}
+              addLabel={type === "carousel" ? "Add slide" : config.imageStyle === "poster" ? "Post a job" : "Add card"}
+              itemLabel={type === "carousel" ? "slide" : config.imageStyle === "poster" ? "job poster" : "card"}
               max={12}
-              emptyText={type === "carousel" ? "No slides yet." : "No cards yet."}
+              emptyText={type === "carousel" ? "No slides yet." : config.imageStyle === "poster" ? "No jobs posted yet." : "No cards yet."}
             />
           )}
         </div>

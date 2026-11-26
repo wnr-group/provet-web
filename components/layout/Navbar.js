@@ -106,9 +106,8 @@ export default function Navbar({ categories = [] }) {
           when one side is much wider than the other. */}
       <div className="container-page flex h-16 items-center gap-6 sm:h-20">
         <div className="flex flex-1 basis-0 items-center">
-          <Link href="/" className="flex shrink-0 items-center gap-2.5">
-            <Image src="/logo-mark.png" alt="" width={36} height={36} className="h-8 w-8 sm:h-9 sm:w-9" />
-            <span className="font-display text-xl font-extrabold tracking-tight text-brand-700">Provet</span>
+          <Link href="/" aria-label="Provet - home" className="flex shrink-0 items-center">
+            <Image src="/logo-full.png" alt="Provet - Excellence through Innovation" width={894} height={331} priority className="h-11 w-auto sm:h-14" />
           </Link>
         </div>
 

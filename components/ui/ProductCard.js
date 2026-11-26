@@ -2,6 +2,7 @@ import ProductName from "@/components/ui/ProductName";
 import Link from "next/link";
 import { ArrowUpRight, Sparkles } from "lucide-react";
 import SiteImage from "@/components/ui/SiteImage";
+import { groupLabel } from "@/lib/groupLabel";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1664216294580-079bc527ae49?auto=format&fit=crop&w=600&h=450&q=80";
@@ -50,7 +51,7 @@ export default function ProductCard({ product }) {
           bottom with mt-auto. */}
       <div className="flex flex-1 flex-col px-3 pb-3 pt-2.5 sm:px-[18px] sm:pb-4 sm:pt-3">
         <span className="text-[11px] font-semibold uppercase leading-4 tracking-[0.12em] text-accent-600">
-          {product.subcategory?.name || product.category?.name}
+          {groupLabel(product.subcategory?.name || product.category?.name)}
         </span>
         <h3 className="mt-1 line-clamp-2 font-display text-[15px] font-bold leading-snug text-ink transition-colors group-hover:text-(--range-text) sm:text-base">
           <ProductName name={product.name} slug={product.slug} className="h-5 sm:h-6" sizes="260px" />

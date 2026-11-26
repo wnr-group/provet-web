@@ -2,6 +2,7 @@ import ProductName from "@/components/ui/ProductName";
 import Link from "next/link";
 import { ArrowRight, Package } from "lucide-react";
 import SiteImage from "@/components/ui/SiteImage";
+import { groupLabel } from "@/lib/groupLabel";
 
 const FALLBACK_IMG =
   "https://images.unsplash.com/photo-1664216294580-079bc527ae49?auto=format&fit=crop&w=600&h=450&q=80";
@@ -23,7 +24,7 @@ const FALLBACK_IMG =
 // a row line up.
 export default function CatalogueCard({ product }) {
   const image = product.images?.[0] || FALLBACK_IMG;
-  const group = product.subcategory?.name || product.category?.name;
+  const group = groupLabel(product.subcategory?.name || product.category?.name);
 
   return (
     <Link
