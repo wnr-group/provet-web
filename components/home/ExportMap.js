@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import clsx from "clsx";
 import { ChevronDown, Mail, MapPin, Phone, Globe2 } from "lucide-react";
 import { MAP_WIDTH, MAP_HEIGHT } from "@/lib/mapSize";
@@ -17,6 +17,7 @@ export default function ExportMap({ outlines, dots, regions }) {
   // clicking a country does.
   const [open, setOpen] = useState(() => countries.find((c) => c.contact)?.key ?? null);
   const total = countries.length;
+  const columnCount = useSyncExternalStore(watchColumns, currentColumns, () => 4);
 
   // The country under the pointer (any country, not only the ones we export
   // to): it grows out of the map and a label with its name follows the cursor.
@@ -107,26 +108,50 @@ export default function ExportMap({ outlines, dots, regions }) {
       )}
       </div>
 
-      <ul className="mx-auto mt-8 grid max-w-5xl items-start gap-x-6 gap-y-1 rounded-2xl bg-white p-5 shadow-soft ring-1 ring-brand-100/70 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
-        {countries.map((country) => (
-          <li key={country.key}>
-            {country.contact ? (
-              <CountryContact
-                country={country}
-                isOpen={open === country.key}
-                onToggle={() => setOpen(open === country.key ? null : country.key)}
-              />
-            ) : (
-              <span className="flex items-center gap-2 py-1 text-sm text-ink-soft">
-                <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent-500" />
-                {country.name}
-              </span>
-            )}
-          </li>
+      {/* Each column is its own list, so an open country pushes down only the
+          names under it. In one shared grid it stretched its whole row, leaving
+          a blank block beside it. Names still read left to right. */}
+      <div className="mx-auto mt-8 grid max-w-5xl items-start gap-x-6 gap-y-1 rounded-2xl bg-white p-5 shadow-soft ring-1 ring-brand-100/70 sm:grid-cols-2 sm:p-6 lg:grid-cols-4">
+        {Array.from({ length: columnCount }, (_, column) => (
+          <ul key={column} className="flex min-w-0 flex-col gap-1">
+            {countries
+              .filter((_, i) => i % columnCount === column)
+              .map((country) => (
+                <li key={country.key}>
+                  {country.contact ? (
+                    <CountryContact
+                      country={country}
+                      isOpen={open === country.key}
+                      onToggle={() => setOpen(open === country.key ? null : country.key)}
+                    />
+                  ) : (
+                    <span className="flex items-center gap-2 py-1 text-sm text-ink-soft">
+                      <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent-500" />
+                      {country.name}
+                    </span>
+                  )}
+                </li>
+              ))}
+          </ul>
         ))}
-      </ul>
+      </div>
     </div>
   );
+}
+
+// How many columns the country list has at this width: 1, 2 from `sm`, 4 from
+// `lg` (matching the grid classes above). The server renders four.
+const COLUMN_QUERIES = ["(min-width: 64rem)", "(min-width: 40rem)"];
+
+function watchColumns(onChange) {
+  const queries = COLUMN_QUERIES.map((q) => window.matchMedia(q));
+  queries.forEach((q) => q.addEventListener("change", onChange));
+  return () => queries.forEach((q) => q.removeEventListener("change", onChange));
+}
+
+function currentColumns() {
+  const [large, small] = COLUMN_QUERIES.map((q) => window.matchMedia(q).matches);
+  return large ? 4 : small ? 2 : 1;
 }
 
 // A country row that opens to its distributor's details.
